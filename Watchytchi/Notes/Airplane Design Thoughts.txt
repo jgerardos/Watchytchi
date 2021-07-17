@@ -1,0 +1,53 @@
+This is me writing some pseudocode for a tamagotchi project on the watchy e-paper smart watch
+
+Developer experience goals:
+	- Start developing a virtual pet watch face for the watchy
+	- Keep the complexity low, especially in terms of experimental technical functionality. Understand that you are using the hardware for something it's not designed
+	- Still have it be interesting to you
+	- Make it something that might be interesting to the average vpet enthusiast
+	- Keep the core tamagotchi functionality, plus one or two interesting ideas
+
+Player experience goals:
+	- The player looks at their pet, and smiles
+	- The player feels the presence of their pet at all times. When they wear it on their wrist, they do not feel alone.
+	- Cultivate moments of surprise; the player looks at the watch and sees novel developments. Ambient behaviors, implying a continuous life of the creature.
+
+
+Core concept:
+	- Take the base tamagotchi interaction menu. You have buttons a, b, and c. A scrolls through options, B selects, and C cancels. You have your creature in the middle, and then a series of icons around it indicating the different care verbs
+	- Pick some interesting animals and creature designs. Having fun sprites will carry this a lot. Picking slow animals could be a fun way to lean in to the aesthetic. But be careful with your inclination towards the austere.
+
+
+Verbs of the classic tamagotchi, and whether I want to keep them:
+	- Hunger:
+		- Behavior: The tamagotchi has a hunger (or satiation) meter. The hunger atrophies over time, so that it becomes less full. The player can feed the tamagotchi using a selection in the menu. When the tama eats, it plays a chewing animation and the food goes through bite animations. If the tamagotchi is left hungry you get a care mistake that influences evolution. If you leave it hungry for too long, it will die.
+		- What I want to keep:
+	- Happiness:
+		- Behavior: The tamagotchi has a happiness meter that also atrophies over time. Playing the game will raise the happy meter, sometimes on the condition that you win. You can also feed the tamagotchi a treat ("snack"), which will make it happy but increase the weight. Having very low happiness is a care mistake. Does it also affect health / lifespan?
+		- What I want to keep: keep happiness, but just make it a second hunger for now.
+	- Game:
+		- Behavior: The player can select a game in the menu using a game icon. They then play a minigame. In the original tamagotchis these are very simple and often guessing based; guess which way the creature will face, for instance. The creature gains a happy point if they win
+		- What I want to keep: I always found the game of chance inane and frustrating. There's something thematically interesting about your creature always wanting to play a game that only a child could enjoy, but it wears through quickly. At the very least I don't want getting the happy point to be a matter of chance.
+		- For MVP reasons, it might be simpler to just have this be an animation, effectively making happiness a second hunger meter
+	- Sickness:
+		- Every once in a while the tamagotchi will get sick. You can cure it with a medicine icon. Sometimes this is represented as a shot, which makes the creature upset, but it cures the illness. If the tamagotchi is left sick too long, it will die(?). Taking too long is also maybe a care mistake?
+		- What I want to keep: I like this mechanic a lot, I think I want all of it.
+	- Discipline:
+		- Every once in a while the tamagotchi will cry out, but not be hungry / reject food. You need to yell at it. This will make it upset, but it raises the discipline. There are only so many discipline cry out moments for every life stage, and if you miss it you don't get another chance.
+		- What I want to keep: I like this mechanic, but it might need some rethinking. It doesn't feel like MVP material to be honest. I do like how it's a second factor for influencing evolution.
+	- Weight:
+		- Eating food and snacks gains weight, playing the game reduces it.
+		- What I want to keep: Nothing. I'm not interested in this one
+	- Settings: I will start off with no settings, no pause, etc.
+	- Status:
+		- You can hit this to view the tamagotchi's age, weight, hunger, and happiness
+		- What I want to keep: all of it I think? I like how you have to manually check on the creature.
+	- Lights:
+		- When it gets late, you have to turn off the lights for the tamagotchi or else it will not sleep well (care mistake).
+		- What I want to keep: all of it, but maybe reframe it as tucking the creature into bed? but ofc that adds complexity because you can't just turn the screen black. But counterpoint: it's so fucking cute?? There could also be an interesting mechanic of adults not needing this, paralleling real children growing up and becoming less dependent.
+	
+Random ideas I'm excited about:
+	- Advice: the player can ask their creature for advice. Maybe they choose the broad category of problem. Then they select "affirmation" or "Open-ended question." The creature will either dispense an affirmation, or ask an open-ended question to help the player think it through. The creature should maybe explicitly state that it can't understand, but will try to help anyway, to get rid of the typical dissonance of a computer pretending it can understand.
+	- Have the time display on a diegetic clock in like the corner of the room
+	- Make the adult "game" birdwatching. Just a little screen where your creature is off in a corner next to some binos. Birds fly by.
+	- Have weather and a sky
