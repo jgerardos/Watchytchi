@@ -78,8 +78,6 @@ void draw()
     creature.Update(dt);
   }
   
-  
-  
   textSize(20);
   text("xPos: " + creature.xPos, 0, height / 2);
   
@@ -93,43 +91,7 @@ void keyPressed()
   if (key == 'a')
     menuButtons[cursorIdx].Click();
 }
-class MenuButton
-{
-  int id;
-  float xPos, yPos;
-  float size;
-  PImage inactiveIcon;
-  PImage activeIcon;
-  MenuButton(int idIn, float xIn, float yIn, PImage inactiveIconIn, PImage activeIconIn)
-  {
-    id = idIn;
-    xPos = xIn;
-    yPos = yIn;
-    inactiveIcon = inactiveIconIn;
-    activeIcon = activeIconIn;
-    size = inactiveIconIn.width; 
-  }
-  void draw()
-  {
-    image(cursorIdx == id ? activeIcon : inactiveIcon, xPos - size / 2f, yPos - size / 2f);
-  }
-  void Click()
-  {
-    hunger = hunger + 1;
-  }
-}
-class FoodButton extends MenuButton
-{  
-   FoodButton(int idIn, float xIn, float yIn, PImage inactiveIconIn, PImage activeIconIn)
-   {
-     super(idIn, xIn, yIn, inactiveIconIn, activeIconIn);
-   }
-  
-  void Click()
-  {
-    hunger += 10;
-  }
-}
+
 
 class Animation
 {
@@ -140,67 +102,5 @@ class Animation
   {
     frameInterval = intervalIn;
     frames = framesIn;
-  }
-}
-
-class Creature
-{
-  float xPos, yPos;
-  Animation currentAnim;
-  int frameIdx = 0;
-  float frameTicker;
-  PVector size = new PVector(0f, 0f);
-  
-  int faceDirection = 1;
-  float speed = 20f;
-
-  Creature(float xIn, float yIn, Animation animIn)
-  {
-    xPos = xIn;
-    yPos = yIn;
-    currentAnim = animIn;
-    
-    for (int i = 0; i < animIn.frames.length; i++)
-    {
-      size.x = max(size.x, animIn.frames[i].width);
-      size.y = max(size.y, animIn.frames[i].height);
-    }
-  }
-  
-  void Update(float dt)
-  {
-    // Basic ping ponging walk behavior
-    xPos += speed * dt * faceDirection;
-    if (faceDirection == -1 && xPos < 0)
-    {
-      faceDirection = 1;
-      xPos = -xPos;
-    }
-    else if (faceDirection == 1 && xPos > width)
-    {
-      faceDirection = -1;
-      xPos = width + width - xPos;
-    }
-  }
-
-  void Draw(float dt)
-  {
-    frameTicker += dt;
-    while (frameTicker > currentAnim.frameInterval)
-    {
-      frameIdx = (frameIdx + 1) % currentAnim.frames.length;
-      frameTicker -= currentAnim.frameInterval;
-    }
-
-    if (faceDirection == -1)
-    {
-       pushMatrix();
-       translate(xPos, yPos);
-       scale(-1.0, 1.0);
-       image(currentAnim.frames[frameIdx], 0, 0);
-       popMatrix();
-    }
-    else
-      image(currentAnim.frames[frameIdx], xPos, yPos);
   }
 }
