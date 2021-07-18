@@ -11,16 +11,25 @@ class Creature
 
   float desiredX = width;
 
-  Creature(float xIn, float yIn, Animation animIn)
+  void SetAnim(Animation newAnim)
+  {
+    if (newAnim != currentAnim)
+    {
+      frameIdx = 0;
+      frameTicker = 0f;
+      currentAnim = newAnim;
+    }
+  }
+
+  Creature(float xIn, float yIn)
   {
     xPos = xIn;
     yPos = yIn;
-    currentAnim = animIn;
     
-    for (int i = 0; i < animIn.frames.length; i++)
+    for (int i = 0; i < idleAnim.frames.length; i++)
     {
-      size.x = max(size.x, animIn.frames[i].width);
-      size.y = max(size.y, animIn.frames[i].height);
+      size.x = max(size.x, idleAnim.frames[i].width);
+      size.y = max(size.y, idleAnim.frames[i].height);
     }
   }
   
@@ -28,6 +37,8 @@ class Creature
   {
     if (activeFoods.size() == 0)
     {
+      SetAnim(stepAnim);
+
       // Basic ping ponging walk behavior
       xPos += speed * dt * faceDirection;
       if (faceDirection == -1 && xPos < 0)
@@ -55,6 +66,18 @@ class Creature
         faceDirection = deltaToTarget > 0 ? 1 : -1;
         float walkDelta = min(abs(deltaToTarget), speed * dt) * faceDirection;
         xPos += walkDelta;
+        SetAnim(stepAnim);
+      }
+      else if (activeFoods.get(0).IsFalling())
+      {
+        faceDirection = 1;
+        SetAnim(idleAnim);
+      }
+      else
+      {
+        faceDirection = 1;
+        SetAnim(eatAnim);
+        activeFoods.get(0).TickEat(dt);
       }
     }
   }

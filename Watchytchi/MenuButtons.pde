@@ -20,7 +20,7 @@ class MenuButton
   }
   void Click()
   {
-    sfx_Vibrate.play();
+    sfx_VibeFail.play();
   }
 }
 class FoodButton extends MenuButton
@@ -32,6 +32,7 @@ class FoodButton extends MenuButton
   
   void Click()
   {
+    sfx_VibeSelect.play();
     CreateFood();
   }
 }

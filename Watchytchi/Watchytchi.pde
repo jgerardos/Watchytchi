@@ -11,9 +11,12 @@ float floorY = 200f-40f;
 boolean doDebug = true;
 
 /*# Assets #*/
-PImage dHogStep1;
-PImage dHogStep2;
-SoundFile sfx_Vibrate;
+Animation stepAnim;
+Animation idleAnim;
+Animation eatAnim;
+SoundFile sfx_VibeCursor;
+SoundFile sfx_VibeFail;
+SoundFile sfx_VibeSelect;
 FoodData foodData_Berry;
 
 /*# Turtles #*/
@@ -36,19 +39,23 @@ void setup()
   size(200, 200);
 
   // Load resources
-  dHogStep1 = loadImage("DaisyHog_Step1.png");
-  dHogStep2 = loadImage("DaisyHog_Step2.png");
-  sfx_Vibrate = new SoundFile(this, "sfx_Vibrate.wav");
+  sfx_VibeCursor = new SoundFile(this, "sfx_VibeCursor.wav");
+  sfx_VibeFail = new SoundFile(this, "sfx_VibeFail.wav");
+  sfx_VibeSelect = new SoundFile(this, "sfx_VibeSelect.wav");
+  stepAnim = new Animation("DaisyHog_Step", 2, 0.5f);
+  idleAnim = new Animation("DaisyHog_Idle", 2, 0.5f);
+  eatAnim = new Animation("DaisyHog_Eat", 2, 0.5f);
+
 
   // Load resources (food)
   int k_numEatFrames = 7;
   PImage[] berryFrames = new PImage[k_numEatFrames];
   for (int i = 0 ; i < k_numEatFrames; i++)
     berryFrames[i] = loadImage("FoodBerry_Stage" + i + ".png");
-  foodData_Berry = new FoodData(berryFrames);
+  foodData_Berry = new FoodData(berryFrames, 20f);
 
   // Initialize creature
-  creature = new Creature(width / 2f, floorY, new Animation(new PImage[]{dHogStep1, dHogStep2}, 0.5f));
+  creature = new Creature(width / 2f, floorY);
   
   // Initialize Menu Buttons
   int numPerRow = menuButtons.length / 2;
@@ -112,11 +119,18 @@ void draw()
 void keyPressed()
 {
   if (key == 'z')
+  {
+    sfx_VibeCursor.play();
     cursorIdx = (cursorIdx + 1) % numButtons;
+  }
   if (key == 'x')
     menuButtons[cursorIdx].Click();
   if (key == 'c')
-  cursorIdx = 0;
+  {
+     sfx_VibeFail.play();
+     cursorIdx = 0;
+  }
+   
 }
 
 
@@ -124,6 +138,14 @@ class Animation
 {
   public float frameInterval;
   public PImage[] frames;
+
+  Animation(String baseString, int numFrames, float intervalIn)
+  {
+    frames = new PImage[numFrames];
+    for (int i = 0; i < numFrames; i++)
+      frames[i] = loadImage(baseString + (i + 1) + ".png");
+    frameInterval = intervalIn;
+  }
 
   Animation(PImage[] framesIn, float intervalIn)
   {

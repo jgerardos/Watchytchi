@@ -3,10 +3,12 @@
 class FoodData
 {
   public PImage[] eatFrames;
+  public float eatDuration;
 
-  FoodData(PImage[] eatFramesIn)
+  FoodData(PImage[] eatFramesIn, float eatDurationIn)
   {
     eatFrames = eatFramesIn;
+    eatDuration = eatDurationIn;
   }
 }
 
@@ -24,9 +26,13 @@ class FoodInstance
     data = dataIn;
   }
 
-  public void TickEat(float eatDelta)
+  public void TickEat(float dt)
   {
-    eatProgress = constrain(eatProgress + eatDelta, 0f, 1f);
+    eatProgress = eatProgress + (dt / data.eatDuration);
+    if (eatProgress > 1f + (1f / data.eatDuration))
+    {
+      activeFoods.remove(this);
+    }
   }
 
   public void Tick(float dt)
