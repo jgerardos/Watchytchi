@@ -86,10 +86,12 @@ void draw()
 
 void keyPressed()
 {
-  if (key == ' ')
+  if (key == 'z')
     cursorIdx = (cursorIdx + 1) % numButtons;
-  if (key == 'a')
+  if (key == 'x')
     menuButtons[cursorIdx].Click();
+  if (key == 'c')
+  cursorIdx = 0;
 }
 
 
