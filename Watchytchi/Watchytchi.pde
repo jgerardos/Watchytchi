@@ -55,11 +55,7 @@ void setup()
 
 
   // Load resources (food)
-  int k_numEatFrames = 7;
-  PImage[] berryFrames = new PImage[k_numEatFrames];
-  for (int i = 0 ; i < k_numEatFrames; i++)
-    berryFrames[i] = loadImage("FoodBerry_Stage" + i + ".png");
-  foodData_Berry = new FoodData(berryFrames, 20f);
+  foodData_Berry = new FoodData("FoodBerry_Stage", 7, 20f);
 
   // Initialize creature
   creature = new Creature(width / 2f, floorY);
@@ -151,6 +147,19 @@ void keyPressed()
    
 }
 
+PImage[] LoadImageArray(String baseString, int numVariants)
+{
+  return LoadImageArray(baseString, numVariants, 1);
+}
+
+PImage[] LoadImageArray(String baseString, int numVariants, int startIdx)
+{
+  PImage[] output = new PImage[numVariants];
+  for (int i = 0; i < numVariants; i++)
+      output[i] = loadImage(baseString + (i + startIdx) + ".png");
+  return output;
+}
+
 
 class Animation
 {
@@ -159,9 +168,7 @@ class Animation
 
   Animation(String baseString, int numFrames, float intervalIn)
   {
-    frames = new PImage[numFrames];
-    for (int i = 0; i < numFrames; i++)
-      frames[i] = loadImage(baseString + (i + 1) + ".png");
+    frames = LoadImageArray(baseString, numFrames);
     frameInterval = intervalIn;
   }
 

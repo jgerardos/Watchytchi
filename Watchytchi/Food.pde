@@ -5,9 +5,9 @@ class FoodData
   public PImage[] eatFrames;
   public float eatDuration;
 
-  FoodData(PImage[] eatFramesIn, float eatDurationIn)
+  FoodData(String spritePrefix, int numEatFrames, float eatDurationIn)
   {
-    eatFrames = eatFramesIn;
+    eatFrames = LoadImageArray(spritePrefix, numEatFrames, 0); // TODO: inconsistent food indices
     eatDuration = eatDurationIn;
   }
 }
