@@ -16,14 +16,14 @@ class FoodInstance extends Turtle
 {
   public FoodData data;
   public float eatProgress = 0f;
-  public ImageRenderer imgRenderer;
+  public SpriteRenderer sprRenderer;
 
   public FoodInstance(PVector posIn, FoodData dataIn)
   {
     super(posIn);
     data = dataIn;
-    imgRenderer = new ImageRenderer(this, dataIn.eatFrames[0], new PVector(0.5f, 1f));
-    renderer = imgRenderer;
+    sprRenderer = new SpriteRenderer(this, dataIn.eatFrames[0], new PVector(0.5f, 1f));
+    renderer = sprRenderer;
   }
 
   public void TickEat(float dt)
@@ -33,7 +33,7 @@ class FoodInstance extends Turtle
     {
       activeFoods.remove(this);
     }
-    imgRenderer.image =  data.eatFrames[floor(eatProgress * (data.eatFrames.length - 1f))];
+    sprRenderer.image =  data.eatFrames[floor(eatProgress * (data.eatFrames.length - 1f))];
   }
 
   public void Tick(float dt)

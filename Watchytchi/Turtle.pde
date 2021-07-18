@@ -8,10 +8,11 @@ public abstract class Turtle
     pos = posIn;
   }
   
+  // R00 TODO: move to factory method(?)
   public Turtle(PVector posIn, PImage image, PVector anchor)
   {
     pos = posIn;
-    renderer = new ImageRenderer(this, image, anchor);
+    renderer = new SpriteRenderer(this, image, anchor);
   }
 
   public void Tick(float dt) {};
@@ -41,12 +42,12 @@ public abstract class Renderer
   }
 }
 
-public class ImageRenderer extends Renderer
+public class SpriteRenderer extends Renderer
 {
   public PImage image;
   public PVector anchor;
   
-  public ImageRenderer(Turtle ownerIn, PImage imageIn, PVector anchorIn)
+  public SpriteRenderer(Turtle ownerIn, PImage imageIn, PVector anchorIn)
   {
     super(ownerIn);
     image = imageIn;
