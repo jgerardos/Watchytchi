@@ -78,9 +78,9 @@ public class Creature
       SetAnim(stepAnim);
 
       // Basic ping ponging walk behavior
-      if (faceDirection == 0 || (faceDirection == -1 && xPos < 0))
+      if (faceDirection == 0 || (faceDirection == -1 && xPos < 0 + size.x / 2f))
         desiredX = width + 20;
-      else if (faceDirection == 1 && xPos > width)
+      else if (faceDirection == 1 && xPos > width - size.x / 2f)
         desiredX = -20;
     }
     else if (state == CState.PursueFood)
