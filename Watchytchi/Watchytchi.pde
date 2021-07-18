@@ -14,6 +14,7 @@ boolean doDebug = true;
 Animation stepAnim;
 Animation idleAnim;
 Animation eatAnim;
+Animation sleepAnim;
 SoundFile sfx_VibeCursor;
 SoundFile sfx_VibeFail;
 SoundFile sfx_VibeSelect;
@@ -45,6 +46,7 @@ void setup()
   stepAnim = new Animation("DaisyHog_Step", 2, 0.5f);
   idleAnim = new Animation("DaisyHog_Idle", 2, 0.5f);
   eatAnim = new Animation("DaisyHog_Eat", 2, 0.5f);
+  sleepAnim = new Animation("DaisyHog_Sleep", 2, 1f);
 
 
   // Load resources (food)

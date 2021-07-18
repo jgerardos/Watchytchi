@@ -3,7 +3,7 @@ public enum CState {IdleWander, PursueFood, Sleep}
 public class Creature
 {
   /*# Brain State #*/
-  public CState state = CState.IdleWander;
+  public CState state;
 
   /*# Locomotion State #*/
   float xPos, yPos;
@@ -11,6 +11,9 @@ public class Creature
   int faceDirection = 0;
   float speed = 20f;
   PVector size = new PVector(0f, 0f);
+  PVector awakeDurationRange = new PVector (40f, 70);
+  PVector sleepDurationRange = new PVector (90f, 120f);
+  float sleepTimer;
   
 
   /*# Animation State #*/
@@ -39,11 +42,30 @@ public class Creature
       size.x = max(size.x, idleAnim.frames[i].width);
       size.y = max(size.y, idleAnim.frames[i].height);
     }
+
+    sleepTimer = random(awakeDurationRange.x, awakeDurationRange.y);
+    state = CState.IdleWander;
   }
   
   void Tick(float dt)
   {
-    if (activeFoods.size() != 0 && state != CState.PursueFood)
+    sleepTimer -= dt;
+    if (sleepTimer < 0)
+    {
+      if (state == CState.Sleep)
+      {
+        sleepTimer = random(awakeDurationRange.x, awakeDurationRange.y);
+        state = CState.IdleWander;
+      }
+      else
+      {
+        sleepTimer = random(sleepDurationRange.x, sleepDurationRange.y);
+        state = CState.Sleep;
+        SetAnim(sleepAnim);
+      }
+    }
+
+    if (state != CState.Sleep && activeFoods.size() != 0 && state != CState.PursueFood)
       state = CState.PursueFood;
     else if (activeFoods.size() == 0 && state == CState.PursueFood)
     {
@@ -82,7 +104,7 @@ public class Creature
     }
 
     float deltaToTarget = desiredX - xPos;
-    if (!IsAtTarget())
+    if (!IsAtTarget() && state != CState.Sleep)
     {
       faceDirection = deltaToTarget > 0 ? 1 : -1;
       float walkDelta = min(abs(deltaToTarget), speed * dt) * faceDirection;
