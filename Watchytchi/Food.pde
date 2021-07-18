@@ -12,18 +12,18 @@ class FoodData
   }
 }
 
-class FoodInstance
+class FoodInstance extends Turtle
 {
-  public float xPos;
-  public float yPos;
   public FoodData data;
   public float eatProgress = 0f;
+  public ImageRenderer imgRenderer;
 
-  public FoodInstance(float xIn, float yIn, FoodData dataIn)
+  public FoodInstance(PVector posIn, FoodData dataIn)
   {
-    xPos = xIn;
-    yPos = yIn;
+    super(posIn);
     data = dataIn;
+    imgRenderer = new ImageRenderer(this, dataIn.eatFrames[0], new PVector(0.5f, 1f));
+    renderer = imgRenderer;
   }
 
   public void TickEat(float dt)
@@ -33,29 +33,24 @@ class FoodInstance
     {
       activeFoods.remove(this);
     }
+    imgRenderer.image =  data.eatFrames[floor(eatProgress * (data.eatFrames.length - 1f))];
   }
 
   public void Tick(float dt)
   {
     // Apply gravity
-    if (yPos < floorY)
-      yPos = constrain(yPos + dt * gravitySpeed, 0, floorY);
-  }
-
-  public void Draw()
-  {
-    PImage frame = data.eatFrames[floor(eatProgress * (data.eatFrames.length - 1f))];
-    image(frame, xPos, yPos - frame.height);
+    if (pos.y < floorY)
+      pos.y = constrain(pos.y + dt * gravitySpeed, 0, floorY);
   }
 
   public boolean IsFalling()
   {
-    return yPos < floorY;
+    return pos.y < floorY;
   }
 }
 
 void CreateFood()
 {
-  FoodInstance newFood = new FoodInstance(150f, 0f, foodData_Berry);
+  FoodInstance newFood = new FoodInstance(new PVector(164f, 0f), foodData_Berry);
   activeFoods.add(newFood);
 }

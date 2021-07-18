@@ -88,7 +88,7 @@ public class Creature
       if (activeFoods.get(0).IsFalling())
         desiredX = 60;
       else
-        desiredX = 110f;
+        desiredX = 120f;
 
       if (IsAtTarget())
       {
@@ -132,7 +132,7 @@ public class Creature
     scale(faceDirection, 1.0);
     image(currentAnim.frames[frameIdx], 0, 0);
     popMatrix();
-
+    
     if (doDebug)
     {
       fill(255, 0, 255);
