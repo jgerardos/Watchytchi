@@ -22,7 +22,7 @@ class Creature
     }
   }
   
-  void Update(float dt)
+  void Tick(float dt)
   {
     // Basic ping ponging walk behavior
     xPos += speed * dt * faceDirection;

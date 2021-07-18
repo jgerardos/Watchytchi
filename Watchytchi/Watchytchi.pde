@@ -75,7 +75,7 @@ void draw()
     lastUpdateTs = currentTs;
     
     hunger -= dt;
-    creature.Update(dt);
+    creature.Tick(dt);
   }
   
   textSize(20);
