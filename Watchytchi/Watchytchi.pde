@@ -8,7 +8,7 @@ int drawFrameRate = 16;
 int tickFrameRate = 2;
 float gravitySpeed = 75f;
 float floorY = 200f-40f;
-boolean doDebug = true;
+boolean doDebug = false;
 
 /*# Assets #*/
 Animation stepAnim;
@@ -51,8 +51,8 @@ void setup()
   idleAnim = new Animation("DaisyHog_Idle", 2, 0.5f);
   eatAnim = new Animation("DaisyHog_Eat", 2, 0.5f);
   sleepAnim = new Animation("DaisyHog_Sleep", 2, 1f);
-  sunSprite = loadImage("Sun.png");
-  moonSprite = loadImage("Moon.png");
+  sunSprite = loadImage("Sun_Dithered.png");
+  moonSprite = loadImage("Moon_Dithered.png");
   cloudSprites = LoadImageArray("Cloud", 3);
 
   // Load resources (food)
