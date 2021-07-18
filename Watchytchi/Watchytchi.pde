@@ -19,10 +19,13 @@ SoundFile sfx_VibeCursor;
 SoundFile sfx_VibeFail;
 SoundFile sfx_VibeSelect;
 FoodData foodData_Berry;
+PImage sunSprite;
+PImage moonSprite;
 
 /*# Turtles #*/
 Creature creature;
 MenuButton[] menuButtons = new MenuButton[numButtons];
+ArrayList<Turtle> turtles = new ArrayList<Turtle>();
 ArrayList<FoodInstance> activeFoods = new ArrayList<FoodInstance>();
 
 /*# State #*/
@@ -47,6 +50,8 @@ void setup()
   idleAnim = new Animation("DaisyHog_Idle", 2, 0.5f);
   eatAnim = new Animation("DaisyHog_Eat", 2, 0.5f);
   sleepAnim = new Animation("DaisyHog_Sleep", 2, 1f);
+  sunSprite = loadImage("Sun.png");
+  moonSprite = loadImage("Moon.png");
 
 
   // Load resources (food)
@@ -77,6 +82,9 @@ void setup()
       menuButtons[i] = new MenuButton(i, xPos, yPos, "Placeholder");
   }
   
+  // Initialize Environment
+  turtles.add(new HeavenlyBody());
+  
   lastUpdateTs = System.currentTimeMillis();
 }
 
@@ -106,6 +114,10 @@ void draw()
     {
       activeFoods.get(i).Tick(dt);
     }
+    for (int i = 0; i < turtles.size(); i++)
+    {
+      turtles.get(i).Tick(dt);
+    }
   }
   
   // textSize(20);
@@ -114,6 +126,10 @@ void draw()
   for (int i = 0; i < activeFoods.size(); i++)
   {
     activeFoods.get(i).Draw();
+  }
+  for (int i = 0; i < turtles.size(); i++)
+  {
+    turtles.get(i).Draw();
   }
   creature.Draw(dt);
 }
