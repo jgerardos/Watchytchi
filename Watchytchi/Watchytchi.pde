@@ -8,6 +8,7 @@ int drawFrameRate = 16;
 int tickFrameRate = 2;
 float gravitySpeed = 75f;
 float floorY = 200f-40f;
+boolean doDebug = true;
 
 /*# Assets #*/
 PImage dHogStep1;
@@ -47,7 +48,7 @@ void setup()
   foodData_Berry = new FoodData(berryFrames);
 
   // Initialize creature
-  creature = new Creature(width / 2f, height / 2f, new Animation(new PImage[]{dHogStep1, dHogStep2}, 0.5f));
+  creature = new Creature(width / 2f, floorY, new Animation(new PImage[]{dHogStep1, dHogStep2}, 0.5f));
   
   // Initialize Menu Buttons
   int numPerRow = menuButtons.length / 2;
@@ -61,7 +62,7 @@ void setup()
       yPos = buttonWidth / 2;
     else
       yPos = height - (buttonWidth / 2);
-    if (i == 0)
+    if (i == 2)
       menuButtons[i] = new FoodButton(i, xPos, yPos, "Feed");
     else
       menuButtons[i] = new MenuButton(i, xPos, yPos, "Placeholder");
@@ -98,8 +99,8 @@ void draw()
     }
   }
   
-  textSize(20);
-  text("xPos: " + creature.xPos, 0, height / 2);
+  // textSize(20);
+  // text("xPos: " + creature.xPos, 0, height / 2);
   
   for (int i = 0; i < activeFoods.size(); i++)
   {

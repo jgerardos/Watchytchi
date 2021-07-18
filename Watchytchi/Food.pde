@@ -41,6 +41,11 @@ class FoodInstance
     PImage frame = data.eatFrames[floor(eatProgress * (data.eatFrames.length - 1f))];
     image(frame, xPos, yPos - frame.height);
   }
+
+  public boolean IsFalling()
+  {
+    return yPos < floorY;
+  }
 }
 
 void CreateFood()

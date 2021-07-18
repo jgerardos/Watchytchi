@@ -9,6 +9,8 @@ class Creature
   int faceDirection = 1;
   float speed = 20f;
 
+  float desiredX = width;
+
   Creature(float xIn, float yIn, Animation animIn)
   {
     xPos = xIn;
@@ -24,17 +26,36 @@ class Creature
   
   void Tick(float dt)
   {
-    // Basic ping ponging walk behavior
-    xPos += speed * dt * faceDirection;
-    if (faceDirection == -1 && xPos < 0)
+    if (activeFoods.size() == 0)
     {
-      faceDirection = 1;
-      xPos = -xPos;
+      // Basic ping ponging walk behavior
+      xPos += speed * dt * faceDirection;
+      if (faceDirection == -1 && xPos < 0)
+      {
+        faceDirection = 1;
+        xPos = -xPos;
+      }
+      else if (faceDirection == 1 && xPos > width)
+      {
+        faceDirection = -1;
+        xPos = width + width - xPos;
+      }
     }
-    else if (faceDirection == 1 && xPos > width)
+    else
     {
-      faceDirection = -1;
-      xPos = width + width - xPos;
+      float desiredX;
+      if (activeFoods.get(0).IsFalling())
+        desiredX = 60;
+      else
+        desiredX = 110f;
+
+      float deltaToTarget = desiredX - xPos;
+      if (abs(deltaToTarget) > 0.000001f)
+      {
+        faceDirection = deltaToTarget > 0 ? 1 : -1;
+        float walkDelta = min(abs(deltaToTarget), speed * dt) * faceDirection;
+        xPos += walkDelta;
+      }
     }
   }
 
@@ -47,15 +68,16 @@ class Creature
       frameTicker -= currentAnim.frameInterval;
     }
 
-    if (faceDirection == -1)
+    pushMatrix();
+    translate(xPos - size.x / 2f * faceDirection, yPos - size.y);
+    scale(faceDirection, 1.0);
+    image(currentAnim.frames[frameIdx], 0, 0);
+    popMatrix();
+
+    if (doDebug)
     {
-       pushMatrix();
-       translate(xPos, yPos);
-       scale(-1.0, 1.0);
-       image(currentAnim.frames[frameIdx], 0, 0);
-       popMatrix();
+      fill(255, 0, 255);
+      square(xPos, yPos, 2);
     }
-    else
-      image(currentAnim.frames[frameIdx], xPos, yPos);
   }
 }
