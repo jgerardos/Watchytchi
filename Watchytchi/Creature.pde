@@ -1,12 +1,15 @@
-class Creature
+public enum CState {IdleWander, PursueFood, Sleep}
+
+public class Creature
 {
+  public CState state = CState.IdleWander;
   float xPos, yPos;
   Animation currentAnim;
   int frameIdx = 0;
   float frameTicker;
   PVector size = new PVector(0f, 0f);
   
-  int faceDirection = 1;
+  int faceDirection = 0;
   float speed = 20f;
 
   float desiredX = width;
@@ -35,51 +38,57 @@ class Creature
   
   void Tick(float dt)
   {
-    if (activeFoods.size() == 0)
+    if (activeFoods.size() != 0 && state != CState.PursueFood)
+      state = CState.PursueFood;
+    else if (activeFoods.size() == 0 && state == CState.PursueFood)
+    {
+      state = CState.IdleWander;
+      faceDirection = 0;
+    }
+      
+    if (state == CState.IdleWander)
     {
       SetAnim(stepAnim);
 
       // Basic ping ponging walk behavior
-      xPos += speed * dt * faceDirection;
-      if (faceDirection == -1 && xPos < 0)
-      {
-        faceDirection = 1;
-        xPos = -xPos;
-      }
+      if (faceDirection == 0 || (faceDirection == -1 && xPos < 0))
+        desiredX = width + 20;
       else if (faceDirection == 1 && xPos > width)
-      {
-        faceDirection = -1;
-        xPos = width + width - xPos;
-      }
+        desiredX = -20;
     }
-    else
+    else if (state == CState.PursueFood)
     {
-      float desiredX;
       if (activeFoods.get(0).IsFalling())
         desiredX = 60;
       else
         desiredX = 110f;
 
-      float deltaToTarget = desiredX - xPos;
-      if (abs(deltaToTarget) > 0.000001f)
-      {
-        faceDirection = deltaToTarget > 0 ? 1 : -1;
-        float walkDelta = min(abs(deltaToTarget), speed * dt) * faceDirection;
-        xPos += walkDelta;
-        SetAnim(stepAnim);
-      }
-      else if (activeFoods.get(0).IsFalling())
+      if (IsAtTarget())
       {
         faceDirection = 1;
-        SetAnim(idleAnim);
-      }
-      else
-      {
-        faceDirection = 1;
-        SetAnim(eatAnim);
-        activeFoods.get(0).TickEat(dt);
+        if (activeFoods.get(0).IsFalling())
+          SetAnim(idleAnim);
+        else
+        {
+          SetAnim(eatAnim);
+          activeFoods.get(0).TickEat(dt);
+        }
       }
     }
+
+    float deltaToTarget = desiredX - xPos;
+    if (!IsAtTarget())
+    {
+      faceDirection = deltaToTarget > 0 ? 1 : -1;
+      float walkDelta = min(abs(deltaToTarget), speed * dt) * faceDirection;
+      xPos += walkDelta;
+      SetAnim(stepAnim);
+    }
+  }
+
+  boolean IsAtTarget()
+  {
+    return abs(desiredX - xPos) <= 0.000001f;
   }
 
   void Draw(float dt)
