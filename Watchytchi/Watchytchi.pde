@@ -1,21 +1,31 @@
+import processing.sound.*;
+
 /*# Constants #*/
 int numButtons = 8; 
 float buttonWidth = 32;
 float maxHunger = 100;
 int drawFrameRate = 16;
 int tickFrameRate = 2;
+float gravitySpeed = 75f;
+float floorY = 200f-40f;
 
+/*# Assets #*/
+PImage dHogStep1;
+PImage dHogStep2;
+SoundFile sfx_Vibrate;
+FoodData foodData_Berry;
+
+/*# Turtles #*/
+Creature creature;
+MenuButton[] menuButtons = new MenuButton[numButtons];
+ArrayList<FoodInstance> activeFoods = new ArrayList<FoodInstance>();
 
 /*# State #*/
 int cursorIdx;
-MenuButton[] menuButtons = new MenuButton[numButtons];
 float hunger = maxHunger;
-PImage dHogStep1;
-PImage dHogStep2;
 long lastUpdateTs;
 long frameNumber = 0;
 
-Creature creature;
 
 void setup()
 {
@@ -27,8 +37,16 @@ void setup()
   // Load resources
   dHogStep1 = loadImage("DaisyHog_Step1.png");
   dHogStep2 = loadImage("DaisyHog_Step2.png");
+  sfx_Vibrate = new SoundFile(this, "sfx_Vibrate.wav");
   PImage activeIcon = loadImage("MenuIcon_Placeholder.png");
   PImage inactiveIcon = loadImage("MenuIcon_Placeholder_NoSelect.png");
+
+  // Load resources (food)
+  int k_numEatFrames = 7;
+  PImage[] berryFrames = new PImage[k_numEatFrames];
+  for (int i = 0 ; i < k_numEatFrames; i++)
+    berryFrames[i] = loadImage("FoodBerry_Stage" + i + ".png");
+  foodData_Berry = new FoodData(berryFrames);
 
   // Initialize creature
   creature = new Creature(width / 2f, height / 2f, new Animation(new PImage[]{dHogStep1, dHogStep2}, 0.5f));
@@ -76,11 +94,19 @@ void draw()
     
     hunger -= dt;
     creature.Tick(dt);
+    for (int i = 0; i < activeFoods.size(); i++)
+    {
+      activeFoods.get(i).Tick(dt);
+    }
   }
   
   textSize(20);
   text("xPos: " + creature.xPos, 0, height / 2);
   
+  for (int i = 0; i < activeFoods.size(); i++)
+  {
+    activeFoods.get(i).Draw();
+  }
   creature.Draw(dt);
 }
 

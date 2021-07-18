@@ -20,7 +20,7 @@ class MenuButton
   }
   void Click()
   {
-    hunger = hunger + 1;
+    sfx_Vibrate.play();
   }
 }
 class FoodButton extends MenuButton
@@ -32,6 +32,6 @@ class FoodButton extends MenuButton
   
   void Click()
   {
-    hunger += 10;
+    CreateFood();
   }
 }
