@@ -19,7 +19,7 @@ public static class TimeAndWeather
 
 public class HeavenlyBody extends Turtle
 {
-  float arcFloor = 100f; 
+  PVector heightRange = new PVector(30f, 120f); 
   public HeavenlyBody()
   {
     super(new PVector(0f, 0f), sunSprite, new PVector(0.5f, 0.5f));
@@ -37,10 +37,9 @@ public class HeavenlyBody extends Turtle
     float hourF = hour() + (minute() / 60f);
     //float hourF = ((float)second()) % 24f; // Uncomment this to fast debug the sun
     float t = ((hourF + 18f) % 12) / 12f;
-    text("" + hourF, width / 2f, height / 2f);
     float theta = t * PI;
     
-    pos = new PVector(map(cos(theta), -1f, 1f, 0, 1f) * width, arcFloor * (1f - abs(sin(theta))));
+    pos = new PVector(map(cos(theta), -1f, 1f, 0, 1f) * width, lerp(heightRange.x, heightRange.y, (1f - abs(sin(theta)))));
   }
 
   PImage GetDesiredSprite()
@@ -52,6 +51,44 @@ public class HeavenlyBody extends Turtle
       case Evening : return moonSprite;
       case Night : return moonSprite;
       default: throw new IllegalStateException();
+    }
+  }
+}
+
+public class Cloud extends Turtle
+{
+  PVector spawnDelayRange = new PVector(2f, 10f);
+  PVector startYRange = new PVector(40f, 80f);
+  PVector speedRange = new PVector(0.05f, 0.3f);
+  float speed;
+  SpriteRenderer sprRenderer;
+  float respawnTimer;
+
+  public Cloud()
+  {
+    super();
+    sprRenderer = AddSpriteRenderer(null, new PVector(0.5f, 0.5f));
+    Spawn();
+    pos.x = random(-width, width);
+  }
+
+  public void Spawn()
+  {
+    PImage sprite = cloudSprites[(int)random(0, cloudSprites.length)];
+    sprRenderer.image = sprite;
+    pos = new PVector(width + sprite.width / 2f, random(startYRange.x, startYRange.y));
+    speed = random(speedRange.x, speedRange.y);
+    respawnTimer = random(spawnDelayRange.x, spawnDelayRange.y);
+  }
+
+  public void Tick(float dt)
+  {
+    pos.x -= speed;
+    if (pos.x < -sprRenderer.image.width )
+    {
+      respawnTimer -= dt;
+      if (respawnTimer <= 0f)
+        Spawn();
     }
   }
 }

@@ -21,6 +21,7 @@ SoundFile sfx_VibeSelect;
 FoodData foodData_Berry;
 PImage sunSprite;
 PImage moonSprite;
+PImage[] cloudSprites;
 
 /*# Turtles #*/
 Creature creature;
@@ -52,7 +53,7 @@ void setup()
   sleepAnim = new Animation("DaisyHog_Sleep", 2, 1f);
   sunSprite = loadImage("Sun.png");
   moonSprite = loadImage("Moon.png");
-
+  cloudSprites = LoadImageArray("Cloud", 3);
 
   // Load resources (food)
   foodData_Berry = new FoodData("FoodBerry_Stage", 7, 20f);
@@ -80,6 +81,8 @@ void setup()
   
   // Initialize Environment
   turtles.add(new HeavenlyBody());
+  for (int i = 0; i < 2; i++)
+    turtles.add(new Cloud());
   
   lastUpdateTs = System.currentTimeMillis();
 }
@@ -87,10 +90,6 @@ void setup()
 void draw()
 {
   background(255, 255, 255);
-  for (int i = 0; i < menuButtons.length; i++)
-  {
-    menuButtons[i].draw();
-  }
   
   int tickInterval = drawFrameRate / tickFrameRate;
   boolean isTickFrame = frameNumber % tickInterval == 0; 
@@ -128,6 +127,12 @@ void draw()
     turtles.get(i).Draw();
   }
   creature.Draw(dt);
+  
+  // Draw UI
+  for (int i = 0; i < menuButtons.length; i++)
+  {
+    menuButtons[i].draw();
+  }
 }
 
 void keyPressed()
