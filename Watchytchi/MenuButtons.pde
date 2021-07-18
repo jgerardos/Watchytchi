@@ -5,14 +5,14 @@ class MenuButton
   float size;
   PImage inactiveIcon;
   PImage activeIcon;
-  MenuButton(int idIn, float xIn, float yIn, PImage inactiveIconIn, PImage activeIconIn)
+  MenuButton(int idIn, float xIn, float yIn, String name)
   {
     id = idIn;
     xPos = xIn;
     yPos = yIn;
-    inactiveIcon = inactiveIconIn;
-    activeIcon = activeIconIn;
-    size = inactiveIconIn.width; 
+    inactiveIcon = loadImage("MenuIcon_" + name + "_Inactive.png");
+    activeIcon = loadImage("MenuIcon_" + name + "_Active.png");
+    size = inactiveIcon.width; 
   }
   void draw()
   {
@@ -25,9 +25,9 @@ class MenuButton
 }
 class FoodButton extends MenuButton
 {  
-   FoodButton(int idIn, float xIn, float yIn, PImage inactiveIconIn, PImage activeIconIn)
+   FoodButton(int idIn, float xIn, float yIn, String name)
    {
-     super(idIn, xIn, yIn, inactiveIconIn, activeIconIn);
+     super(idIn, xIn, yIn, name);
    }
   
   void Click()

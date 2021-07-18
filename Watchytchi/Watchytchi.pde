@@ -38,8 +38,6 @@ void setup()
   dHogStep1 = loadImage("DaisyHog_Step1.png");
   dHogStep2 = loadImage("DaisyHog_Step2.png");
   sfx_Vibrate = new SoundFile(this, "sfx_Vibrate.wav");
-  PImage activeIcon = loadImage("MenuIcon_Placeholder.png");
-  PImage inactiveIcon = loadImage("MenuIcon_Placeholder_NoSelect.png");
 
   // Load resources (food)
   int k_numEatFrames = 7;
@@ -64,9 +62,9 @@ void setup()
     else
       yPos = height - (buttonWidth / 2);
     if (i == 0)
-      menuButtons[i] = new FoodButton(i, xPos, yPos, inactiveIcon, activeIcon);
+      menuButtons[i] = new FoodButton(i, xPos, yPos, "Feed");
     else
-      menuButtons[i] = new MenuButton(i, xPos, yPos, inactiveIcon, activeIcon);
+      menuButtons[i] = new MenuButton(i, xPos, yPos, "Placeholder");
   }
   
   lastUpdateTs = System.currentTimeMillis();
