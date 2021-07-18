@@ -2,17 +2,22 @@ public enum CState {IdleWander, PursueFood, Sleep}
 
 public class Creature
 {
+  /*# Brain State #*/
   public CState state = CState.IdleWander;
+
+  /*# Locomotion State #*/
   float xPos, yPos;
-  Animation currentAnim;
-  int frameIdx = 0;
-  float frameTicker;
-  PVector size = new PVector(0f, 0f);
-  
+  float desiredX = width;
   int faceDirection = 0;
   float speed = 20f;
+  PVector size = new PVector(0f, 0f);
+  
 
-  float desiredX = width;
+  /*# Animation State #*/
+  int frameIdx = 0;
+  float frameTicker;
+  Animation currentAnim;
+
 
   void SetAnim(Animation newAnim)
   {
