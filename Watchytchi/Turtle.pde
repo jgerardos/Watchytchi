@@ -3,6 +3,11 @@ public abstract class Turtle
   public PVector pos;
   public Renderer renderer;
 
+  public Turtle()
+  {
+    pos = new PVector(0f, 0f);
+  }
+
   public Turtle(PVector posIn)
   {
     pos = posIn;
@@ -12,7 +17,7 @@ public abstract class Turtle
   public Turtle(PVector posIn, PImage image, PVector anchor)
   {
     pos = posIn;
-    renderer = new SpriteRenderer(this, image, anchor);
+    AddSpriteRenderer(image, anchor);
   }
 
   public void Tick(float dt) {};
@@ -21,6 +26,13 @@ public abstract class Turtle
   {
     if (renderer != null)
       renderer.Draw();
+  }
+
+  public SpriteRenderer AddSpriteRenderer(PImage image, PVector anchor)
+  {
+    SpriteRenderer output = new SpriteRenderer(this, image, anchor);
+    renderer = output;
+    return output;
   }
 }
 
@@ -56,7 +68,8 @@ public class SpriteRenderer extends Renderer
   
   public void Draw()
   {
-    image(image, owner.pos.x + anchor.x * -image.width, owner.pos.y - anchor.y * image.height);
+    if (image != null)
+      image(image, owner.pos.x + anchor.x * -image.width, owner.pos.y - anchor.y * image.height);
     super.Draw();
   }
 }
