@@ -1,8 +1,6 @@
 import processing.sound.*;
 
 /*# Constants #*/
-int numButtons = 8; 
-float buttonWidth = 32;
 float maxHunger = 100;
 int drawFrameRate = 16;
 int tickFrameRate = 2;
@@ -22,19 +20,23 @@ FoodData foodData_Berry;
 PImage sunSprite;
 PImage moonSprite;
 PImage[] cloudSprites;
+PImage statusMenuBackground;
 
 /*# Turtles #*/
 Creature creature;
-MenuButton[] menuButtons = new MenuButton[numButtons];
 ArrayList<Turtle> turtles = new ArrayList<Turtle>();
+ArrayList<UIScreen> uiStack = new ArrayList<UIScreen>();
 ArrayList<FoodInstance> activeFoods = new ArrayList<FoodInstance>();
+
+/*# UI #*/
+MainMenuUI mainMenu;
+StatusScreen statusScreen;
 
 /*# State #*/
 int cursorIdx;
 float hunger = maxHunger;
 long lastUpdateTs;
 long frameNumber = 0;
-
 
 void setup()
 {
@@ -54,30 +56,18 @@ void setup()
   sunSprite = loadImage("Sun_Dithered.png");
   moonSprite = loadImage("Moon_Dithered.png");
   cloudSprites = LoadImageArray("Cloud", 3);
+  statusMenuBackground = loadImage("StatusBackground.png");
+
+  // Initialize UI:
+  mainMenu = new MainMenuUI();
+  statusScreen = new StatusScreen();
+  uiStack.add(mainMenu);
 
   // Load resources (food)
   foodData_Berry = new FoodData("FoodBerry_Stage", 7, 20f);
 
   // Initialize creature
   creature = new Creature(width / 2f, floorY);
-  
-  // Initialize Menu Buttons
-  int numPerRow = menuButtons.length / 2;
-  float separation = width / (float)numPerRow; 
-  for (int i = 0; i < menuButtons.length; i++)
-  {
-    int column = i % numPerRow;
-    float xPos = width * ((float)column / numPerRow) + (separation / 2);
-    float yPos;
-    if (i < numPerRow)
-      yPos = buttonWidth / 2;
-    else
-      yPos = height - (buttonWidth / 2);
-    if (i == 2)
-      menuButtons[i] = new FoodButton(i, xPos, yPos, "Feed");
-    else
-      menuButtons[i] = new MenuButton(i, xPos, yPos, "Placeholder");
-  }
   
   // Initialize Environment
   turtles.add(new HeavenlyBody());
@@ -115,9 +105,6 @@ void draw()
     }
   }
   
-  // textSize(20);
-  // text("xPos: " + creature.xPos, 0, height / 2);
-  
   for (int i = 0; i < activeFoods.size(); i++)
   {
     activeFoods.get(i).Draw();
@@ -128,28 +115,20 @@ void draw()
   }
   creature.Draw(dt);
   
-  // Draw UI
-  for (int i = 0; i < menuButtons.length; i++)
+  // Draw UI:
+  for (int i = 0; i < uiStack.size(); i++)
   {
-    menuButtons[i].draw();
+    uiStack.get(i).Draw();
   }
 }
 
 void keyPressed()
 {
-  if (key == 'z')
+  for (int i = uiStack.size() - 1; i >= 0; i--)
   {
-    sfx_VibeCursor.play();
-    cursorIdx = (cursorIdx + 1) % numButtons;
+    if (uiStack.get(i).HandleInput())
+      break;
   }
-  if (key == 'x')
-    menuButtons[cursorIdx].Click();
-  if (key == 'c')
-  {
-     sfx_VibeFail.play();
-     cursorIdx = 0;
-  }
-   
 }
 
 PImage[] LoadImageArray(String baseString, int numVariants)

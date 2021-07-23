@@ -1,10 +1,11 @@
-class MenuButton
+class MenuButton extends Turtle
 {
   int id;
   float xPos, yPos;
   float size;
   PImage inactiveIcon;
   PImage activeIcon;
+
   MenuButton(int idIn, float xIn, float yIn, String name)
   {
     id = idIn;
@@ -14,15 +15,18 @@ class MenuButton
     activeIcon = loadImage("MenuIcon_" + name + "_Active.png");
     size = inactiveIcon.width; 
   }
-  void draw()
+
+  public void Draw()
   {
     image(cursorIdx == id ? activeIcon : inactiveIcon, xPos - size / 2f, yPos - size / 2f);
   }
-  void Click()
+
+  public void Click()
   {
     sfx_VibeFail.play();
   }
 }
+
 class FoodButton extends MenuButton
 {  
    FoodButton(int idIn, float xIn, float yIn, String name)
@@ -30,9 +34,23 @@ class FoodButton extends MenuButton
      super(idIn, xIn, yIn, name);
    }
   
-  void Click()
+  public void Click()
   {
     sfx_VibeSelect.play();
     CreateFood();
+  }
+}
+
+class StatusButton extends MenuButton
+{
+  StatusButton(int idIn, float xIn, float yIn, String name)
+  {
+    super(idIn, xIn, yIn, name);
+  }
+  
+  public void Click()
+  {
+    sfx_VibeSelect.play();
+    statusScreen.Show();
   }
 }
