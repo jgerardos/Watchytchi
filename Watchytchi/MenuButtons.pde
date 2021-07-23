@@ -54,3 +54,17 @@ class StatusButton extends MenuButton
     statusScreen.Show();
   }
 }
+
+class LightsButton extends MenuButton
+{
+  LightsButton(int idIn, float xIn, float yIn, String name)
+  {
+    super(idIn, xIn, yIn, name);
+  }
+  
+  public void Click()
+  {
+    areLightsOn = !areLightsOn;
+    sfx_VibeSelect.play();
+  }
+}

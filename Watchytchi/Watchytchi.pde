@@ -36,6 +36,7 @@ StatusScreen statusScreen;
 
 /*# State #*/
 JSONObject saveJson;
+boolean areLightsOn = true;
 float hunger = maxHunger;
 float age = 0;
 long lastUpdateTs;
@@ -56,15 +57,16 @@ void RestoreFromDisk()
     return;
   }
     
-  age = saveJson.getFloat("age");
-  hunger = saveJson.getFloat("hunger");
+  age = saveJson.getFloat("age", 0f);
+  hunger = saveJson.getFloat("hunger", maxHunger);
+  areLightsOn = saveJson.getBoolean("areLightsOn", true);
 }
 
 void SaveToDisk()
 {
-  println("In save method");
   saveJson.setFloat("age", age);
   saveJson.setFloat("hunger", hunger);
+  saveJson.setBoolean("areLightsOn", areLightsOn);
   saveJSONObject(saveJson, "save/SaveData.json");
 }
 
@@ -113,11 +115,8 @@ void setup()
 
 void exit()
 {
-  println("About to save");
   SaveToDisk();
-  println("Saved");
   super.exit();
-  println("Exited");
 }
 
 void draw()
@@ -169,6 +168,9 @@ void draw()
   {
     uiStack.get(i).Draw();
   }
+
+  if (!areLightsOn)
+    filter(INVERT);
 }
 
 void keyPressed()
