@@ -18,7 +18,7 @@ class MenuButton extends Turtle
 
   public void Draw()
   {
-    image(cursorIdx == id ? activeIcon : inactiveIcon, xPos - size / 2f, yPos - size / 2f);
+    image(mainMenu.cursorIdx == id ? activeIcon : inactiveIcon, xPos - size / 2f, yPos - size / 2f);
   }
 
   public void Click()

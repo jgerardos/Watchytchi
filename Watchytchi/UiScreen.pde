@@ -24,6 +24,7 @@ public class MainMenuUI extends UIScreen
   
   /*# State #*/
   public MenuButton[] menuButtons;
+  int cursorIdx = -1;
 
   public MainMenuUI()
   {
@@ -70,7 +71,7 @@ public class MainMenuUI extends UIScreen
     if (key == 'c')
     {
       sfx_VibeFail.play();
-      cursorIdx = 0;
+      cursorIdx = -1;
     }
     return true;
   }
