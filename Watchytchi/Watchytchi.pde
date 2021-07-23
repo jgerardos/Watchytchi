@@ -138,6 +138,11 @@ void draw()
     
     hunger = constrain(hunger - dt / 4f, 0, maxHunger);
     age += dt / 60f;
+
+    for (int i = 0; i < uiStack.size(); i++)
+    {
+      uiStack.get(i).Tick(dt);
+    }
     creature.Tick(dt);
     for (int i = 0; i < activeFoods.size(); i++)
     {
