@@ -1,4 +1,4 @@
-public abstract class Turtle
+public class Turtle
 {
   public PVector pos;
   public Renderer renderer;
@@ -20,7 +20,11 @@ public abstract class Turtle
     AddSpriteRenderer(image, anchor);
   }
 
-  public void Tick(float dt) {};
+  public void Tick(float dt) 
+  {
+    if (renderer != null)
+      renderer.Tick(dt);
+  };
   
   public void Draw()
   {
@@ -34,42 +38,11 @@ public abstract class Turtle
     renderer = output;
     return output;
   }
-}
 
-public abstract class Renderer
-{
-  public Turtle owner;
-  public Renderer(Turtle ownerIn)
+  public AnimatedRenderer AddAnimRenderer(AnimationData anim, PVector anchor)
   {
-    owner = ownerIn;
-  }
-  public void Tick() {}
-  public void Draw()
-  {
-    if (doDebug)
-    {
-      fill(255, 0, 255);
-      square(owner.pos.x, owner.pos.y, 2);
-    }
-  }
-}
-
-public class SpriteRenderer extends Renderer
-{
-  public PImage image;
-  public PVector anchor;
-  
-  public SpriteRenderer(Turtle ownerIn, PImage imageIn, PVector anchorIn)
-  {
-    super(ownerIn);
-    image = imageIn;
-    anchor = anchorIn;
-  }
-  
-  public void Draw()
-  {
-    if (image != null)
-      image(image, owner.pos.x + anchor.x * -image.width, owner.pos.y - anchor.y * image.height);
-    super.Draw();
+    AnimatedRenderer output = new AnimatedRenderer(this, anim, anchor);
+    renderer = output;
+    return output;
   }
 }

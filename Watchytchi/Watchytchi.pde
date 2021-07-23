@@ -7,10 +7,14 @@ int drawFrameRate = 16;
 int tickFrameRate = 2;
 float gravitySpeed = 75f;
 float floorY = 200f-40f;
-boolean doDebug = false;
+boolean doDebug = true;
 
 /*# Assets #*/
 PFont font_20;
+AnimationData stepAnim;
+AnimationData idleAnim;
+AnimationData eatAnim;
+AnimationData sleepAnim;
 Animation stepAnim;
 Animation idleAnim;
 Animation eatAnim;
@@ -82,6 +86,10 @@ void setup()
   sfx_VibeCursor = new SoundFile(this, "sfx_VibeCursor.wav");
   sfx_VibeFail = new SoundFile(this, "sfx_VibeFail.wav");
   sfx_VibeSelect = new SoundFile(this, "sfx_VibeSelect.wav");
+  stepAnim = new AnimationData("DaisyHog_Step", 2, 0);
+  idleAnim = new AnimationData("DaisyHog_Idle", 2, 0);
+  eatAnim = new AnimationData("DaisyHog_Eat", 2, 0);
+  sleepAnim = new AnimationData("DaisyHog_Sleep", 2, 1);
   stepAnim = new Animation("DaisyHog_Step", 2, 0.5f);
   idleAnim = new Animation("DaisyHog_Idle", 2, 0.5f);
   eatAnim = new Animation("DaisyHog_Eat", 2, 0.5f);
@@ -100,13 +108,13 @@ void setup()
   foodData_Berry = new FoodData("FoodBerry_Stage", 7, 20f);
 
   // Initialize creature
-  creature = new Creature(width / 2f, floorY);
+  creature = new Creature(new PVector(width / 2f, floorY));
   
   // Initialize Environment
   turtles.add(new HeavenlyBody());
   for (int i = 0; i < 2; i++)
     turtles.add(new Cloud());
-    
+
   // Load save data
   RestoreFromDisk();
   
@@ -161,7 +169,7 @@ void draw()
   {
     turtles.get(i).Draw();
   }
-  creature.Draw(dt);
+  creature.Draw();
   
   // Draw UI:
   for (int i = 0; i < uiStack.size(); i++)
@@ -196,20 +204,20 @@ PImage[] LoadImageArray(String baseString, int numVariants, int startIdx)
 }
 
 
-class Animation
+class AnimationData
 {
-  public float frameInterval;
+  public int numFrameSkips;
   public PImage[] frames;
 
-  Animation(String baseString, int numFrames, float intervalIn)
+  AnimationData(String baseString, int numFrames, int numFrameSkipsIn)
   {
     frames = LoadImageArray(baseString, numFrames);
-    frameInterval = intervalIn;
+    numFrameSkips = numFrameSkipsIn;
   }
 
-  Animation(PImage[] framesIn, float intervalIn)
+  AnimationData(PImage[] framesIn, int numFrameSkipsIn)
   {
-    frameInterval = intervalIn;
     frames = framesIn;
+    numFrameSkips = numFrameSkipsIn;
   }
 }

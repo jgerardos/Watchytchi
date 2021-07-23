@@ -69,7 +69,12 @@ public class MainMenuUI extends UIScreen
       cursorIdx = (cursorIdx + 1) % numButtons;
     }
     if (key == 'x')
-      menuButtons[cursorIdx].Click();
+    {
+      if (cursorIdx >= 0)
+        menuButtons[cursorIdx].Click();
+      else
+        sfx_VibeFail.play();
+    }
     if (key == 'c')
     {
       sfx_VibeFail.play();

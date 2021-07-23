@@ -33,15 +33,15 @@ public class HeavenlyBody extends Turtle
       ((SpriteRenderer)renderer).image = desiredSprite;
       
     // HACK: I feel like the sun got pretty messy when it was all over the screen. Going to try locking it for now
-    pos = new PVector(160f, 60f);
+    // pos = new PVector(160f, 60f);
     
     // Position according to time of day:   
-    // float hourF = hour() + (minute() / 60f);
-    // //float hourF = ((float)second()) % 24f; // Uncomment this to fast debug the sun
-    // float t = ((hourF + 18f) % 12) / 12f;
-    // float theta = t * PI;
+    float hourF = hour() + (minute() / 60f);
+    //float hourF = ((float)second()) % 24f; // Uncomment this to fast debug the sun
+    float t = ((hourF + 18f) % 12) / 12f;
+    float theta = t * PI;
     
-    // pos = new PVector(map(cos(theta), -1f, 1f, 0, 1f) * width, lerp(heightRange.x, heightRange.y, (1f - abs(sin(theta)))));
+    pos = new PVector(map(cos(theta), -1f, 1f, 0, 1f) * width, lerp(heightRange.x, heightRange.y, (1f - abs(sin(theta)))));
 
   }
 

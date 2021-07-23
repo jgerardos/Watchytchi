@@ -1,12 +1,11 @@
 public enum CState {IdleWander, PursueFood, Sleep}
 
-public class Creature
+public class Creature extends Turtle
 {
   /*# Brain State #*/
   public CState state;
 
   /*# Locomotion State #*/
-  float xPos, yPos;
   float desiredX = width;
   int faceDirection = 0;
   float speed = 20f;
@@ -15,28 +14,22 @@ public class Creature
   PVector sleepDurationRange = new PVector (90f, 120f);
   float sleepTimer;
   
-
-  /*# Animation State #*/
-  int frameIdx = 0;
-  float frameTicker;
-  Animation currentAnim;
+  /*# Components #*/
+  AnimatedRenderer animator;
 
 
-  void SetAnim(Animation newAnim)
+  void SetAnim(AnimationData newAnim)
   {
-    if (newAnim != currentAnim)
+    if (newAnim != animator.anim)
     {
-      frameIdx = 0;
-      frameTicker = 0f;
-      currentAnim = newAnim;
+      animator.anim = newAnim;
+      animator.Reset();
     }
   }
 
-  Creature(float xIn, float yIn)
+  Creature(PVector pos)
   {
-    xPos = xIn;
-    yPos = yIn;
-    
+    super(pos);
     for (int i = 0; i < idleAnim.frames.length; i++)
     {
       size.x = max(size.x, idleAnim.frames[i].width);
@@ -45,10 +38,12 @@ public class Creature
 
     sleepTimer = random(awakeDurationRange.x, awakeDurationRange.y);
     state = CState.IdleWander;
+    animator = AddAnimRenderer(null, new PVector(0.5f, 1.0f));
   }
   
   void Tick(float dt)
   {
+    super.Tick(dt);
     sleepTimer -= dt;
     if (sleepTimer < 0)
     {
@@ -78,9 +73,9 @@ public class Creature
       SetAnim(stepAnim);
 
       // Basic ping ponging walk behavior
-      if (faceDirection == 0 || (faceDirection == -1 && xPos < 0 + size.x / 2f))
+      if (faceDirection == 0 || (faceDirection == -1 && pos.x < 0 + size.x / 2f))
         desiredX = width + 20;
-      else if (faceDirection == 1 && xPos > width - size.x / 2f)
+      else if (faceDirection == 1 && pos.x > width - size.x / 2f)
         desiredX = -20;
     }
     else if (state == CState.PursueFood)
@@ -93,6 +88,7 @@ public class Creature
       if (IsAtTarget())
       {
         faceDirection = 1;
+        animator.scale = new PVector(faceDirection, 1f);
         if (activeFoods.get(0).IsFalling())
           SetAnim(idleAnim);
         else
@@ -103,40 +99,19 @@ public class Creature
       }
     }
 
-    float deltaToTarget = desiredX - xPos;
+    float deltaToTarget = desiredX - pos.x;
     if (!IsAtTarget() && state != CState.Sleep)
     {
       faceDirection = deltaToTarget > 0 ? 1 : -1;
+      animator.scale = new PVector(faceDirection, 1f);
       float walkDelta = min(abs(deltaToTarget), speed * dt) * faceDirection;
-      xPos += walkDelta;
+      pos.x += walkDelta;
       SetAnim(stepAnim);
     }
   }
 
   boolean IsAtTarget()
   {
-    return abs(desiredX - xPos) <= 0.000001f;
-  }
-
-  void Draw(float dt)
-  {
-    frameTicker += dt;
-    while (frameTicker > currentAnim.frameInterval)
-    {
-      frameIdx = (frameIdx + 1) % currentAnim.frames.length;
-      frameTicker -= currentAnim.frameInterval;
-    }
-
-    pushMatrix();
-    translate(xPos - size.x / 2f * faceDirection, yPos - size.y);
-    scale(faceDirection, 1.0);
-    image(currentAnim.frames[frameIdx], 0, 0);
-    popMatrix();
-    
-    if (doDebug)
-    {
-      fill(255, 0, 255);
-      square(xPos, yPos, 2);
-    }
+    return abs(desiredX - pos.x) <= 0.000001f;
   }
 }
