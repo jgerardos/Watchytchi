@@ -33,6 +33,7 @@ class FoodInstance extends Turtle
     {
       activeFoods.remove(this);
     }
+    hunger = constrain(hunger + dt * 3f, 0, maxHunger);
     sprRenderer.image =  data.eatFrames[floor(eatProgress * (data.eatFrames.length - 1f))];
   }
 

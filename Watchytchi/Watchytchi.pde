@@ -36,7 +36,6 @@ StatusScreen statusScreen;
 
 /*# State #*/
 JSONObject saveJson;
-int cursorIdx;
 float hunger = maxHunger;
 float age = 0;
 long lastUpdateTs;
@@ -137,7 +136,7 @@ void draw()
     dt = (currentTs - lastUpdateTs) / 1000f;
     lastUpdateTs = currentTs;
     
-    hunger -= dt;
+    hunger = constrain(hunger - dt / 4f, 0, maxHunger);
     age += dt / 60f;
     creature.Tick(dt);
     for (int i = 0; i < activeFoods.size(); i++)
