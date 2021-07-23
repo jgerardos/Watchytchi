@@ -1,6 +1,7 @@
 import processing.sound.*;
 
 /*# Constants #*/
+String savePath = "save/SaveData.json";
 float maxHunger = 100;
 int drawFrameRate = 16;
 int tickFrameRate = 2;
@@ -34,10 +35,39 @@ MainMenuUI mainMenu;
 StatusScreen statusScreen;
 
 /*# State #*/
+JSONObject saveJson;
 int cursorIdx;
 float hunger = maxHunger;
+float age = 0;
 long lastUpdateTs;
 long frameNumber = 0;
+
+void RestoreFromDisk()
+{
+  try {
+    saveJson = loadJSONObject(savePath);
+  }
+  // HACK: we'll get an exception if the file doesn't exist. There's probably a better way to check if it exists
+  catch (Exception e) {
+    // If file doesn't exist, create it
+    PrintWriter writer = createWriter(savePath);
+    writer.println("{}");
+    writer.flush();
+    saveJson = loadJSONObject(savePath);
+    return;
+  }
+    
+  age = saveJson.getFloat("age");
+  hunger = saveJson.getFloat("hunger");
+}
+
+void SaveToDisk()
+{
+  println("In save method");
+  saveJson.setFloat("age", age);
+  saveJson.setFloat("hunger", hunger);
+  saveJSONObject(saveJson, "save/SaveData.json");
+}
 
 void setup()
 {
@@ -75,8 +105,20 @@ void setup()
   turtles.add(new HeavenlyBody());
   for (int i = 0; i < 2; i++)
     turtles.add(new Cloud());
+    
+  // Load save data
+  RestoreFromDisk();
   
   lastUpdateTs = System.currentTimeMillis();
+}
+
+void exit()
+{
+  println("About to save");
+  SaveToDisk();
+  println("Saved");
+  super.exit();
+  println("Exited");
 }
 
 void draw()
@@ -96,6 +138,7 @@ void draw()
     lastUpdateTs = currentTs;
     
     hunger -= dt;
+    age += dt / 60f;
     creature.Tick(dt);
     for (int i = 0; i < activeFoods.size(); i++)
     {

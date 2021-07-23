@@ -8,7 +8,8 @@ class StatusScreen extends UIScreen
 
     fill(0, 0, 0);
     textFont(font_20);
-    text("Hunger: " + round(hunger), 14, 30);
+    text("Hunger " + round(hunger), 14, 30);
+    text(round(age) + " yr", 135, 30);
   }
 
   public boolean HandleInput()
