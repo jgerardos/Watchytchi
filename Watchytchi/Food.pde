@@ -40,8 +40,9 @@ class FoodInstance extends Turtle
   public void Tick(float dt)
   {
     // Apply gravity
-    if (pos.y < floorY)
-      pos.y = constrain(pos.y + dt * gravitySpeed, 0, floorY);
+    float floor = floorY - (activeFoods.indexOf(this) * sprRenderer.image.height); 
+    if (pos.y < floor)
+      pos.y = constrain(pos.y + dt * gravitySpeed, 0, floor);
   }
 
   public boolean IsFalling()
