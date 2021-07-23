@@ -9,6 +9,7 @@ float floorY = 200f-40f;
 boolean doDebug = false;
 
 /*# Assets #*/
+PFont font_20;
 Animation stepAnim;
 Animation idleAnim;
 Animation eatAnim;
@@ -46,6 +47,7 @@ void setup()
   size(200, 200);
 
   // Load resources
+  font_20 = loadFont("Cambria-20.vlw");
   sfx_VibeCursor = new SoundFile(this, "sfx_VibeCursor.wav");
   sfx_VibeFail = new SoundFile(this, "sfx_VibeFail.wav");
   sfx_VibeSelect = new SoundFile(this, "sfx_VibeSelect.wav");

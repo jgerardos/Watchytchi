@@ -7,8 +7,8 @@ class StatusScreen extends UIScreen
     image(statusMenuBackground, xPadding, yPadding);
 
     fill(0, 0, 0);
-    textSize(20);
-    text("Hunger: " + round(hunger), 30, 30);
+    textFont(font_20);
+    text("Hunger: " + round(hunger), 14, 30);
   }
 
   public boolean HandleInput()
