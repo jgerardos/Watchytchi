@@ -15,10 +15,7 @@ AnimationData stepAnim;
 AnimationData idleAnim;
 AnimationData eatAnim;
 AnimationData sleepAnim;
-Animation stepAnim;
-Animation idleAnim;
-Animation eatAnim;
-Animation sleepAnim;
+AnimationData poopAnim;
 SoundFile sfx_VibeCursor;
 SoundFile sfx_VibeFail;
 SoundFile sfx_VibeSelect;
@@ -64,6 +61,8 @@ void RestoreFromDisk()
   age = saveJson.getFloat("age", 0f);
   hunger = saveJson.getFloat("hunger", maxHunger);
   areLightsOn = saveJson.getBoolean("areLightsOn", true);
+  creature.poopTimer = saveJson.getFloat("poopTimer", 0f);
+  creature.isTickingPoopTimer = saveJson.getBoolean("isTickingPoopTimer", false);
 }
 
 void SaveToDisk()
@@ -71,6 +70,8 @@ void SaveToDisk()
   saveJson.setFloat("age", age);
   saveJson.setFloat("hunger", hunger);
   saveJson.setBoolean("areLightsOn", areLightsOn);
+  saveJson.setFloat("poopTimer", creature.poopTimer);
+  saveJson.setBoolean("isTickingPoopTimer", creature.isTickingPoopTimer);
   saveJSONObject(saveJson, "save/SaveData.json");
 }
 
@@ -90,10 +91,7 @@ void setup()
   idleAnim = new AnimationData("DaisyHog_Idle", 2, 0);
   eatAnim = new AnimationData("DaisyHog_Eat", 2, 0);
   sleepAnim = new AnimationData("DaisyHog_Sleep", 2, 1);
-  stepAnim = new Animation("DaisyHog_Step", 2, 0.5f);
-  idleAnim = new Animation("DaisyHog_Idle", 2, 0.5f);
-  eatAnim = new Animation("DaisyHog_Eat", 2, 0.5f);
-  sleepAnim = new Animation("DaisyHog_Sleep", 2, 1f);
+  poopAnim = new AnimationData("Poop_", 2, 0);
   sunSprite = loadImage("Sun_Dithered.png");
   moonSprite = loadImage("Moon_Dithered.png");
   cloudSprites = LoadImageArray("Cloud", 3);

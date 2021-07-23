@@ -30,7 +30,6 @@ class StatusScreen extends UIScreen
     if (lastHungerTier == -1 || lastHungerTier != hungerTier)
       descriptorIdx = floor(random(0, hungerDescriptors[hungerTier].length));
     lastHungerTier = hungerTier;
-    println("Hunger is " + hunger + ", hungerTier is " + hungerTier + ", descriptor Idx is " + descriptorIdx);
   }
 
   public void Tick(float dt)

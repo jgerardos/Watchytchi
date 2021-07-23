@@ -38,9 +38,9 @@ public class MainMenuUI extends UIScreen
       float xPos = width * ((float)column / numPerRow) + (separation / 2);
       float yPos;
       if (i < numPerRow)
-        yPos = buttonWidth / 2;
+        yPos = buttonWidth / 2 + 1;
       else
-        yPos = height - (buttonWidth / 2);
+        yPos = height - (buttonWidth / 2) - 1;
       if (i == 0)
         menuButtons[i] = new StatusButton(i, xPos, yPos, "Status");
       else if (i == 2)
