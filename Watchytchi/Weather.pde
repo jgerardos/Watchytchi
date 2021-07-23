@@ -72,7 +72,7 @@ public class Cloud extends Turtle
     super();
     sprRenderer = AddSpriteRenderer(null, new PVector(0.5f, 0.5f));
     Spawn();
-    pos.x = random(-width, width);
+    pos.x = random(0.2, width * 2.5f);
   }
 
   public void Spawn()
