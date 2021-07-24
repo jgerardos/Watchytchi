@@ -47,6 +47,8 @@ public class MainMenuUI extends UIScreen
         menuButtons[i] = new FoodButton(i, xPos, yPos, "Feed");
       else if (i == 5)
         menuButtons[i] = new LightsButton(i, xPos, yPos, "Lights");
+      else if (i == 7)
+        menuButtons[i] = new MenuButton(i, xPos, yPos, "Read");
       else
         menuButtons[i] = new MenuButton(i, xPos, yPos, "Placeholder");
     }
