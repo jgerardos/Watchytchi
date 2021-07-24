@@ -15,7 +15,7 @@ public class Creature extends Turtle
   float sleepTimer;
   float poopTimer;
   boolean isTickingPoopTimer;
-  
+
   /*# Components #*/
   AnimatedRenderer animator;
 
@@ -42,7 +42,7 @@ public class Creature extends Turtle
     state = CState.IdleWander;
     animator = AddAnimRenderer(null, new PVector(0.5f, 1.0f));
   }
-  
+
   void Tick(float dt)
   {
     super.Tick(dt);
@@ -53,7 +53,7 @@ public class Creature extends Turtle
       {
         sleepTimer = random(awakeDurationRange.x, awakeDurationRange.y);
         state = CState.IdleWander;
-      }
+      } 
       else
       {
         sleepTimer = random(sleepDurationRange.x, sleepDurationRange.y);
@@ -69,7 +69,7 @@ public class Creature extends Turtle
       state = CState.IdleWander;
       faceDirection = 0;
     }
-      
+
     if (state == CState.IdleWander)
     {
       SetAnim(stepAnim);
@@ -102,7 +102,7 @@ public class Creature extends Turtle
             poopTimer = constrain(poopTimer + dt, 0f, 20f);
             if (poopTimer >= 20f)
               isTickingPoopTimer = true;
-          }         
+          }
         }
       }
     }
@@ -132,10 +132,7 @@ public class Creature extends Turtle
 
   void Poop()
   {
-    Turtle poop = new Turtle(new PVector(pos.x - size.x / 2f * faceDirection, floorY));
-    poop.AddAnimRenderer(poopAnim, new PVector(0.5f, 1.0f));
-    turtles.add(poop);
-    sfx_VibeCursor.play();
+    poopManager.AddPoop(new PVector(pos.x - size.x / 2f * faceDirection, floorY));
     isTickingPoopTimer = false;
   }
 }

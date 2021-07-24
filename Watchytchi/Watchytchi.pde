@@ -7,7 +7,7 @@ int drawFrameRate = 16;
 int tickFrameRate = 2;
 float gravitySpeed = 75f;
 float floorY = 200f-40f;
-boolean doDebug = true;
+boolean doDebug = false;
 
 /*# Assets #*/
 PFont font_20;
@@ -36,6 +36,7 @@ MainMenuUI mainMenu;
 StatusScreen statusScreen;
 
 /*# State #*/
+PoopManager poopManager;
 JSONObject saveJson;
 boolean areLightsOn = true;
 float hunger = maxHunger;
@@ -63,6 +64,7 @@ void RestoreFromDisk()
   areLightsOn = saveJson.getBoolean("areLightsOn", true);
   creature.poopTimer = saveJson.getFloat("poopTimer", 0f);
   creature.isTickingPoopTimer = saveJson.getBoolean("isTickingPoopTimer", false);
+  poopManager.RestoreFromDisk(saveJson);
 }
 
 void SaveToDisk()
@@ -72,6 +74,7 @@ void SaveToDisk()
   saveJson.setBoolean("areLightsOn", areLightsOn);
   saveJson.setFloat("poopTimer", creature.poopTimer);
   saveJson.setBoolean("isTickingPoopTimer", creature.isTickingPoopTimer);
+  poopManager.SaveToDisk(saveJson);
   saveJSONObject(saveJson, "save/SaveData.json");
 }
 
@@ -112,6 +115,7 @@ void setup()
   turtles.add(new HeavenlyBody());
   for (int i = 0; i < 2; i++)
     turtles.add(new Cloud());
+  poopManager = new PoopManager();
 
   // Load save data
   RestoreFromDisk();
