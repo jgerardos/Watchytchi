@@ -23,7 +23,7 @@ public abstract class Renderer
       translate(pos.x, pos.y);
       if (scale.x != 1f || scale.y != 1f)
         scale(scale.x, scale.y);
-      image(image, anchor.x * -image.width, - anchor.y * image.height);
+      image(image, round(anchor.x * -image.width), round(- anchor.y * image.height));
       popMatrix();
     }
   }
