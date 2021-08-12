@@ -106,15 +106,22 @@ public class Creature extends Turtle
         }
       }
     }
-
-    float deltaToTarget = desiredX - pos.x;
-    if (!IsAtTarget() && state != CState.Sleep)
+    
+    if (storybookScreen.IsTopScreen())
     {
-      faceDirection = deltaToTarget > 0 ? 1 : -1;
-      animator.scale = new PVector(faceDirection, 1f);
-      float walkDelta = min(abs(deltaToTarget), speed * dt) * faceDirection;
-      pos.x += walkDelta;
-      SetAnim(stepAnim);
+      SetAnim(idleAnim);
+    }
+    else
+    {
+      float deltaToTarget = desiredX - pos.x;
+      if (!IsAtTarget() && state != CState.Sleep)
+      {
+        faceDirection = deltaToTarget > 0 ? 1 : -1;
+        animator.scale = new PVector(faceDirection, 1f);
+        float walkDelta = min(abs(deltaToTarget), speed * dt) * faceDirection;
+        pos.x += walkDelta;
+        SetAnim(stepAnim);
+      }
     }
 
     if (isTickingPoopTimer && state != CState.Sleep)

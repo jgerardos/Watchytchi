@@ -68,3 +68,31 @@ class LightsButton extends MenuButton
     sfx_VibeSelect.play();
   }
 }
+
+class CleaningButton extends MenuButton
+{
+  CleaningButton(int idIn, float xIn, float yIn, String name)
+  {
+    super(idIn, xIn, yIn, name);
+  }
+  
+  public void Click()
+  {
+    sfx_VibeSelect.play();
+    cleaningScreen.Show();
+  }
+}
+
+class StorybookButton extends MenuButton
+{
+  StorybookButton(int idIn, float xIn, float yIn, String name)
+  {
+    super(idIn, xIn, yIn, name);
+  }
+  
+  public void Click()
+  {
+    sfx_VibeSelect.play();
+    storybookScreen.Show();
+  }
+}

@@ -8,6 +8,10 @@ int tickFrameRate = 2;
 float gravitySpeed = 75f;
 float floorY = 200f-40f;
 boolean doDebug = false;
+final char key_cursor = 'z';
+final char key_select = 'x';
+final char key_back = 'c';
+
 
 /*# Assets #*/
 PFont font_20;
@@ -24,6 +28,7 @@ PImage sunSprite;
 PImage moonSprite;
 PImage[] cloudSprites;
 PImage statusMenuBackground;
+JSONArray velveteenData;
 
 /*# Turtles #*/
 Creature creature;
@@ -34,6 +39,8 @@ ArrayList<FoodInstance> activeFoods = new ArrayList<FoodInstance>();
 /*# UI #*/
 MainMenuUI mainMenu;
 StatusScreen statusScreen;
+CleaningScreen cleaningScreen;
+StorybookScreen storybookScreen;
 
 /*# State #*/
 PoopManager poopManager;
@@ -43,6 +50,7 @@ float hunger = maxHunger;
 float age = 0;
 long lastUpdateTs;
 long frameNumber = 0;
+int velveteenIndex = 0;
 
 void RestoreFromDisk()
 {
@@ -65,6 +73,13 @@ void RestoreFromDisk()
   creature.poopTimer = saveJson.getFloat("poopTimer", 0f);
   creature.isTickingPoopTimer = saveJson.getBoolean("isTickingPoopTimer", false);
   poopManager.RestoreFromDisk(saveJson);
+  velveteenIndex = saveJson.getInt("velveteenIndex", 0);
+
+  velveteenData = loadJSONArray("VelveteenData.json");
+  for (int i = 0; i < velveteenData.size(); i++)
+  {
+    println(velveteenData.getString(i));
+  }
 }
 
 void SaveToDisk()
@@ -75,6 +90,7 @@ void SaveToDisk()
   saveJson.setFloat("poopTimer", creature.poopTimer);
   saveJson.setBoolean("isTickingPoopTimer", creature.isTickingPoopTimer);
   poopManager.SaveToDisk(saveJson);
+  saveJson.setInt("velveteenIndex", velveteenIndex);
   saveJSONObject(saveJson, "save/SaveData.json");
 }
 
@@ -103,6 +119,8 @@ void setup()
   // Initialize UI:
   mainMenu = new MainMenuUI();
   statusScreen = new StatusScreen();
+  cleaningScreen = new CleaningScreen();
+  storybookScreen = new StorybookScreen();
   uiStack.add(mainMenu);
 
   // Load resources (food)
@@ -174,7 +192,17 @@ void draw()
   creature.Draw();
   
   // Draw UI:
-  for (int i = 0; i < uiStack.size(); i++)
+  int uiDrawStartIndex = 0;
+  for (int i = uiStack.size() - 1; i >= 0; i--)
+  {
+    if (uiStack.get(i).BlocksDrawingBelow())
+    {
+      uiDrawStartIndex = i;
+      break;
+    }
+  }
+  
+  for (int i = uiDrawStartIndex; i < uiStack.size(); i++)
   {
     uiStack.get(i).Draw();
   }

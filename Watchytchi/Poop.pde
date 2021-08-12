@@ -23,6 +23,12 @@ class PoopManager
     poopColumns[column] = poop;
   }
 
+  public void RemovePoop(int column)
+  {
+    turtles.remove(poopColumns[column]);
+    poopColumns[column] = null;
+  }
+
   void RestoreFromDisk(JSONObject obj)
   {
     if (obj.isNull("poops"))  

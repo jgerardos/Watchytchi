@@ -14,18 +14,18 @@ public abstract class Renderer
       square(owner.pos.x, owner.pos.y, 2);
     }
   }
+}
 
-  public void DrawSprite(PVector pos, PImage image, PVector anchor, PVector scale)
+public void DrawSprite(PVector pos, PImage image, PVector anchor, PVector scale)
+{
+  if (image != null)
   {
-    if (image != null)
-    {
-      pushMatrix();
-      translate(pos.x, pos.y);
-      if (scale.x != 1f || scale.y != 1f)
-        scale(scale.x, scale.y);
-      image(image, round(anchor.x * -image.width), round(- anchor.y * image.height));
-      popMatrix();
-    }
+    pushMatrix();
+    translate(pos.x, pos.y);
+    if (scale.x != 1f || scale.y != 1f)
+      scale(scale.x, scale.y);
+    image(image, round(anchor.x * -image.width), round(- anchor.y * image.height));
+    popMatrix();
   }
 }
 

@@ -14,6 +14,16 @@ public abstract class UIScreen extends Turtle
   {
     uiStack.remove(this);
   }
+
+  public boolean BlocksDrawingBelow()
+  {
+    return false;
+  }
+  
+  public boolean IsTopScreen()
+  {
+    return uiStack.get(uiStack.size() - 1) == this;
+  }
 }
 
 public class MainMenuUI extends UIScreen
@@ -45,10 +55,12 @@ public class MainMenuUI extends UIScreen
         menuButtons[i] = new StatusButton(i, xPos, yPos, "Status");
       else if (i == 2)
         menuButtons[i] = new FoodButton(i, xPos, yPos, "Feed");
+      else if (i == 4)
+        menuButtons[i] = new CleaningButton(i, xPos, yPos, "Lights");
       else if (i == 5)
         menuButtons[i] = new LightsButton(i, xPos, yPos, "Lights");
       else if (i == 7)
-        menuButtons[i] = new MenuButton(i, xPos, yPos, "Read");
+        menuButtons[i] = new StorybookButton(i, xPos, yPos, "Read");
       else
         menuButtons[i] = new MenuButton(i, xPos, yPos, "Placeholder");
     }
@@ -65,19 +77,19 @@ public class MainMenuUI extends UIScreen
 
   public boolean HandleInput()
   {
-    if (key == 'z')
+    if (key == key_cursor)
     {
       sfx_VibeCursor.play();
       cursorIdx = (cursorIdx + 1) % numButtons;
     }
-    if (key == 'x')
+    if (key == key_select)
     {
       if (cursorIdx >= 0)
         menuButtons[cursorIdx].Click();
       else
         sfx_VibeFail.play();
     }
-    if (key == 'c')
+    if (key == key_back)
     {
       sfx_VibeFail.play();
       cursorIdx = -1;
