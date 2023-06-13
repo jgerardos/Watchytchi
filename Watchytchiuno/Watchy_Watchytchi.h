@@ -1,6 +1,3 @@
-#ifndef WATCHY_DKTIME_H
-#define WATCHY_DKTIME_H
-
 #include "Watchy_Base.h"
 #include "ImageAssets.h"
 
@@ -14,5 +11,3 @@ class Watchytchi : public WatchyBase{
         void drawUIButton(int idx, bool quickCursorUpdate);
         void clearCreatureBackground();
 };
-
-#endif

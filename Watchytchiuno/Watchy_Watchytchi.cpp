@@ -2,9 +2,6 @@
 #include <stdlib.h>     //srand, rand
 
 const unsigned char *dk_nums [10] = {dk0, dk1, dk2, dk3, dk4, dk5, dk6, dk7, dk8, dk9};
-const unsigned char *dk_anim1 [2] = {dk_1, dk_2};
-const unsigned char *dk_anim2 [2] = {dk_3, dk_4};
-const unsigned char *dk_anim3 [4] = {dk_5, dk_6, dk_7, dk_8};
 const unsigned char *food_stages[7] = {img_FoodBerry_Stage0, img_FoodBerry_Stage1, img_FoodBerry_Stage2, img_FoodBerry_Stage3, 
   img_FoodBerry_Stage4, img_FoodBerry_Stage5, img_FoodBerry_Stage6};
 
