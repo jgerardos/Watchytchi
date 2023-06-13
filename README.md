@@ -1,5 +1,5 @@
 # Watchytchi
-This is a work-in-progress attempt at making a tamagotchi-like virtual pet for [Watchy](https://watchy.sqfmi.com/), an open-source open-source e-ink smart watch.
+This is a work-in-progress attempt at making a tamagotchi-like virtual pet for [Watchy](https://watchy.sqfmi.com/), an open-source e-ink smart watch.
 
 I love virtual pets, and as a game developer I have always wanted to make my own. I don't have any experience with microelectronics or custom hardware, so I chose Watchy as my platform because it has buttons, a screen, and comes more or less fully assembled. With that said, this is my first experience working with Arduino and ESP32 and it is not the cleanest code at all. 
 
