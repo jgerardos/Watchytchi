@@ -6,9 +6,9 @@ I love virtual pets, and as a game developer I have always wanted to make my own
 This repo contains 3 main items: an all-software prototype made in (Processing)[https://processing.org/], the Watchy project, and some paint.net asset files. The Watchy project compiles and works on device but it is a rough first draft, with some messy code and missing freatures. I have not been updating this project frequently, but I hope to get back to it! In the meantime, I hope it serves as useful reference for others.
 
  <div>
- <img src="./Github%20Assets/Watchytchi_Idle.jpg" alt="drawing" width="200"/> 
- <img src="./Github%20Assets/Watchytchi_Double.jpg" alt="drawing" width="400"/> 
- <img src="./Github%20Assets/Watchytchi_TiredNight.jpg" alt="drawing" width="200"/> 
+ <img src="./Github%20Assets/Watchytchi_Idle.jpg" alt="The pet in idle pose" width="200"/> 
+ <img src="./Github%20Assets/Watchytchi_Double.jpg" alt="Two Watchys with the pet" width="400"/> 
+ <img src="./Github%20Assets/Watchytchi_TiredNight.jpg" alt="A tired pet at night, lit by a lightbulb" width="200"/> 
  </div>
 
 ## Instructions:
@@ -39,7 +39,6 @@ Selecting the magnifying glass will open up the "inspect" UI, showing your pet's
  - During the day, if your pet is not hungry, they may display idle animations
  - Every 3 minutes they perform a short animation 
  - Depending on the time of day, their default idle pose may be replaced by a "skygazing" (flipped onto their back) pose.
-![The Watchy Creature](./Github%20Assets/Watchytchi_TiredNight.jpg?raw=true "Title")
 # Limitations
 This is very much a work in progress project and has several large issues. Due to my inexperience with microelectronics and C++, some of these may take a long time to fix
  - All data is lost when the battery runs out. I don't know quite how to make data fully persistent.
