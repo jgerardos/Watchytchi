@@ -34,17 +34,8 @@ static float floatModulo(float val, float range)
 
 void Watchytchi::drawWatchFace(){
     startProfile();
-    int Hour = currentTime.Hour;
-    
-    //Change to 12 Hour Time
-    if(twelve_mode) {
-        if (Hour > 12) {
-          Hour = Hour - 12;
-        } else if (Hour == 0) {
-          Hour = 12;
-        }
-    }
 
+    /*# Background and environment: #*/
     auto isLateNight = currentTime.Hour >= 21 || currentTime.Hour <= 6;
     if (!isLateNight)
       invertColors = false;
@@ -189,13 +180,13 @@ void Watchytchi::drawUIButton(int idx, bool quickCursorUpdate)
     if (quickCursorUpdate)
       display.fillRect(xPos, yPos, 32, 32, isElectricLit ? color_fg : color_bg);
 
-    if (idx == 0)
+    if (idx == MENUIDX_INSPECT)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Status_Active : img_MenuIcon_Status_Inactive, 32, 32, iconColor);
-    else if (idx == 2)
+    else if (idx == MENUIDX_FEED)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Feed_Active : img_MenuIcon_Feed_Inactive, 32, 32, iconColor);
-    else if (idx == 5)
+    else if (idx == MENUIDX_LIGHT)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Lights_Active : img_MenuIcon_Lights_Inactive, 32, 32, iconColor);
-    else if (idx == 7)
+    else if (idx == MENUIDX_READ)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Read_Active : img_MenuIcon_Read_Inactive, 32, 32, iconColor);
     else
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Placeholder_Active : img_MenuIcon_Placeholder_Inactive, 32, 32, iconColor);
