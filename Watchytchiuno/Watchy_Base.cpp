@@ -100,14 +100,16 @@ bool WatchyBase::handleButtonPress() {
     // to do. Therefore, no return;
   }
 
+  // Process selection
   if (IS_KEY_SELECT) {
-    hasStatusDisplay = menuIdx == 0;
-    if (menuIdx == 2)
+    hasStatusDisplay = menuIdx == MENUIDX_INSPECT;
+    if (menuIdx == MENUIDX_FEED)
       isEating = true;
-    if (menuIdx == 5 && (currentTime.Hour >= 21 || currentTime.Hour <= 6))
+    if (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6))
       invertColors = !invertColors;
     RTC.read(currentTime);
-    if (menuIdx == 0 || menuIdx == 2 || (menuIdx == 5 && (currentTime.Hour >= 21 || currentTime.Hour <= 6)))
+    // Vibrate if this selection resulted in an action
+    if (menuIdx == MENUIDX_INSPECT || menuIdx == MENUIDX_FEED || (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6)))
       vibrate(1, 50);
     showWatchFace(true);
     return true;
@@ -138,7 +140,7 @@ bool WatchyBase::handleButtonPress() {
   if (IS_KEY_CANCEL) {
     RTC.read(currentTime);
     vibrate();
-    menuIdx = -1;
+    menuIdx = MENUIDX_NOTHING;
     vibrate(1, 30);
     showWatchFace(true);
     return true;

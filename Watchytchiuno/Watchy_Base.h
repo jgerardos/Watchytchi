@@ -34,6 +34,12 @@ extern RTC_DATA_ATTR int dayBorn;
 #define IS_KEY_SELECT IS_BTN_RIGHT_UP
 #define IS_KEY_CANCEL IS_BTN_RIGHT_DOWN
 
+const int MENUIDX_NOTHING = -1;
+const int MENUIDX_INSPECT = 0;
+const int MENUIDX_FEED = 2;
+const int MENUIDX_LIGHT = 5;
+const int MENUIDX_READ = 7;
+
 class WatchyBase : public Watchy {
     public:
         WatchyBase();
