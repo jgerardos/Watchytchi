@@ -127,6 +127,10 @@ bool WatchyBase::handleButtonPress() {
       didPerformAction = true;
       auto prevHour = lastPoopHour;
       lastPoopHour = currentTime.Hour; // Cleaning resets last poop hour in order to prevent immediate poop once again
+      NVS.begin();
+      NVS.setInt("hasPoop", 0, false);
+      NVS.setInt("lastPoopHour", lastPoopHour, false);
+      NVS.commit();
       Serial.print("Cleaned poop! New lastPoopHour =");
       Serial.print(lastPoopHour);
       Serial.print(", previously it was");
@@ -137,6 +141,8 @@ bool WatchyBase::handleButtonPress() {
     if (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6))
     {
       invertColors = !invertColors;
+      NVS.begin();
+      NVS.setInt("invertColors", invertColors ? 1 : 0, true);
       didPerformAction = true;
     }
     // Vibrate if this selection resulted in an action

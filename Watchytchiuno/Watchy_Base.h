@@ -3,6 +3,7 @@
 #define WATCHY_BASE_H
 
 #include <Watchy.h>
+#include "ArduinoNvs.h"
 
 #if __has_include("config.h") && __has_include(<stdint.h>)
 # include "config.h"

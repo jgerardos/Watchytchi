@@ -35,6 +35,20 @@ static float floatModulo(float val, float range)
 void Watchytchi::drawWatchFace(){
     startProfile();
 
+    /*# Load Data: #*/
+    NVS.begin();
+    hunger = NVS.getFloat("hunger", 1.f);
+    hasPoop = 1 == NVS.getInt("hasPoop", 0);
+    lastPoopHour = NVS.getInt("lastPoopHour", -1);
+    dayBorn = NVS.getInt("dayBorn", -1);
+    invertColors = 1 == NVS.getInt("invertColors", 0);
+
+    Serial.print("Loaded hunger from NVS, value: ");
+    Serial.print(hunger);
+    Serial.println();
+
+    endProfileAndStart("Section 0: Load values");
+
     /*# Background and environment: #*/
     auto isLateNight = currentTime.Hour >= 21 || currentTime.Hour <= 6;
     if (!isLateNight)
@@ -183,6 +197,21 @@ void Watchytchi::drawWatchFace(){
     {
       lastHungerCryMinute = -1;
     }
+
+    /*# Save data #*/
+    NVS.setFloat("Hunger", hunger);
+    NVS.setFloat("hunger", hunger, false);
+    NVS.setInt("hasPoop", hasPoop ? 1 : 0, false);
+    NVS.setInt("lastPoopHour", lastPoopHour, false);
+    NVS.setInt("dayBorn", dayBorn, false);
+    NVS.setInt("invertColors", invertColors ? 1 : 0, false);
+    auto didSave = NVS.commit();
+
+    Serial.print("Tried to save hunger value ");
+    Serial.print(hunger);
+    Serial.print(", success? ");
+    Serial.print(didSave);
+    Serial.println();
 } 
 
 void Watchytchi::drawUIButton(int idx, bool quickCursorUpdate)
