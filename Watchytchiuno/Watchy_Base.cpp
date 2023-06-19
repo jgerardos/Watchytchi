@@ -8,6 +8,8 @@ RTC_DATA_ATTR bool playAnim = false;
 RTC_DATA_ATTR int menuIdx;
 RTC_DATA_ATTR float hunger = 1.f;
 RTC_DATA_ATTR bool isEating = false;
+RTC_DATA_ATTR bool hasPoop = false;
+RTC_DATA_ATTR int lastPoopHour = -1;
 RTC_DATA_ATTR int idleAnimIdx = 0;
 RTC_DATA_ATTR bool hasStatusDisplay = false;
 RTC_DATA_ATTR int lastAdvanceIdxMinute = 0;
@@ -102,14 +104,43 @@ bool WatchyBase::handleButtonPress() {
 
   // Process selection
   if (IS_KEY_SELECT) {
-    hasStatusDisplay = menuIdx == MENUIDX_INSPECT;
-    if (menuIdx == MENUIDX_FEED)
-      isEating = true;
-    if (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6))
-      invertColors = !invertColors;
+    auto didPerformAction = false;
     RTC.read(currentTime);
+    // Open up the menu UI
+    if (menuIdx == MENUIDX_INSPECT)
+    {
+      hasStatusDisplay = true;
+      didPerformAction = true;
+    }
+    else
+      hasStatusDisplay = false;
+    // Start feeding
+    if (menuIdx == MENUIDX_FEED)
+    {
+      isEating = true;
+      didPerformAction = true;
+    }
+    // Clean Poop
+    if (hasPoop && menuIdx == MENUIDX_CLEAN)
+    {
+      hasPoop = false;
+      didPerformAction = true;
+      auto prevHour = lastPoopHour;
+      lastPoopHour = currentTime.Hour; // Cleaning resets last poop hour in order to prevent immediate poop once again
+      Serial.print("Cleaned poop! New lastPoopHour =");
+      Serial.print(lastPoopHour);
+      Serial.print(", previously it was");
+      Serial.print(prevHour);
+      Serial.println();
+    }
+    // Toggle Light
+    if (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6))
+    {
+      invertColors = !invertColors;
+      didPerformAction = true;
+    }
     // Vibrate if this selection resulted in an action
-    if (menuIdx == MENUIDX_INSPECT || menuIdx == MENUIDX_FEED || (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6)))
+    if (didPerformAction)
       vibrate(1, 50);
     showWatchFace(true);
     return true;

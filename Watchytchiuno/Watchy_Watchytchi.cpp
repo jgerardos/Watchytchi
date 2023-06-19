@@ -107,7 +107,7 @@ void Watchytchi::drawWatchFace(){
       
 
 
-    endProfile("Section 4: Clock digits");
+    endProfileAndStart("Section 4: Clock digits");
     if(isEating) {
       drawEatAnim();
     } 
@@ -129,6 +129,33 @@ void Watchytchi::drawWatchFace(){
     else {
       drawIdleCreature();
     }
+    endProfileAndStart("Section 5: Drawing Critters");
+
+    /*# Poop: #*/
+    if (!hasPoop && !isLateNight && (lastPoopHour == -1 || currentTime.Hour >= lastPoopHour + 4 || currentTime.Hour <= lastPoopHour - 20) 
+      && lastAnimateMinute > 0)/*Hack: do this to avoid immediate poop at the start of a new game. */
+    {
+      Serial.print("Pooping! lastPoopHour = ");
+      Serial.print(lastPoopHour);
+      Serial.print(", lastAnimateMinute = ");
+      Serial.print(lastAnimateMinute);
+      Serial.println();
+      hasPoop = true;
+      lastPoopHour = currentTime.Hour;
+      vibrate(3, 50);
+    }
+    else
+    {
+      Serial.print("Chose not to poop! lastPoopHour = ");
+      Serial.print(lastPoopHour);
+      Serial.print(", lastAnimateMinute = ");
+      Serial.print(lastAnimateMinute);
+      Serial.println();
+    }
+
+    if (hasPoop)    
+      display.drawBitmap(32, 200 - 32 - 20 - 4, idleAnimIdx % 2 == 0 ? img_SmallPoop_1 : img_SmallPoop_2, 20, 20, color_fg);
+    endProfile("Section 6: Poop");
 
 
     auto isNight = currentTime.Hour <= 6 || currentTime.Hour >= 19;
@@ -193,6 +220,8 @@ void Watchytchi::drawUIButton(int idx, bool quickCursorUpdate)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Status_Active : img_MenuIcon_Status_Inactive, 32, 32, iconColor);
     else if (idx == MENUIDX_FEED)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Feed_Active : img_MenuIcon_Feed_Inactive, 32, 32, iconColor);
+    else if (idx == MENUIDX_CLEAN)
+      display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Clean_Active : img_MenuIcon_Clean_Inactive, 32, 32, iconColor);
     else if (idx == MENUIDX_LIGHT)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Lights_Active : img_MenuIcon_Lights_Inactive, 32, 32, iconColor);
     else if (idx == MENUIDX_READ)

@@ -13,6 +13,8 @@ extern RTC_DATA_ATTR bool playAnim;
 extern RTC_DATA_ATTR int menuIdx;
 extern RTC_DATA_ATTR float hunger;
 extern RTC_DATA_ATTR bool isEating;
+extern RTC_DATA_ATTR bool hasPoop;
+extern RTC_DATA_ATTR int lastPoopHour;
 extern RTC_DATA_ATTR int idleAnimIdx;
 extern RTC_DATA_ATTR bool hasStatusDisplay;
 extern RTC_DATA_ATTR int lastAdvanceIdxMinute;
@@ -37,6 +39,7 @@ extern RTC_DATA_ATTR int dayBorn;
 const int MENUIDX_NOTHING = -1;
 const int MENUIDX_INSPECT = 0;
 const int MENUIDX_FEED = 2;
+const int MENUIDX_CLEAN = 4;
 const int MENUIDX_LIGHT = 5;
 const int MENUIDX_READ = 7;
 
