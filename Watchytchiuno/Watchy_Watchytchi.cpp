@@ -270,7 +270,7 @@ void Watchytchi::drawWatchFace(){
     endProfileAndStart("Section 5: Drawing Critters");
 
     /*# Poop: #*/
-    if (!hasPoop && getTimeOfDay() != TimeOfDay::LateNight && (lastPoopHour == -1 || currentTime.Hour >= lastPoopHour + 4 || currentTime.Hour <= lastPoopHour - 6) 
+    if (!hasPoop && getTimeOfDay() != TimeOfDay::LateNight && (lastPoopHour == -1 || currentTime.Hour >= lastPoopHour + 4 || currentTime.Hour < lastPoopHour) 
       && lastAnimateMinute > 0)/*Hack: do this to avoid immediate poop at the start of a new game. */
     {
       Serial.print("Pooping! lastPoopHour = ");
