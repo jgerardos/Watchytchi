@@ -4,6 +4,7 @@
 class Watchytchi : public WatchyBase{
     public:
         Watchytchi();
+        bool handleButtonPress();
         void drawWatchFace();
         void drawEatAnim();
         void drawIdleCreature();
