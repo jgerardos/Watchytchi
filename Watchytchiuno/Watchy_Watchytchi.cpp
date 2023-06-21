@@ -4,6 +4,9 @@
 const unsigned char *dk_nums [10] = {dk0, dk1, dk2, dk3, dk4, dk5, dk6, dk7, dk8, dk9};
 const unsigned char *food_stages[7] = {img_FoodBerry_Stage0, img_FoodBerry_Stage1, img_FoodBerry_Stage2, img_FoodBerry_Stage3, 
   img_FoodBerry_Stage4, img_FoodBerry_Stage5, img_FoodBerry_Stage6};
+const unsigned char* flower_stages[6] = { img_GrowingFlower1, img_GrowingFlower2, img_GrowingFlower3, 
+  img_GrowingFlower4, img_GrowingFlower5, img_GrowingFlower6};
+
 
 const unsigned char *img_smallFontArr[10] = {
   img_smallFont_0,
@@ -78,6 +81,22 @@ void Watchytchi::drawWatchFace(){
 
     endProfileAndStart("Section 3: UI");
 
+    // Calculate Age:
+    if (dayBorn == -1)
+      dayBorn = currentTime.Day;
+    auto age = currentTime.Day - dayBorn;
+    if (age > 9)
+      age = 9;
+    
+    // Draw a flower that grows a little bit every day:
+    auto flowerGrowthIdx = age;
+    if (flowerGrowthIdx > 5)
+      flowerGrowthIdx = 5;
+    display.drawBitmap(156, 91, flower_stages[flowerGrowthIdx], 30, 45, color_fg);
+    
+
+    endProfileAndStart("Section 3.5: Age Flower");
+
     // Draw a very small debug clock:
     auto Hour = currentTime.Hour;
     if(twelve_mode) {
@@ -95,12 +114,6 @@ void Watchytchi::drawWatchFace(){
     display.drawBitmap(192-46, 195, img_smallFontArr[currentTime.Minute/10], 3, 5, color_fg); //first digit
     display.drawBitmap(196-46, 195, img_smallFontArr[currentTime.Minute%10], 3, 5, color_fg); //second digit
 
-    // Age
-    if (dayBorn == -1)
-      dayBorn = currentTime.Day;
-    auto age = currentTime.Day - dayBorn;
-    if (age > 9)
-      age = 9;
 
     // Hunger
     auto oldHunger = hunger;
