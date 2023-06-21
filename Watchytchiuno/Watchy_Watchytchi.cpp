@@ -35,6 +35,21 @@ static float floatModulo(float val, float range)
   return val;
 }
 
+TimeOfDay Watchytchi::getTimeOfDay()
+{
+  if (currentTime.Hour >= 21 || currentTime.Hour <= 6)
+    return TimeOfDay::LateNight;
+  else if (currentTime.Hour > 18 || (currentTime.Hour == 18 && currentTime.Minute >= 30))
+    return TimeOfDay::Dusk;
+  else
+    return TimeOfDay::Daytime;
+}
+
+bool Watchytchi::isElectricLit()
+{
+  return getTimeOfDay() == TimeOfDay::LateNight && !invertColors;
+}
+
 bool Watchytchi::handleButtonPress() {
   uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
 
@@ -150,22 +165,21 @@ void Watchytchi::drawWatchFace(){
     endProfileAndStart("Section 0: Load values");
 
     /*# Background and environment: #*/
-    auto isLateNight = currentTime.Hour >= 21 || currentTime.Hour <= 6;
-    if (!isLateNight)
+    if (getTimeOfDay() != TimeOfDay::LateNight)
       invertColors = false;
     auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
     auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
     
-    auto isElectricLit = !invertColors && isLateNight;
     //BG
     display.fillScreen(color_bg);
     endProfileAndStart("Section 1: Initialize and fillscreen");
 
-    if (isElectricLit)
+    if (isElectricLit())
       display.drawBitmap(0, 0, img_LightbulbLightGradient_1, 200, 200, color_fg);
-    else if (!invertColors && (currentTime.Hour > 18 || (currentTime.Hour == 18 && currentTime.Minute >= 30)))
+    else if (getTimeOfDay() == TimeOfDay::Dusk)
       display.drawBitmap(0, 0, img_DuskLightGradient, 200, 200, color_fg);
-    if (isLateNight)
+    
+    if (getTimeOfDay() == TimeOfDay::LateNight)
       display.drawBitmap(100 - (9/2), 0, img_HangingLightbulb, 9, 81, color_fg); 
     
     drawWeather();
@@ -214,7 +228,7 @@ void Watchytchi::drawWatchFace(){
 
     // Hunger
     auto oldHunger = hunger;
-    if (!isLateNight)
+    if (getTimeOfDay() != TimeOfDay::LateNight)
       hunger -= 0.002f;
     if (hunger < 0.f)
       hunger = 0.f;
@@ -256,7 +270,7 @@ void Watchytchi::drawWatchFace(){
     endProfileAndStart("Section 5: Drawing Critters");
 
     /*# Poop: #*/
-    if (!hasPoop && !isLateNight && (lastPoopHour == -1 || currentTime.Hour >= lastPoopHour + 4 || currentTime.Hour <= lastPoopHour - 6) 
+    if (!hasPoop && getTimeOfDay() != TimeOfDay::LateNight && (lastPoopHour == -1 || currentTime.Hour >= lastPoopHour + 4 || currentTime.Hour <= lastPoopHour - 6) 
       && lastAnimateMinute > 0)/*Hack: do this to avoid immediate poop at the start of a new game. */
     {
       Serial.print("Pooping! lastPoopHour = ");
@@ -282,8 +296,7 @@ void Watchytchi::drawWatchFace(){
     endProfile("Section 6: Poop");
 
 
-    auto isNight = currentTime.Hour <= 6 || currentTime.Hour >= 19;
-    if (!isNight && hunger <= 0.1f && (lastHungerCryMinute == -1 || currentTime.Minute - lastHungerCryMinute >= 5 || currentTime.Minute < lastHungerCryMinute))
+    if (getTimeOfDay() == TimeOfDay::Daytime && hunger <= 0.1f && (lastHungerCryMinute == -1 || currentTime.Minute - lastHungerCryMinute >= 5 || currentTime.Minute < lastHungerCryMinute))
     {
       const float numVibes = 4;
       for (int i = 0; i < numVibes; i++)
@@ -326,12 +339,10 @@ void Watchytchi::drawWatchFace(){
 
 void Watchytchi::drawUIButton(int idx, bool quickCursorUpdate)
 {
-    auto isLateNight = currentTime.Hour >= 21 || currentTime.Hour <= 6;
-    if (!isLateNight)
+    if (getTimeOfDay() != TimeOfDay::LateNight)
       invertColors = false;
     auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
     auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
-    auto isElectricLit = !invertColors && isLateNight;
   
     int numButtons = 8;
     int width = 200;
@@ -339,7 +350,7 @@ void Watchytchi::drawUIButton(int idx, bool quickCursorUpdate)
     int buttonWidth = 32;
     int numPerRow = numButtons / 2;
     float separation = width / (float)numPerRow; 
-    auto iconColor = isElectricLit ? color_bg : color_fg;
+    auto iconColor = isElectricLit() ? color_bg : color_fg;
     int column = idx % numPerRow;
     int xPos = (int)(width * ((float)column / numPerRow) + (separation / 2)) - buttonWidth / 2;
     int yPos;
@@ -353,7 +364,7 @@ void Watchytchi::drawUIButton(int idx, bool quickCursorUpdate)
         menuIdx = -1;
 
     if (quickCursorUpdate)
-      display.fillRect(xPos, yPos, 32, 32, isElectricLit ? color_fg : color_bg);
+      display.fillRect(xPos, yPos, 32, 32, isElectricLit() ? color_fg : color_bg);
 
     if (idx == MENUIDX_INSPECT)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Status_Active : img_MenuIcon_Status_Inactive, 32, 32, iconColor);
@@ -417,13 +428,11 @@ void Watchytchi::drawWeather(){
 void Watchytchi::drawIdleCreature(){
   auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
   auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
-
-  auto isLateNight = currentTime.Hour >= 21 || currentTime.Hour <= 6;
   
     //Static Creature
-    if (isLateNight && !invertColors)
+    if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
       display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Sleepy1 : img_DaisyHog_Sleepy2, 72, 55, color_fg);
-    else if (isLateNight && invertColors)
+    else if (getTimeOfDay() == TimeOfDay::LateNight && invertColors)
       display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Sleep1 : img_DaisyHog_Sleep2, 72, 55, color_fg);
     else if (hunger <= 0.1f)
     {
