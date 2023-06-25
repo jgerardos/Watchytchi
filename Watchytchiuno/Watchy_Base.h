@@ -26,6 +26,11 @@ extern RTC_DATA_ATTR int lastAnimateMinute;
 extern RTC_DATA_ATTR bool isPeriodicAnim;
 extern RTC_DATA_ATTR int dayBorn;
 
+// Compile out macros to increase speed of serial printing
+#define VERBOSE_LOGGING_ENABLED 1
+#define DBGPrint(content) if (VERBOSE_LOGGING_ENABLED) {Serial.print(content);}
+#define DBGPrintln() if (VERBOSE_LOGGING_ENABLED) {Serial.println();}
+
 // Btn definitions
 #define IS_DOUBLE_TAP       (wakeupBit & ACC_INT_MASK && guiState == WATCHFACE_STATE)
 #define IS_BTN_RIGHT_UP     (wakeupBit & UP_BTN_MASK && guiState == WATCHFACE_STATE)

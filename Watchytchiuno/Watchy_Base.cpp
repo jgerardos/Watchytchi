@@ -78,8 +78,8 @@ void WatchyBase::init() {
     deepSleep();
 //  else
 //  {
-//    Serial.print("Skipped deep sleep because cursor button was pressed");
-//    Serial.println();
+//    DBGPrint("Skipped deep sleep because cursor button was pressed");
+//    DBGPrintln();
 //  }
 }
 
@@ -247,12 +247,12 @@ int WatchyBase::endProfile(char* label)
 {
   auto idx = --nextProfileIdx;
   auto ms = millis();
-  Serial.print("Profile label ");
-  Serial.print(label);
-  Serial.print(" took ");
-  Serial.print(millis() - profileMs[idx]);
-  Serial.print(" ms");
-  Serial.println();
+  DBGPrint("Profile label ");
+  DBGPrint(label);
+  DBGPrint(" took ");
+  DBGPrint(millis() - profileMs[idx]);
+  DBGPrint(" ms");
+  DBGPrintln();
   
 }
 

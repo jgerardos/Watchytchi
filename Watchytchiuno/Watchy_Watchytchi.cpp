@@ -92,11 +92,11 @@ bool Watchytchi::handleButtonPress() {
       NVS.setInt("hasPoop", 0, false);
       NVS.setInt("lastPoopHour", lastPoopHour, false);
       NVS.commit();
-      Serial.print("Cleaned poop! New lastPoopHour =");
-      Serial.print(lastPoopHour);
-      Serial.print(", previously it was");
-      Serial.print(prevHour);
-      Serial.println();
+      DBGPrint("Cleaned poop! New lastPoopHour =");
+      DBGPrint(lastPoopHour);
+      DBGPrint(", previously it was");
+      DBGPrint(prevHour);
+      DBGPrintln();
     }
     // Toggle Light
     if (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6))
@@ -158,9 +158,9 @@ void Watchytchi::drawWatchFace(){
     dayBorn = NVS.getInt("dayBorn", -1);
     invertColors = 1 == NVS.getInt("invertColors", 0);
 
-    Serial.print("Loaded hunger from NVS, value: ");
-    Serial.print(hunger);
-    Serial.println();
+    DBGPrint("Loaded hunger from NVS, value: ");
+    DBGPrint(hunger);
+    DBGPrintln();
 
     endProfileAndStart("Section 0: Load values");
 
@@ -275,22 +275,22 @@ void Watchytchi::drawWatchFace(){
     if (!hasPoop && getTimeOfDay() != TimeOfDay::LateNight && (lastPoopHour == -1 || currentTime.Hour >= lastPoopHour + 4 || currentTime.Hour < lastPoopHour) 
       && lastAnimateMinute > 0)/*Hack: do this to avoid immediate poop at the start of a new game. */
     {
-      Serial.print("Pooping! lastPoopHour = ");
-      Serial.print(lastPoopHour);
-      Serial.print(", lastAnimateMinute = ");
-      Serial.print(lastAnimateMinute);
-      Serial.println();
+      DBGPrint("Pooping! lastPoopHour = ");
+      DBGPrint(lastPoopHour);
+      DBGPrint(", lastAnimateMinute = ");
+      DBGPrint(lastAnimateMinute);
+      DBGPrintln();
       hasPoop = true;
       lastPoopHour = currentTime.Hour;
       vibrate(3, 50);
     }
     else
     {
-      Serial.print("Chose not to poop! lastPoopHour = ");
-      Serial.print(lastPoopHour);
-      Serial.print(", lastAnimateMinute = ");
-      Serial.print(lastAnimateMinute);
-      Serial.println();
+      DBGPrint("Chose not to poop! lastPoopHour = ");
+      DBGPrint(lastPoopHour);
+      DBGPrint(", lastAnimateMinute = ");
+      DBGPrint(lastAnimateMinute);
+      DBGPrintln();
     }
 
     if (hasPoop)    
@@ -332,11 +332,11 @@ void Watchytchi::drawWatchFace(){
     NVS.setInt("invertColors", invertColors ? 1 : 0, false);
     auto didSave = NVS.commit();
 
-    Serial.print("Tried to save hunger value ");
-    Serial.print(hunger);
-    Serial.print(", success? ");
-    Serial.print(didSave);
-    Serial.println();
+    DBGPrint("Tried to save hunger value ");
+    DBGPrint(hunger);
+    DBGPrint(", success? ");
+    DBGPrint(didSave);
+    DBGPrintln();
 } 
 
 void Watchytchi::drawUIButton(int idx, bool quickCursorUpdate)
@@ -413,13 +413,13 @@ void Watchytchi::drawWeather(){
   auto cloud3T = floatModulo((t + 0.7) * 2.5f, 1.f);
   float cloud3X = floatMap(cloud3T, 0.f, 1.f, 500.f, -300.f);
 
-//  Serial.print("t (* 100) is ");
-//  Serial.print(t * 100.f);
-//  Serial.print(", cloudT (* 100) is ");
-//  Serial.print(cloud1T * 100.f);
-//  Serial.print(", cloudX is ");
-//  Serial.print(cloud1X);
-//  Serial.println();
+//  DBGPrint("t (* 100) is ");
+//  DBGPrint(t * 100.f);
+//  DBGPrint(", cloudT (* 100) is ");
+//  DBGPrint(cloud1T * 100.f);
+//  DBGPrint(", cloudX is ");
+//  DBGPrint(cloud1X);
+//  DBGPrintln();
 
   auto isDark = currentTime.Hour > 18 || (currentTime.Hour == 18 && currentTime.Minute >= 30);
   display.drawBitmap(cloud1X, 42, isDark ? img_DarkCloud1 : img_Cloud1, 99, 54, color_fg);
