@@ -203,6 +203,8 @@ void Watchytchi::drawWatchFace(){
     auto flowerGrowthIdx = age;
     if (flowerGrowthIdx > 5)
       flowerGrowthIdx = 5;
+    else if (flowerGrowthIdx < 0)
+      flowerGrowthIdx = 0;
     display.drawBitmap(156, 91, flower_stages[flowerGrowthIdx], 30, 45, color_fg);
     
 
