@@ -431,29 +431,38 @@ void Watchytchi::drawIdleCreature(){
   auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
   auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
   
-    //Static Creature
+    // Late night with lights on: Sleepy pose
     if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
       display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Sleepy1 : img_DaisyHog_Sleepy2, 72, 55, color_fg);
+    // Late night lights off: Asleep pose
     else if (getTimeOfDay() == TimeOfDay::LateNight && invertColors)
       display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Sleep1 : img_DaisyHog_Sleep2, 72, 55, color_fg);
+    // Extreme hunger: Starving pose
     else if (hunger <= 0.1f)
     {
       display.drawBitmap(100 - 36, 110, img_DaisyHog_VeryHungry1, 72, 55, color_fg);
       display.drawBitmap(100 - 36 + 25, 110-16+7, idleAnimIdx % 2 == 0 ? img_Emote_Hungry1 : img_Emote_Hungry2, 28, 19, color_fg);
     }
+    // Medium hunger: Hungry pose
     else if (hunger <= 0.45f)
     {
       display.drawBitmap(100 - 36, 110, img_DaisyHog_Hungry1, 72, 55, color_fg);
     }
+    // Afternoon special: hind legs
+    else if (currentTime.Hour >= 12 && currentTime.Hour < 14)
+      display.drawBitmap(100 - 36, 93 + 4, idleAnimIdx % 2 == 0 ? img_DaisyHog_HindLegs1 : img_DaisyHog_HindLegs2, 72, 72, color_fg);
+    // Every couple of hours: special idle
     else if (currentTime.Hour % 2 == 0 && currentTime.Minute >= 20 && currentTime.Minute <= 40)
     {
       display.drawBitmap(100 - 36, 110 + 4, idleAnimIdx % 2 == 0 ? img_DaisyHog_SkyGaze1 : img_DaisyHog_SkyGaze2, 72, 55, color_fg);
       display.drawBitmap(112, 110, idleAnimIdx % 2 == 0 ? img_Emote_Music1 : img_Emote_Music2, 28, 19, color_fg);
     }
+    // Do a twich instead of the standing idle frames if we're on our periodic animation
     else if (isPeriodicAnim)
     {
       display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Twitch1 : img_DaisyHog_Twitch2, 80, 55, color_fg);
     }
+    // Default: Standing idle
     else
       display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Idle1 : img_DaisyHog_Idle2, 72, 55, color_fg);
     idleAnimIdx = (idleAnimIdx + 1) % 2;
