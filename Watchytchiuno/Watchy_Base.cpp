@@ -26,7 +26,7 @@ void WatchyBase::init() {
   wakeup_reason = esp_sleep_get_wakeup_cause(); //get wake up reason
   Wire.begin(SDA, SCL); //init i2c
 
-  auto shouldSleep = true;
+  auto shouldDeepSleep = true;
   switch (wakeup_reason)
   {
     case ESP_SLEEP_WAKEUP_EXT0: //RTC Alarm
@@ -56,7 +56,8 @@ void WatchyBase::init() {
         break;
       }
 
-      shouldSleep &= handleButtonPress();
+      handleButtonPress();
+      shouldDeepSleep = false;
       break;
 
     default: //reset
@@ -74,13 +75,16 @@ void WatchyBase::init() {
     _bmaConfig();
   }
 
-//  if (shouldSleep)
+  // if (shouldDeepSleep)
     deepSleep();
-//  else
-//  {
-//    DBGPrint("Skipped deep sleep because cursor button was pressed");
-//    DBGPrintln();
-//  }
+  // else
+    // lightSleep();
+}
+
+void WatchyBase::lightSleep() {
+  esp_sleep_enable_ext0_wakeup(RTC_PIN, 0); //enable deep sleep wake on RTC interrupt
+  esp_sleep_enable_ext1_wakeup(EXT_INT_MASK, ESP_EXT1_WAKEUP_ANY_HIGH); //enable deep sleep wake on button press
+  esp_light_sleep_start();
 }
 
 void WatchyBase::deepSleep() {

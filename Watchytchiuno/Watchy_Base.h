@@ -54,6 +54,7 @@ class WatchyBase : public Watchy {
         WatchyBase();
         virtual void init();
         virtual bool handleButtonPress();
+        virtual void lightSleep();
         virtual void deepSleep();
         void vibrate(uint8_t times=1, uint32_t delay_time=40);
         esp_sleep_wakeup_cause_t wakeup_reason;
