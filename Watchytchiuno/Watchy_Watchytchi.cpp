@@ -213,17 +213,9 @@ void Watchytchi::drawWatchFace(){
     endProfileAndStart("Section 3.5: Age Flower");
 
     // Draw a very small debug clock:
-    auto Hour = currentTime.Hour;
-    if(twelve_mode) {
-        if (Hour > 12) {
-          Hour = Hour - 12;
-        } else if (Hour == 0) {
-          Hour = 12;
-        }
-    }
     //Hour
-    display.drawBitmap(183-46, 195, img_smallFontArr[Hour/10], 3, 5, color_fg); //first digit
-    display.drawBitmap(187-46, 195, img_smallFontArr[Hour%10], 3, 5, color_fg); //second digit
+    display.drawBitmap(183-46, 195, img_smallFontArr[currentTime.Hour/10], 3, 5, color_fg); //first digit
+    display.drawBitmap(187-46, 195, img_smallFontArr[currentTime.Hour%10], 3, 5, color_fg); //second digit
 
     //Minute
     display.drawBitmap(192-46, 195, img_smallFontArr[currentTime.Minute/10], 3, 5, color_fg); //first digit

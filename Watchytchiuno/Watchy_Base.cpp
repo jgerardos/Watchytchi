@@ -2,7 +2,6 @@
 #include "Watchy_Base.h"
 
 RTC_DATA_ATTR int16_t alarm_timer = -1;
-RTC_DATA_ATTR bool twelve_mode = true;
 RTC_DATA_ATTR bool sleep_mode = false;
 RTC_DATA_ATTR bool playAnim = false;
 RTC_DATA_ATTR int menuIdx;
