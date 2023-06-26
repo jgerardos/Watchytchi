@@ -116,6 +116,8 @@ bool Watchytchi::handleButtonPress() {
   if (IS_KEY_CURSOR) {
     RTC.read(currentTime);
     menuIdx = (menuIdx + 1) % 8;
+    while (menuIdx == MENUIDX_PLACEHOLDER1 || menuIdx == MENUIDX_PLACEHOLDER3 || menuIdx == MENUIDX_PLACEHOLDER6)
+      menuIdx = (menuIdx + 1) % 8;
     vibrate();
     lastAdvanceIdxMinute = currentTime.Minute;
 

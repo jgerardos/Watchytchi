@@ -44,9 +44,12 @@ extern RTC_DATA_ATTR int dayBorn;
 
 const int MENUIDX_NOTHING = -1;
 const int MENUIDX_INSPECT = 0;
+const int MENUIDX_PLACEHOLDER1 = 1;
 const int MENUIDX_FEED = 2;
+const int MENUIDX_PLACEHOLDER3 = 3;
 const int MENUIDX_CLEAN = 4;
 const int MENUIDX_LIGHT = 5;
+const int MENUIDX_PLACEHOLDER6 = 6;
 const int MENUIDX_READ = 7;
 
 class WatchyBase : public Watchy {
