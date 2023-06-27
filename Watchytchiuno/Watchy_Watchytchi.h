@@ -4,11 +4,11 @@
 enum TimeOfDay {Daytime, Dusk, LateNight};
 
 class Watchytchi : public WatchyBase{
+    using WatchyBase::WatchyBase;
     public:
-        Watchytchi();
         TimeOfDay getTimeOfDay();
         bool isElectricLit();
-        bool handleButtonPress();
+        void handleButtonPress();
         void drawWatchFace();
         void drawEatAnim();
         void drawIdleCreature();

@@ -19,24 +19,33 @@ RTC_DATA_ATTR int lastAnimateMinute = 0;
 RTC_DATA_ATTR bool isPeriodicAnim = false;
 RTC_DATA_ATTR int dayBorn = -1;
 
-WatchyBase::WatchyBase() {}
+/*void WatchyBase::init() {
+  // Serial.print("Init called!!");
+  // Serial.println();
+  DBGPrintF("P0: Init!!");
+  DBGPrintln();
 
-void WatchyBase::init() {
+
+
   wakeup_reason = esp_sleep_get_wakeup_cause(); //get wake up reason
   Wire.begin(SDA, SCL); //init i2c
+  RTC.init();
+
+  // Init the display here for all cases, if unused, it will do nothing
+  display.epd2.selectSPI(SPI, SPISettings(20000000, MSBFIRST, SPI_MODE0)); // Set SPI to 20Mhz (default is 4Mhz)
+  display.init(0, displayFullInit, 10,
+               true); // 10ms by spec, and fast pulldown reset
+  display.epd2.setBusyCallback(displayBusyCallback);
+
+  DBGPrintF("P1: About to switch");
+  DBGPrintln();
 
   auto shouldDeepSleep = true;
   switch (wakeup_reason)
   {
     case ESP_SLEEP_WAKEUP_EXT0: //RTC Alarm
-
-      // Handle classical tick
-      RTC.setAlarm(ALM1_MATCH_SECONDS, lastSecMatch, 0, 0, 0); //alarm wakes up Watchy every quarter minute
-      lastSecMatch = (lastSecMatch + 15) % 60;
-      RTC.alarm(ALARM_1); //resets the alarm flag in the RTC1
-      
-      RTC.alarm(ALARM_2); //resets the alarm flag in the RTC
-
+      DBGPrintF("PA: Woke up because of Wakeup Ext 0");
+      DBGPrintln();
       if (guiState == WATCHFACE_STATE) {
         RTC.read(currentTime);
         playAnim = true;
@@ -45,10 +54,10 @@ void WatchyBase::init() {
       break;
 
     case ESP_SLEEP_WAKEUP_EXT1: //button Press + no handling if wakeup
+      DBGPrintF("PB: Woke up because of Wakeup Ext 1");
+      DBGPrintln();
       if (sleep_mode) {
         sleep_mode = false;
-        RTC.alarmInterrupt(ALARM_2, true);
-        RTC.alarm(ALARM_2); //resets the alarm flag in the RTC
 
         RTC.read(currentTime);
         showWatchFace(false); //full update on wakeup from sleep mode
@@ -60,6 +69,8 @@ void WatchyBase::init() {
       break;
 
     default: //reset
+      DBGPrintF("PC: Default Reset");
+      DBGPrintln();
       _rtcConfig();
       _bmaConfig();
       showWatchFace(true); //full update on reset
@@ -68,6 +79,7 @@ void WatchyBase::init() {
 
   // Sometimes BMA crashes - simply try to reinitialize bma...
   if (sensor.getErrorCode() != 0) {
+    DBGPrintF("PD: BMA Crash");
     sensor.shutDown();
     sensor.wakeUp();
     sensor.softReset();
@@ -75,24 +87,16 @@ void WatchyBase::init() {
   }
 
   // if (shouldDeepSleep)
-    deepSleep();
+  DBGPrintF("P3: Entering deep sleep baby!");
+  deepSleep();
   // else
     // lightSleep();
 }
+*/
 
-void WatchyBase::lightSleep() {
-  esp_sleep_enable_ext0_wakeup(RTC_PIN, 0); //enable deep sleep wake on RTC interrupt
-  esp_sleep_enable_ext1_wakeup(EXT_INT_MASK, ESP_EXT1_WAKEUP_ANY_HIGH); //enable deep sleep wake on button press
-  esp_light_sleep_start();
-}
 
-void WatchyBase::deepSleep() {
-  esp_sleep_enable_ext0_wakeup(RTC_PIN, 0); //enable deep sleep wake on RTC interrupt
-  esp_sleep_enable_ext1_wakeup(EXT_INT_MASK, ESP_EXT1_WAKEUP_ANY_HIGH); //enable deep sleep wake on button press
-  esp_deep_sleep_start();
-}
 
-bool WatchyBase::handleButtonPress() {
+void WatchyBase::handleButtonPress() {
   // Handled in base class
 }
 
@@ -113,14 +117,6 @@ void WatchyBase::vibrate(uint8_t times, uint32_t delay_time) {
 }
 
 void WatchyBase::_rtcConfig() {
-  //https://github.com/JChristensen/DS3232RTC
-  RTC.squareWave(SQWAVE_NONE); //disable square wave output
-  //RTC.set(compileTime()); //set RTC time to compile time
-  RTC.setAlarm(ALM2_EVERY_MINUTE, 0, 0, 0, 0); //alarm wakes up Watchy every minute
-  RTC.alarmInterrupt(ALARM_2, true); //enable alarm interrupt
-  RTC.setAlarm(ALM1_MATCH_SECONDS, lastSecMatch, 0, 0, 0); //alarm wakes up Watchy every half minute
-  lastSecMatch = (lastSecMatch + 15) % 60;
-  RTC.alarmInterrupt(ALARM_1, true); //enable alarm interrupt
   RTC.read(currentTime);
 }
 
@@ -242,24 +238,41 @@ uint16_t WatchyBase::_writeRegister(uint8_t address, uint8_t reg, uint8_t *data,
 
 void WatchyBase::startProfile()
 {
+  return;
+  DBGPrintF("startprofile!");
+  DBGPrintln();
+
+  DBGPrintF("before starting a new profile, nextProfileIdx is ");
+  DBGPrint(nextProfileIdx);
+  DBGPrintln();
   profileMs[nextProfileIdx] = millis();
   nextProfileIdx++;
+  DBGPrintF("after starting a new profile, nextProfileIdx is ");
+  DBGPrint(nextProfileIdx);
+  DBGPrintln();
 }
 
-int WatchyBase::endProfile(char* label)
+void WatchyBase::endProfile(char* label)
 {
+  DBGPrintF("Before endProfile, nextProfileIdx is ");
+  DBGPrint(nextProfileIdx);
+  DBGPrintln();
+
   auto idx = --nextProfileIdx;
   auto ms = millis();
-  DBGPrint("Profile label ");
+  DBGPrintF("Profile label ");
   DBGPrint(label);
-  DBGPrint(" took ");
+  DBGPrintF(" took ");
   DBGPrint(millis() - profileMs[idx]);
-  DBGPrint(" ms");
+  DBGPrintF(" ms, ");
+  DBGPrintF("After endProfile, nextProfileIdx is ");
+  DBGPrint(nextProfileIdx);
+
   DBGPrintln();
   
 }
 
-int WatchyBase::endProfileAndStart(char* label)
+void WatchyBase::endProfileAndStart(char* label)
 {
   endProfile(label);
   startProfile();

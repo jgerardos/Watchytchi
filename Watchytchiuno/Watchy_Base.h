@@ -26,8 +26,9 @@ extern RTC_DATA_ATTR bool isPeriodicAnim;
 extern RTC_DATA_ATTR int dayBorn;
 
 // Compile out macros to increase speed of serial printing
-#define VERBOSE_LOGGING_ENABLED 1
+#define VERBOSE_LOGGING_ENABLED 0
 #define DBGPrint(content) if (VERBOSE_LOGGING_ENABLED) {Serial.print(content);}
+#define DBGPrintF(content) if (VERBOSE_LOGGING_ENABLED) {Serial.print(F(content));}
 #define DBGPrintln() if (VERBOSE_LOGGING_ENABLED) {Serial.println();}
 
 // Btn definitions
@@ -52,17 +53,15 @@ const int MENUIDX_PLACEHOLDER6 = 6;
 const int MENUIDX_READ = 7;
 
 class WatchyBase : public Watchy {
+    using Watchy::Watchy;
     public:
-        WatchyBase();
-        virtual void init();
-        virtual bool handleButtonPress();
-        virtual void lightSleep();
-        virtual void deepSleep();
+        // virtual void init();
+        virtual void handleButtonPress();
         void vibrate(uint8_t times=1, uint32_t delay_time=40);
         esp_sleep_wakeup_cause_t wakeup_reason;
         void startProfile();
-        int endProfile(char* label);
-        int endProfileAndStart(char* label);
+        void endProfile(char* label);
+        void endProfileAndStart(char* label);
         int profileMs[16];
         int nextProfileIdx;
         virtual void drawUIButton(int idx, bool quickCursorUpdate) {}

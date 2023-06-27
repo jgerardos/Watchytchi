@@ -21,8 +21,6 @@ const unsigned char *img_smallFontArr[10] = {
   img_smallFont_9
 };
 
-Watchytchi::Watchytchi(){} //constructor
-
 static float floatMap(float val, float fromLow, float fromHigh, float toLow, float toHigh, float precision = 1000.f)
 {
   return (float)map(precision * val, precision * fromLow, precision * fromHigh, precision * toLow, precision * toHigh) / precision;
@@ -50,7 +48,7 @@ bool Watchytchi::isElectricLit()
   return getTimeOfDay() == TimeOfDay::LateNight && !invertColors;
 }
 
-bool Watchytchi::handleButtonPress() {
+void Watchytchi::handleButtonPress() {
   uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
 
   if (IS_DOUBLE_TAP) {
@@ -92,9 +90,9 @@ bool Watchytchi::handleButtonPress() {
       NVS.setInt("hasPoop", 0, false);
       NVS.setInt("lastPoopHour", lastPoopHour, false);
       NVS.commit();
-      DBGPrint("Cleaned poop! New lastPoopHour =");
+      DBGPrintF("Cleaned poop! New lastPoopHour =");
       DBGPrint(lastPoopHour);
-      DBGPrint(", previously it was");
+      DBGPrintF(", previously it was");
       DBGPrint(prevHour);
       DBGPrintln();
     }
@@ -110,7 +108,7 @@ bool Watchytchi::handleButtonPress() {
     if (didPerformAction)
       vibrate(1, 50);
     showWatchFace(true);
-    return true;
+    return;
   }
 
   if (IS_KEY_CURSOR) {
@@ -134,7 +132,7 @@ bool Watchytchi::handleButtonPress() {
     showWatchFace(true);
 
     endProfile("Partial cursor update");
-    return false;
+    return;
   }
 
   if (IS_KEY_CANCEL) {
@@ -143,7 +141,7 @@ bool Watchytchi::handleButtonPress() {
     menuIdx = MENUIDX_NOTHING;
     vibrate(1, 30);
     showWatchFace(true);
-    return true;
+    return;
   }
 
   Watchy::handleButtonPress();
@@ -160,7 +158,7 @@ void Watchytchi::drawWatchFace(){
     dayBorn = NVS.getInt("dayBorn", -1);
     invertColors = 1 == NVS.getInt("invertColors", 0);
 
-    DBGPrint("Loaded hunger from NVS, value: ");
+    DBGPrintF("Loaded hunger from NVS, value: ");
     DBGPrint(hunger);
     DBGPrintln();
 
@@ -269,9 +267,9 @@ void Watchytchi::drawWatchFace(){
     if (!hasPoop && getTimeOfDay() != TimeOfDay::LateNight && (lastPoopHour == -1 || currentTime.Hour >= lastPoopHour + 4 || currentTime.Hour < lastPoopHour) 
       && lastAnimateMinute > 0)/*Hack: do this to avoid immediate poop at the start of a new game. */
     {
-      DBGPrint("Pooping! lastPoopHour = ");
+      DBGPrintF("Pooping! lastPoopHour = ");
       DBGPrint(lastPoopHour);
-      DBGPrint(", lastAnimateMinute = ");
+      DBGPrintF(", lastAnimateMinute = ");
       DBGPrint(lastAnimateMinute);
       DBGPrintln();
       hasPoop = true;
@@ -280,9 +278,9 @@ void Watchytchi::drawWatchFace(){
     }
     else
     {
-      DBGPrint("Chose not to poop! lastPoopHour = ");
+      DBGPrintF("Chose not to poop! lastPoopHour = ");
       DBGPrint(lastPoopHour);
-      DBGPrint(", lastAnimateMinute = ");
+      DBGPrintF(", lastAnimateMinute = ");
       DBGPrint(lastAnimateMinute);
       DBGPrintln();
     }
@@ -326,9 +324,9 @@ void Watchytchi::drawWatchFace(){
     NVS.setInt("invertColors", invertColors ? 1 : 0, false);
     auto didSave = NVS.commit();
 
-    DBGPrint("Tried to save hunger value ");
+    DBGPrintF("Tried to save hunger value ");
     DBGPrint(hunger);
-    DBGPrint(", success? ");
+    DBGPrintF(", success? ");
     DBGPrint(didSave);
     DBGPrintln();
 } 
@@ -407,11 +405,11 @@ void Watchytchi::drawWeather(){
   auto cloud3T = floatModulo((t + 0.7) * 2.5f, 1.f);
   float cloud3X = floatMap(cloud3T, 0.f, 1.f, 500.f, -300.f);
 
-//  DBGPrint("t (* 100) is ");
+//  DBGPrintF("t (* 100) is ");
 //  DBGPrint(t * 100.f);
-//  DBGPrint(", cloudT (* 100) is ");
+//  DBGPrintF(", cloudT (* 100) is ");
 //  DBGPrint(cloud1T * 100.f);
-//  DBGPrint(", cloudX is ");
+//  DBGPrintF(", cloudX is ");
 //  DBGPrint(cloud1X);
 //  DBGPrintln();
 
