@@ -55,7 +55,6 @@ const int MENUIDX_READ = 7;
 class WatchyBase : public Watchy {
     using Watchy::Watchy;
     public:
-        // virtual void init();
         virtual void handleButtonPress();
         void vibrate(uint8_t times=1, uint32_t delay_time=40);
         esp_sleep_wakeup_cause_t wakeup_reason;
@@ -67,9 +66,6 @@ class WatchyBase : public Watchy {
         virtual void drawUIButton(int idx, bool quickCursorUpdate) {}
     private:
         void _rtcConfig();
-        void _bmaConfig();
-        static uint16_t _readRegister(uint8_t address, uint8_t reg, uint8_t *data, uint16_t len);
-        static uint16_t _writeRegister(uint8_t address, uint8_t reg, uint8_t *data, uint16_t len);
 };
 
 #endif

@@ -409,14 +409,6 @@ void Watchytchi::drawWeather(){
   auto cloud3T = floatModulo((t + 0.7) * 2.5f, 1.f);
   float cloud3X = floatMap(cloud3T, 0.f, 1.f, 500.f, -300.f);
 
-//  DBGPrintF("t (* 100) is ");
-//  DBGPrint(t * 100.f);
-//  DBGPrintF(", cloudT (* 100) is ");
-//  DBGPrint(cloud1T * 100.f);
-//  DBGPrintF(", cloudX is ");
-//  DBGPrint(cloud1X);
-//  DBGPrintln();
-
   auto isDark = currentTime.Hour > 18 || (currentTime.Hour == 18 && currentTime.Minute >= 30);
   display.drawBitmap(cloud1X, 42, isDark ? img_DarkCloud1 : img_Cloud1, 99, 54, color_fg);
   display.drawBitmap(cloud2X, 56, isDark ? img_DarkCloud2 : img_Cloud2, 128, 62, color_fg);
