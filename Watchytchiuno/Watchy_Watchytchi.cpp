@@ -227,7 +227,7 @@ void Watchytchi::drawWatchFace(){
     // Hunger
     auto oldHunger = hunger;
     if (getTimeOfDay() != TimeOfDay::LateNight)
-      hunger -= 0.002f;
+      hunger -= 0.008f;
     if (hunger < 0.f)
       hunger = 0.f;
 
