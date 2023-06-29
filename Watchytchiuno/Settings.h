@@ -3,6 +3,7 @@
 
 
 watchySettings settings{
+    .vibrateOClock = false,
 };
 
 #endif
