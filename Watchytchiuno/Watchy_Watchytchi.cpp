@@ -150,7 +150,7 @@ void Watchytchi::handleButtonPress() {
 void Watchytchi::drawWatchFace(){
     // For some reason we need to clear alarm 1, otherwise the watch updates every single frame
     if (Watchy::RTC.rtcType == DS3231) {
-      Watchy::RTC.rtc_ds.alarm(DS3232RTC::ALARM_1);
+      Watchy::RTC.rtc_ds.clearAlarm(DS3232RTC::ALARM_1);
     }
     startProfile();
 
