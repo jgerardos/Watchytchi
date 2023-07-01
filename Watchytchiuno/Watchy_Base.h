@@ -9,6 +9,7 @@
 # include "config.h"
 #endif
 
+extern RTC_DATA_ATTR int lastUpdateTsEpoch;
 extern RTC_DATA_ATTR bool playAnim;
 extern RTC_DATA_ATTR int menuIdx;
 extern RTC_DATA_ATTR float hunger;

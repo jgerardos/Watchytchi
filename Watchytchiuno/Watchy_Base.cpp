@@ -1,6 +1,7 @@
 //Derived from peerdavid's source at: https://github.com/peerdavid/Watchy
 #include "Watchy_Base.h"
 
+RTC_DATA_ATTR int lastUpdateTsEpoch = -1;
 RTC_DATA_ATTR int16_t alarm_timer = -1;
 RTC_DATA_ATTR bool sleep_mode = false;
 RTC_DATA_ATTR bool playAnim = false;

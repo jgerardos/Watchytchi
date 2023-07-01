@@ -7,6 +7,7 @@ const unsigned char *food_stages[7] = {img_FoodBerry_Stage0, img_FoodBerry_Stage
 const unsigned char* flower_stages[6] = { img_GrowingFlower1, img_GrowingFlower2, img_GrowingFlower3, 
   img_GrowingFlower4, img_GrowingFlower5, img_GrowingFlower6};
 
+const int k_maxSecondsDeltaForUpdate = 24 * 60 * 60;
 
 const unsigned char *img_smallFontArr[10] = {
   img_smallFont_0,
@@ -161,12 +162,27 @@ void Watchytchi::drawWatchFace(){
     lastPoopHour = NVS.getInt("lastPoopHour", -1);
     dayBorn = NVS.getInt("dayBorn", -1);
     invertColors = 1 == NVS.getInt("invertColors", 0);
+    lastUpdateTsEpoch = NVS.getInt("lastTs", -1);
+    DBGPrintF("Loaded lastUpdateTsEpoch"); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
 
     DBGPrintF("Loaded hunger from NVS, value: ");
     DBGPrint(hunger);
     DBGPrintln();
 
     endProfileAndStart("Section 0: Load values");
+
+    /*# Track time changes #*/
+    time_t currentEpochTime = makeTime(currentTime);
+    if (lastUpdateTsEpoch <= 0)
+      lastUpdateTsEpoch = currentEpochTime;
+    auto timeDelta = (float)(currentEpochTime - lastUpdateTsEpoch);
+    if (timeDelta < 0.f)
+      timeDelta = 0.f;
+    if (timeDelta > k_maxSecondsDeltaForUpdate)
+      timeDelta = k_maxSecondsDeltaForUpdate;
+    
+    DBGPrintF("Current epoch time "); DBGPrint(currentEpochTime); DBGPrintF(", new epoch time "); DBGPrint(lastUpdateTsEpoch); DBGPrintF(", delta of "); DBGPrint(timeDelta);
+    DBGPrintln();
 
     /*# Background and environment: #*/
     if (getTimeOfDay() != TimeOfDay::LateNight)
@@ -326,6 +342,7 @@ void Watchytchi::drawWatchFace(){
     NVS.setInt("lastPoopHour", lastPoopHour, false);
     NVS.setInt("dayBorn", dayBorn, false);
     NVS.setInt("invertColors", invertColors ? 1 : 0, false);
+    NVS.setInt("lastTs", (int64_t)currentEpochTime);
     auto didSave = NVS.commit();
 
     DBGPrintF("Tried to save hunger value ");
