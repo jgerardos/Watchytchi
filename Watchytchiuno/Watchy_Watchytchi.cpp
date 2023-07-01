@@ -7,6 +7,7 @@ const unsigned char *food_stages[7] = {img_FoodBerry_Stage0, img_FoodBerry_Stage
 const unsigned char* flower_stages[6] = { img_GrowingFlower1, img_GrowingFlower2, img_GrowingFlower3, 
   img_GrowingFlower4, img_GrowingFlower5, img_GrowingFlower6};
 
+const float k_secDurationToFullyDepleteHunger = 4.f * 60.f * 60.f;
 const int k_maxSecondsDeltaForUpdate = 24 * 60 * 60;
 
 const unsigned char *img_smallFontArr[10] = {
@@ -242,10 +243,12 @@ void Watchytchi::drawWatchFace(){
 
     // Hunger
     auto oldHunger = hunger;
+    auto hungerDelta = timeDelta / k_secDurationToFullyDepleteHunger;
     if (getTimeOfDay() != TimeOfDay::LateNight)
-      hunger -= 0.008f;
+      hunger -= hungerDelta;
     if (hunger < 0.f)
       hunger = 0.f;
+    DBGPrintF("Hunger delta = "); DBGPrint(hungerDelta); DBGPrintF(", new hunger = "); DBGPrint(hunger); DBGPrintln();
 
     int hungerNumIdx = (int)(hunger * 10.f);
     if (hungerNumIdx > 9)
