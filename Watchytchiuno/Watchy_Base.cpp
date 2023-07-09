@@ -19,6 +19,8 @@ RTC_DATA_ATTR int lastSecMatch = 0;
 RTC_DATA_ATTR int lastAnimateMinute = 0;
 RTC_DATA_ATTR bool isPeriodicAnim = false;
 RTC_DATA_ATTR int dayBorn = -1;
+RTC_DATA_ATTR int nextAlertTs = -1;
+RTC_DATA_ATTR bool isExecutingAlertInteraction = false;
 
 
 void WatchyBase::handleButtonPress() {

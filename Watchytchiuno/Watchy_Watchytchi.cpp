@@ -9,6 +9,8 @@ const unsigned char* flower_stages[6] = { img_GrowingFlower1, img_GrowingFlower2
 
 const float k_secDurationToFullyDepleteHunger = 4.f * 60.f * 60.f;
 const int k_maxSecondsDeltaForUpdate = 24 * 60 * 60;
+const int k_alertInterval = 3 * 60 * 60;
+const int k_alertExpirationWindow = 30 * 60;
 
 const unsigned char *img_smallFontArr[10] = {
   img_smallFont_0,
@@ -35,11 +37,31 @@ static float floatModulo(float val, float range)
   return val;
 }
 
+/// @brief Schedule the next "alert" to take place in the future, skipping nighttime alerts
+void Watchytchi::scheduleNextAlert()
+{
+  tmElements_t alertTsElements;
+  time_t currentEpochTime = makeTime(currentTime);
+  nextAlertTs = currentEpochTime;
+
+  do
+  {
+    nextAlertTs += k_alertInterval;
+    // Make sure we don't set an alert during the night:
+    breakTime(nextAlertTs, alertTsElements);
+  } while (getTimeOfDay(alertTsElements) == TimeOfDay::LateNight);
+}
+
 TimeOfDay Watchytchi::getTimeOfDay()
 {
-  if (currentTime.Hour >= 21 || currentTime.Hour <= 6)
+  return getTimeOfDay(currentTime);
+}
+
+TimeOfDay Watchytchi::getTimeOfDay(const tmElements_t &tm)
+{
+  if (tm.Hour >= 21 || tm.Hour <= 6)
     return TimeOfDay::LateNight;
-  else if (currentTime.Hour > 18 || (currentTime.Hour == 18 && currentTime.Minute >= 30))
+  else if (tm.Hour > 18 || (tm.Hour == 18 && tm.Minute >= 30))
     return TimeOfDay::Dusk;
   else
     return TimeOfDay::Daytime;
@@ -48,6 +70,13 @@ TimeOfDay Watchytchi::getTimeOfDay()
 bool Watchytchi::isElectricLit()
 {
   return getTimeOfDay() == TimeOfDay::LateNight && !invertColors;
+}
+
+bool Watchytchi::hasActiveAlert()
+{
+  time_t currentEpochTime = makeTime(currentTime);
+  // The alert is active if it is scheduled in the past, but not so far in the past that we've missed it entirely
+  return (nextAlertTs > 0 && currentEpochTime > nextAlertTs && currentEpochTime < nextAlertTs + k_alertExpirationWindow);
 }
 
 void Watchytchi::handleButtonPress() {
@@ -80,6 +109,13 @@ void Watchytchi::handleButtonPress() {
     {
       isEating = true;
       didPerformAction = true;
+    }
+    // React to alert
+    if (menuIdx == MENUIDX_ALERT && hasActiveAlert())
+    {
+      isExecutingAlertInteraction = true;
+      didPerformAction = false;
+      scheduleNextAlert();
     }
     // Clean Poop
     if (hasPoop && menuIdx == MENUIDX_CLEAN)
@@ -116,7 +152,8 @@ void Watchytchi::handleButtonPress() {
   if (IS_KEY_CURSOR) {
     RTC.read(currentTime);
     menuIdx = (menuIdx + 1) % 8;
-    while (menuIdx == MENUIDX_PLACEHOLDER1 || menuIdx == MENUIDX_PLACEHOLDER3 || menuIdx == MENUIDX_PLACEHOLDER6)
+    // Skip icons for not-yet-implemented functions, and skip the alert icon if there is no active alert
+    while (menuIdx == MENUIDX_PLACEHOLDER1 || menuIdx == MENUIDX_PLACEHOLDER6 || (!hasActiveAlert() && menuIdx == MENUIDX_ALERT))
       menuIdx = (menuIdx + 1) % 8;
     vibrate();
     lastAdvanceIdxMinute = currentTime.Minute;
@@ -164,6 +201,7 @@ void Watchytchi::drawWatchFace(){
     dayBorn = NVS.getInt("dayBorn", -1);
     invertColors = 1 == NVS.getInt("invertColors", 0);
     lastUpdateTsEpoch = NVS.getInt("lastTs", -1);
+    nextAlertTs = NVS.getInt("nextAlertTs", -1);
     DBGPrintF("Loaded lastUpdateTsEpoch"); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
 
     DBGPrintF("Loaded hunger from NVS, value: ");
@@ -190,6 +228,32 @@ void Watchytchi::drawWatchFace(){
       invertColors = false;
     auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
     auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
+
+    auto beforeAlertTs = nextAlertTs;
+    /*# Interaction Alert #*/
+    // Schedule a new alert if we don't have one scheduled, if our current alert is expired, or if it is too far in the past (TODO: are we correctly handling the last case?)
+    if (nextAlertTs < 0 || currentEpochTime - nextAlertTs >= k_alertExpirationWindow || currentEpochTime >= nextAlertTs + k_alertExpirationWindow * 2)
+      scheduleNextAlert();
+    // If the owner pressed the alert button while it was active, execute an animation
+    if (isExecutingAlertInteraction)
+    {
+      scheduleNextAlert();
+      isExecutingAlertInteraction = false;
+      display.fillScreen(color_bg);
+      // Draw top row of menu buttons (bottom is covered up by critter)
+      for (auto i = 0; i < 4; i++)
+        drawUIButton(i, false);
+
+      // Draw the two close up frames back and forth
+      const int numCloseUpFrames = 10;
+      for (auto i = 0; i < numCloseUpFrames; i++)
+      {
+        display.drawBitmap(0, 0, i % 2 == 0 ? img_CloseUp_Happy1 : img_CloseUp_Happy2, 200, 200, color_fg);
+        display.display(true);
+        display.fillRect(0, 32, 200, 200 - 32, color_bg);
+      }
+    }
+    DBGPrintF("Next Alert ts was "); DBGPrint(beforeAlertTs); DBGPrintF(", now it is "); DBGPrint(nextAlertTs); DBGPrintln();
     
     //BG
     display.fillScreen(color_bg);
@@ -241,7 +305,7 @@ void Watchytchi::drawWatchFace(){
     display.drawBitmap(196-46, 195, img_smallFontArr[currentTime.Minute%10], 3, 5, color_fg); //second digit
 
 
-    // Hunger
+    /*# Hunger #*/
     auto oldHunger = hunger;
     auto hungerDelta = timeDelta / k_secDurationToFullyDepleteHunger;
     if (getTimeOfDay() != TimeOfDay::LateNight)
@@ -346,6 +410,7 @@ void Watchytchi::drawWatchFace(){
     NVS.setInt("dayBorn", dayBorn, false);
     NVS.setInt("invertColors", invertColors ? 1 : 0, false);
     NVS.setInt("lastTs", (int64_t)currentEpochTime);
+    NVS.setInt("nextAlertTs", nextAlertTs);
     auto didSave = NVS.commit();
 
     DBGPrintF("Tried to save hunger value ");
@@ -384,10 +449,22 @@ void Watchytchi::drawUIButton(int idx, bool quickCursorUpdate)
     if (quickCursorUpdate)
       display.fillRect(xPos, yPos, 32, 32, isElectricLit() ? color_fg : color_bg);
 
+    auto selected = idx == menuIdx;
     if (idx == MENUIDX_INSPECT)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Status_Active : img_MenuIcon_Status_Inactive, 32, 32, iconColor);
     else if (idx == MENUIDX_FEED)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Feed_Active : img_MenuIcon_Feed_Inactive, 32, 32, iconColor);
+    else if (idx == MENUIDX_ALERT)
+    {
+      // The alert menu icon draws differently depending on whether there is an active alert
+      auto hasAlert = hasActiveAlert();
+      if (hasAlert && selected)
+        display.drawBitmap(xPos, yPos, img_MenuIcon_Alert_Active_HasNotification, 32, 32, iconColor);
+      else if (hasAlert)
+        display.drawBitmap(xPos, yPos, img_MenuIcon_Alert_Inactive_HasNotification, 32, 32, iconColor);
+      else 
+        display.drawBitmap(xPos, yPos, img_MenuIcon_Alert_Inactive, 32, 32, iconColor);
+    }
     else if (idx == MENUIDX_CLEAN)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Clean_Active : img_MenuIcon_Clean_Inactive, 32, 32, iconColor);
     else if (idx == MENUIDX_LIGHT)
