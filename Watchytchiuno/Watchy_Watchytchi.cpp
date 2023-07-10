@@ -231,8 +231,8 @@ void Watchytchi::drawWatchFace(){
 
     auto beforeAlertTs = nextAlertTs;
     /*# Interaction Alert #*/
-    // Schedule a new alert if we don't have one scheduled, if our current alert is expired, or if it is too far in the past (TODO: are we correctly handling the last case?)
-    if (nextAlertTs < 0 || currentEpochTime - nextAlertTs >= k_alertExpirationWindow || currentEpochTime >= nextAlertTs + k_alertExpirationWindow * 2)
+    // Schedule a new alert if we don't have one scheduled, if our current alert is expired, or if it is too far in the future due to a time change (TODO: are we correctly handling the last case?)
+    if (nextAlertTs < 0 || currentEpochTime - nextAlertTs >= k_alertExpirationWindow  || nextAlertTs >= currentEpochTime + k_alertInterval * 2)
       scheduleNextAlert();
     // If the owner pressed the alert button while it was active, execute an animation
     if (isExecutingAlertInteraction)
