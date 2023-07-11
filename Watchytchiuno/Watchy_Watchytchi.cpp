@@ -155,6 +155,7 @@ void Watchytchi::handleButtonPress() {
         didPerformAction = true;
         auto prevHour = lastPoopHour;
         lastPoopHour = currentTime.Hour; // Cleaning resets last poop hour in order to prevent immediate poop once again
+        lastAnimateMinute = -99; // Do a little dance afterwards by resetting the last animate minute
         NVS.begin();
         NVS.setInt("hasPoop", 0, false);
         NVS.setInt("lastPoopHour", lastPoopHour, false);
