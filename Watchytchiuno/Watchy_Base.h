@@ -9,6 +9,8 @@
 # include "config.h"
 #endif
 
+enum CreatureSpecies {Hog, Snake};
+
 extern RTC_DATA_ATTR int lastUpdateTsEpoch;
 extern RTC_DATA_ATTR bool playAnim;
 extern RTC_DATA_ATTR int menuIdx;
@@ -27,6 +29,7 @@ extern RTC_DATA_ATTR bool isPeriodicAnim;
 extern RTC_DATA_ATTR int dayBorn;
 extern RTC_DATA_ATTR int nextAlertTs;
 extern RTC_DATA_ATTR bool isExecutingAlertInteraction;
+extern RTC_DATA_ATTR CreatureSpecies species;
 
 // Compile out macros to increase speed of serial printing
 #define VERBOSE_LOGGING_ENABLED 0

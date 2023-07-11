@@ -515,7 +515,10 @@ void Watchytchi::drawWeather(){
 void Watchytchi::drawIdleCreature(){
   auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
   auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
-  
+
+  /*# DaisyHog #*/
+  if (species == CreatureSpecies::Hog)
+  {
     // Late night with lights on: Sleepy pose
     if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
       display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Sleepy1 : img_DaisyHog_Sleepy2, 72, 55, color_fg);
@@ -550,7 +553,41 @@ void Watchytchi::drawIdleCreature(){
     // Default: Standing idle
     else
       display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Idle1 : img_DaisyHog_Idle2, 72, 55, color_fg);
-    idleAnimIdx = (idleAnimIdx + 1) % 2;
+  }
+  /*# MugSnake #*/
+  else if (species == CreatureSpecies::Snake)
+  {
+    // Late night with lights on: Sleepy pose
+    if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
+    {
+      display.drawBitmap(100 - 36, 97, img_MugSnake_Hungry, 72, 72, color_fg); // TODO: bespoke mugsnake animation for 
+    }
+    // Late night lights off: Asleep pose
+    else if (getTimeOfDay() == TimeOfDay::LateNight && invertColors)
+      display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_Sleeping1 : img_MugSnake_Sleeping2, 72, 72, color_fg);
+    // Extreme hunger: Starving pose
+    else if (hunger <= 0.1f)
+    {
+      display.drawBitmap(100 - 36, 97, img_MugSnake_VeryHungry, 72, 72, color_fg);
+      display.drawBitmap(100 - 36 + 25, 97, idleAnimIdx % 2 == 0 ? img_Emote_Hungry1 : img_Emote_Hungry2, 28, 19, color_fg);
+    }
+    // Medium hunger: Hungry pose
+    else if (hunger <= 0.45f)
+    {
+      display.drawBitmap(100 - 36, 97, img_MugSnake_Hungry, 72, 72, color_fg);
+    }
+    // Every couple of hours: special idle
+    else if (currentTime.Hour % 2 == 0 && currentTime.Minute >= 20 && currentTime.Minute <= 40)
+    {
+      display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_TippedOverIdle1 : img_MugSnake_TippedOverIdle2, 72, 72, color_fg);
+      display.drawBitmap(120, 130, idleAnimIdx % 2 == 0 ? img_Emote_Music1 : img_Emote_Music2, 28, 19, color_fg);
+    }
+    // TODO: Periodic animation
+    // Default: Standing idle
+    else
+      display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_Idle1 : img_MugSnake_Idle2, 72, 72, color_fg);
+  }
+  idleAnimIdx = (idleAnimIdx + 1) % 2;
 }
 
 void Watchytchi::drawEatAnim(){    
@@ -560,7 +597,10 @@ void Watchytchi::drawEatAnim(){
      int numFrames = 56;
      for (int i = 0; i < numFrames; i++)
      {
-       display.drawBitmap(100 - 36, 110, i % 2 == 0 ? img_DaisyHog_Eat1 : img_DaisyHog_Eat2, 72, 55, color_fg);
+      if (species == CreatureSpecies::Hog)
+        display.drawBitmap(100 - 36, 110, i % 2 == 0 ? img_DaisyHog_Eat1 : img_DaisyHog_Eat2, 72, 55, color_fg);
+      else if (species == CreatureSpecies::Snake)
+        display.drawBitmap(100 - 36, 97, i % 2 == 0 ? img_MugSnake_Eating1 : img_MugSnake_Eating2, 72, 72, color_fg);
        display.drawBitmap(144 - 18, 126, food_stages[i / 8], 36, 36, color_fg);
        display.display(true);
        clearCreatureBackground();
@@ -570,7 +610,7 @@ void Watchytchi::drawEatAnim(){
 
      //Hide Ghosting
      for(uint8_t i=0; i<3; i++){
-       display.fillRect(100 - 36, 110, 120, 55, color_bg);
+       display.fillRect(100 - 36, 97, 120, 72, color_bg);
        drawIdleCreature();
        display.display(true);
      }
@@ -579,6 +619,5 @@ void Watchytchi::drawEatAnim(){
 void Watchytchi::clearCreatureBackground()
 {
   auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
-  auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
-  display.fillRect(100 - 36, 110, 156 - (100 - 36), 55, color_bg);
+  display.fillRect(100 - 36, 97, 156 - (100 - 36), 72, color_bg);
 }
