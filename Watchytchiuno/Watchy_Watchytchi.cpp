@@ -172,6 +172,13 @@ void Watchytchi::handleButtonPress() {
         invertColors = !invertColors;
         NVS.begin();
         NVS.setInt("invertColors", invertColors ? 1 : 0, true);
+        NVS.commit();
+        didPerformAction = true;
+      }
+      // HACK: for debugging purposes, the not-yet-implemented read icon will toggle the species
+      if (menuIdx == MENUIDX_READ)
+      {
+        species = species == CreatureSpecies::Hog ? CreatureSpecies::Snake : CreatureSpecies::Hog;
         didPerformAction = true;
       }
       // Vibrate if this selection resulted in an action
