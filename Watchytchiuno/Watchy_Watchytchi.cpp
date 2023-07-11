@@ -97,14 +97,20 @@ void Watchytchi::handleButtonPress() {
   {
     // In stroking mode, the left (cursor) and right (select) button moves the hand back and forth
     if (IS_KEY_SELECT) {
-      isStrokingLeftSide = false;
-      vibrate(1, 30);
+      if (isStrokingLeftSide)
+      {
+        isStrokingLeftSide = false;
+        vibrate(1, 30);
+      }
       showWatchFace(true);
       return;
     }
     if (IS_KEY_CURSOR) {
-      isStrokingLeftSide = true;
-      vibrate(1, 30);
+      if (!isStrokingLeftSide)
+      {
+        isStrokingLeftSide = true;
+        vibrate(1, 30);
+      }
       showWatchFace(true);
       return;
     }
