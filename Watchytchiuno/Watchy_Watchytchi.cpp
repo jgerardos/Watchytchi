@@ -91,97 +91,128 @@ void Watchytchi::handleButtonPress() {
     // To be defined in the watch face what we want exactly
     // to do. Therefore, no return;
   }
+  RTC.read(currentTime);
 
-  // Process selection
-  if (IS_KEY_SELECT) {
-    auto didPerformAction = false;
-    RTC.read(currentTime);
-    // Open up the menu UI
-    if (menuIdx == MENUIDX_INSPECT)
-    {
-      hasStatusDisplay = true;
-      didPerformAction = true;
+  if (isStrokingMode)
+  {
+    // In stroking mode, the left (cursor) and right (select) button moves the hand back and forth
+    if (IS_KEY_SELECT) {
+      isStrokingLeftSide = false;
+      vibrate(1, 30);
+      showWatchFace(true);
+      return;
     }
-    else
-      hasStatusDisplay = false;
-    // Start feeding
-    if (menuIdx == MENUIDX_FEED)
-    {
-      isEating = true;
-      didPerformAction = true;
+    if (IS_KEY_CURSOR) {
+      isStrokingLeftSide = true;
+      vibrate(1, 30);
+      showWatchFace(true);
+      return;
     }
-    // React to alert
-    if (menuIdx == MENUIDX_ALERT && hasActiveAlert())
-    {
-      isExecutingAlertInteraction = true;
-      didPerformAction = false;
-      scheduleNextAlert();
-    }
-    // Clean Poop
-    if (hasPoop && menuIdx == MENUIDX_CLEAN)
-    {
-      hasPoop = false;
-      didPerformAction = true;
-      auto prevHour = lastPoopHour;
-      lastPoopHour = currentTime.Hour; // Cleaning resets last poop hour in order to prevent immediate poop once again
-      NVS.begin();
-      NVS.setInt("hasPoop", 0, false);
-      NVS.setInt("lastPoopHour", lastPoopHour, false);
-      NVS.commit();
-      DBGPrintF("Cleaned poop! New lastPoopHour =");
-      DBGPrint(lastPoopHour);
-      DBGPrintF(", previously it was");
-      DBGPrint(prevHour);
-      DBGPrintln();
-    }
-    // Toggle Light
-    if (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6))
-    {
-      invertColors = !invertColors;
-      NVS.begin();
-      NVS.setInt("invertColors", invertColors ? 1 : 0, true);
-      didPerformAction = true;
-    }
-    // Vibrate if this selection resulted in an action
-    if (didPerformAction)
+    if (IS_KEY_CANCEL) {
+      isStrokingMode = false;
       vibrate(1, 50);
-    showWatchFace(true);
-    return;
+      showWatchFace(true);
+      return;
+    }
   }
+  // Default button behaviors
+  else
+  {
+    // Process selection
+    if (IS_KEY_SELECT) {
+      auto didPerformAction = false;
+      // Open up the menu UI
+      if (menuIdx == MENUIDX_INSPECT)
+      {
+        hasStatusDisplay = true;
+        didPerformAction = true;
+      }
+      else
+        hasStatusDisplay = false;
+      if (menuIdx == MENUIDX_STROKE)
+      {
+        isStrokingMode = true;
+        DBGPrintF("Entering stroke mode!");
+        DBGPrintln();
+      }      
+      // Start feeding
+      if (menuIdx == MENUIDX_FEED)
+      {
+        isEating = true;
+        didPerformAction = true;
+      }
+      // React to alert
+      if (menuIdx == MENUIDX_ALERT && hasActiveAlert())
+      {
+        isExecutingAlertInteraction = true;
+        didPerformAction = false;
+        scheduleNextAlert();
+      }
+      // Clean Poop
+      if (hasPoop && menuIdx == MENUIDX_CLEAN)
+      {
+        hasPoop = false;
+        didPerformAction = true;
+        auto prevHour = lastPoopHour;
+        lastPoopHour = currentTime.Hour; // Cleaning resets last poop hour in order to prevent immediate poop once again
+        NVS.begin();
+        NVS.setInt("hasPoop", 0, false);
+        NVS.setInt("lastPoopHour", lastPoopHour, false);
+        NVS.commit();
+        DBGPrintF("Cleaned poop! New lastPoopHour =");
+        DBGPrint(lastPoopHour);
+        DBGPrintF(", previously it was");
+        DBGPrint(prevHour);
+        DBGPrintln();
+      }
+      // Toggle Light
+      if (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6))
+      {
+        invertColors = !invertColors;
+        NVS.begin();
+        NVS.setInt("invertColors", invertColors ? 1 : 0, true);
+        didPerformAction = true;
+      }
+      // Vibrate if this selection resulted in an action
+      if (didPerformAction)
+        vibrate(1, 50);
+      showWatchFace(true);
+      return;
+    }
 
-  if (IS_KEY_CURSOR) {
-    RTC.read(currentTime);
-    menuIdx = (menuIdx + 1) % 8;
-    // Skip icons for not-yet-implemented functions, and skip the alert icon if there is no active alert
-    while (menuIdx == MENUIDX_PLACEHOLDER1 || menuIdx == MENUIDX_PLACEHOLDER6 || (!hasActiveAlert() && menuIdx == MENUIDX_ALERT))
+    if (IS_KEY_CURSOR) {
       menuIdx = (menuIdx + 1) % 8;
-    vibrate();
-    lastAdvanceIdxMinute = currentTime.Minute;
+      // Skip icons for not-yet-implemented functions, and skip the alert icon if there is no active alert
+      while (menuIdx == MENUIDX_PLACEHOLDER6 || (!hasActiveAlert() && menuIdx == MENUIDX_ALERT))
+        menuIdx = (menuIdx + 1) % 8;
+      vibrate();
+      lastAdvanceIdxMinute = currentTime.Minute;
 
-    // Partial redraw
-    startProfile();
-//    display.init(0, false); //_initial_refresh to false to prevent full update on init
-//    display.setFullWindow();
-//    showWatchFace(true);
-//    //drawUIButton(menuIdx-1, true);
-//    //drawUIButton(menuIdx, true);
-//    //display.display(true); //partial refresh
-//    // display.hibernate();
-//    guiState = WATCHFACE_STATE;
-    showWatchFace(true);
+      // Partial redraw
+      startProfile();
+  //    display.init(0, false); //_initial_refresh to false to prevent full update on init
+  //    display.setFullWindow();
+  //    showWatchFace(true);
+  //    //drawUIButton(menuIdx-1, true);
+  //    //drawUIButton(menuIdx, true);
+  //    //display.display(true); //partial refresh
+  //    // display.hibernate();
+  //    guiState = WATCHFACE_STATE;
+      showWatchFace(true);
 
-    endProfile("Partial cursor update");
-    return;
+      endProfile("Partial cursor update");
+      return;
+    }
+
+    if (IS_KEY_CANCEL) {
+      vibrate();
+      menuIdx = MENUIDX_NOTHING;
+      vibrate(1, 30);
+      showWatchFace(true);
+      return;
+    }
   }
 
-  if (IS_KEY_CANCEL) {
-    RTC.read(currentTime);
-    vibrate();
-    menuIdx = MENUIDX_NOTHING;
-    vibrate(1, 30);
-    showWatchFace(true);
-    return;
-  }
 
   Watchy::handleButtonPress();
 }
@@ -202,7 +233,7 @@ void Watchytchi::drawWatchFace(){
     invertColors = 1 == NVS.getInt("invertColors", 0);
     lastUpdateTsEpoch = NVS.getInt("lastTs", -1);
     nextAlertTs = NVS.getInt("nextAlertTs", -1);
-    DBGPrintF("Loaded lastUpdateTsEpoch"); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
+    DBGPrintF("Loaded lastUpdateTsEpoch "); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
 
     DBGPrintF("Loaded hunger from NVS, value: ");
     DBGPrint(hunger);
@@ -454,6 +485,8 @@ void Watchytchi::drawUIButton(int idx, bool quickCursorUpdate)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Status_Active : img_MenuIcon_Status_Inactive, 32, 32, iconColor);
     else if (idx == MENUIDX_FEED)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Feed_Active : img_MenuIcon_Feed_Inactive, 32, 32, iconColor);
+    else if (idx == MENUIDX_STROKE)
+      display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Stroke_Active : img_MenuIcon_Stroke_Inactive, 32, 32, iconColor);
     else if (idx == MENUIDX_ALERT)
     {
       // The alert menu icon draws differently depending on whether there is an active alert
@@ -519,8 +552,11 @@ void Watchytchi::drawIdleCreature(){
   /*# DaisyHog #*/
   if (species == CreatureSpecies::Hog)
   {
+    // Stroking mode: do stroking animation
+    if (isStrokingMode)
+      display.drawBitmap(100 - 36, 110, isStrokingLeftSide ? img_DaisyHog_BeingStroked1 : img_DaisyHog_BeingStroked2, 72, 55, color_fg);
     // Late night with lights on: Sleepy pose
-    if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
+    else if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
       display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Sleepy1 : img_DaisyHog_Sleepy2, 72, 55, color_fg);
     // Late night lights off: Asleep pose
     else if (getTimeOfDay() == TimeOfDay::LateNight && invertColors)
@@ -557,8 +593,10 @@ void Watchytchi::drawIdleCreature(){
   /*# MugSnake #*/
   else if (species == CreatureSpecies::Snake)
   {
+    if (isStrokingMode)
+      display.drawBitmap(100 - 36, 97, isStrokingLeftSide ? img_MugSnake_BeingPet1 : img_MugSnake_BeingPet2, 72, 72, color_fg);
     // Late night with lights on: Sleepy pose
-    if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
+    else if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
     {
       display.drawBitmap(100 - 36, 97, img_MugSnake_Hungry, 72, 72, color_fg); // TODO: bespoke mugsnake animation for 
     }

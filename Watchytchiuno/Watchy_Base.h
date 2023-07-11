@@ -29,6 +29,8 @@ extern RTC_DATA_ATTR bool isPeriodicAnim;
 extern RTC_DATA_ATTR int dayBorn;
 extern RTC_DATA_ATTR int nextAlertTs;
 extern RTC_DATA_ATTR bool isExecutingAlertInteraction;
+extern RTC_DATA_ATTR bool isStrokingMode;
+extern RTC_DATA_ATTR bool isStrokingLeftSide;
 extern RTC_DATA_ATTR CreatureSpecies species;
 
 // Compile out macros to increase speed of serial printing
@@ -50,7 +52,7 @@ extern RTC_DATA_ATTR CreatureSpecies species;
 
 const int MENUIDX_NOTHING = -1;
 const int MENUIDX_INSPECT = 0;
-const int MENUIDX_PLACEHOLDER1 = 1;
+const int MENUIDX_STROKE = 1;
 const int MENUIDX_FEED = 2;
 const int MENUIDX_ALERT = 3;
 const int MENUIDX_CLEAN = 4;
