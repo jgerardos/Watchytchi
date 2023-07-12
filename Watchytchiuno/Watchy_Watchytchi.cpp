@@ -138,8 +138,7 @@ void Watchytchi::handleButtonPress() {
       if (menuIdx == MENUIDX_STROKE)
       {
         isStrokingMode = true;
-        DBGPrintF("Entering stroke mode!");
-        DBGPrintln();
+        DBGPrintF("Entering stroke mode!"); DBGPrintln();
       }      
       // Start feeding
       if (menuIdx == MENUIDX_FEED)
@@ -166,11 +165,7 @@ void Watchytchi::handleButtonPress() {
         NVS.setInt("hasPoop", 0, false);
         NVS.setInt("lastPoopHour", lastPoopHour, false);
         NVS.commit();
-        DBGPrintF("Cleaned poop! New lastPoopHour =");
-        DBGPrint(lastPoopHour);
-        DBGPrintF(", previously it was");
-        DBGPrint(prevHour);
-        DBGPrintln();
+        DBGPrintF("Cleaned poop! New lastPoopHour ="); DBGPrint(lastPoopHour); DBGPrintF(", previously it was"); DBGPrint(prevHour); DBGPrintln();
       }
       // Toggle Light
       if (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6))
@@ -249,10 +244,6 @@ void Watchytchi::drawWatchFace(){
     nextAlertTs = NVS.getInt("nextAlertTs", -1);
     DBGPrintF("Loaded lastUpdateTsEpoch "); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
 
-    DBGPrintF("Loaded hunger from NVS, value: ");
-    DBGPrint(hunger);
-    DBGPrintln();
-
     endProfileAndStart("Section 0: Load values");
 
     /*# Track time changes #*/
@@ -265,8 +256,7 @@ void Watchytchi::drawWatchFace(){
     if (timeDelta > k_maxSecondsDeltaForUpdate)
       timeDelta = k_maxSecondsDeltaForUpdate;
     
-    DBGPrintF("Current epoch time "); DBGPrint(currentEpochTime); DBGPrintF(", new epoch time "); DBGPrint(lastUpdateTsEpoch); DBGPrintF(", delta of "); DBGPrint(timeDelta);
-    DBGPrintln();
+    DBGPrintF("Current epoch time "); DBGPrint(currentEpochTime); DBGPrintF(", new epoch time "); DBGPrint(lastUpdateTsEpoch); DBGPrintF(", delta of "); DBGPrint(timeDelta); DBGPrintln();
 
     /*# Background and environment: #*/
     if (getTimeOfDay() != TimeOfDay::LateNight)
@@ -399,22 +389,14 @@ void Watchytchi::drawWatchFace(){
     if (!hasPoop && getTimeOfDay() != TimeOfDay::LateNight && (lastPoopHour == -1 || currentTime.Hour >= lastPoopHour + 4 || currentTime.Hour < lastPoopHour) 
       && lastAnimateMinute > 0)/*Hack: do this to avoid immediate poop at the start of a new game. */
     {
-      DBGPrintF("Pooping! lastPoopHour = ");
-      DBGPrint(lastPoopHour);
-      DBGPrintF(", lastAnimateMinute = ");
-      DBGPrint(lastAnimateMinute);
-      DBGPrintln();
+      DBGPrintF("Pooping! lastPoopHour = "); DBGPrint(lastPoopHour); DBGPrintF(", lastAnimateMinute = "); DBGPrint(lastAnimateMinute); DBGPrintln();
       hasPoop = true;
       lastPoopHour = currentTime.Hour;
       vibrate(3, 50);
     }
     else
     {
-      DBGPrintF("Chose not to poop! lastPoopHour = ");
-      DBGPrint(lastPoopHour);
-      DBGPrintF(", lastAnimateMinute = ");
-      DBGPrint(lastAnimateMinute);
-      DBGPrintln();
+      DBGPrintF("Chose not to poop! lastPoopHour = "); DBGPrint(lastPoopHour); DBGPrintF(", lastAnimateMinute = "); DBGPrint(lastAnimateMinute); DBGPrintln();
     }
 
     if (hasPoop)    
@@ -458,11 +440,7 @@ void Watchytchi::drawWatchFace(){
     NVS.setInt("nextAlertTs", nextAlertTs);
     auto didSave = NVS.commit();
 
-    DBGPrintF("Tried to save hunger value ");
-    DBGPrint(hunger);
-    DBGPrintF(", success? ");
-    DBGPrint(didSave);
-    DBGPrintln();
+    DBGPrintF("Save success? "); DBGPrint(didSave); DBGPrintln();
 } 
 
 void Watchytchi::drawUIButton(int idx, bool quickCursorUpdate)

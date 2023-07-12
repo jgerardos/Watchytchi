@@ -52,36 +52,23 @@ void WatchyBase::_rtcConfig() {
 
 void WatchyBase::startProfile()
 {
-  return;
-  DBGPrintF("startprofile!");
-  DBGPrintln();
+  return; // TODO: remove this early out, this was a temporary debug measure that was not supposed to be pushed
+  DBGPrintF("startprofile!"); DBGPrintln();
 
-  DBGPrintF("before starting a new profile, nextProfileIdx is ");
-  DBGPrint(nextProfileIdx);
-  DBGPrintln();
+  DBGPrintF("before starting a new profile, nextProfileIdx is "); DBGPrint(nextProfileIdx); DBGPrintln();
   profileMs[nextProfileIdx] = millis();
   nextProfileIdx++;
-  DBGPrintF("after starting a new profile, nextProfileIdx is ");
-  DBGPrint(nextProfileIdx);
-  DBGPrintln();
+  DBGPrintF("after starting a new profile, nextProfileIdx is "); DBGPrint(nextProfileIdx); DBGPrintln();
 }
 
 void WatchyBase::endProfile(char* label)
 {
-  DBGPrintF("Before endProfile, nextProfileIdx is ");
-  DBGPrint(nextProfileIdx);
-  DBGPrintln();
+  DBGPrintF("Before endProfile, nextProfileIdx is "); DBGPrint(nextProfileIdx); DBGPrintln();
 
   auto idx = --nextProfileIdx;
   auto ms = millis();
-  DBGPrintF("Profile label ");
-  DBGPrint(label);
-  DBGPrintF(" took ");
-  DBGPrint(millis() - profileMs[idx]);
-  DBGPrintF(" ms, ");
-  DBGPrintF("After endProfile, nextProfileIdx is ");
-  DBGPrint(nextProfileIdx);
-  DBGPrintln();
+  DBGPrintF("Profile label "); DBGPrint(label); DBGPrintF(" took "); DBGPrint(millis() - profileMs[idx]); DBGPrintF(" ms, "); 
+  DBGPrintF("After endProfile, nextProfileIdx is "); DBGPrint(nextProfileIdx); DBGPrintln();
 }
 
 void WatchyBase::endProfileAndStart(char* label)
