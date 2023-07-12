@@ -96,24 +96,32 @@ void Watchytchi::handleButtonPress() {
   if (isStrokingMode)
   {
     // In stroking mode, the left (cursor) and right (select) button moves the hand back and forth
-    if (IS_KEY_SELECT) {
-      if (isStrokingLeftSide)
-      {
-        isStrokingLeftSide = false;
-        vibrate(1, 30);
-      }
-      showWatchFace(true);
-      return;
+    auto didPet = false;
+    if (IS_KEY_SELECT && isStrokingLeftSide) 
+    {
+      isStrokingLeftSide = false;
+      didPet = true;
     }
-    if (IS_KEY_CURSOR) {
-      if (!isStrokingLeftSide)
-      {
+
+    if (IS_KEY_CURSOR && !isStrokingLeftSide) 
+    {
         isStrokingLeftSide = true;
+        didPet = true;
+    }
+
+    if (IS_KEY_SELECT || IS_KEY_CURSOR)
+    {
+      if (didPet)
+      {
+        happyPercent += 0.025f;
+        NVS.begin();
+        NVS.setFloat(nvsKey_happyPercent, happyPercent, true);
         vibrate(1, 30);
       }
       showWatchFace(true);
       return;
     }
+
     if (IS_KEY_CANCEL) {
       isStrokingMode = false;
       vibrate(1, 50);
@@ -342,6 +350,7 @@ void Watchytchi::drawWatchFace(){
       hunger = 0.f;
     DBGPrintF("Hunger delta = "); DBGPrint(hungerDelta); DBGPrintF(", new hunger = "); DBGPrint(hunger); DBGPrintln();
 
+    /*# Status Display #*/
     int hungerNumIdx = (int)(hunger * 10.f);
     if (hungerNumIdx > 9)
       hungerNumIdx = 9;
@@ -350,8 +359,35 @@ void Watchytchi::drawWatchFace(){
     {
       display.drawBitmap(10, 110, dk_nums[hungerNumIdx], 28, 26, color_fg); //first digit
       display.drawBitmap(158, 110, dk_nums[constrain(age, 0, 9)], 28, 26, color_fg);
+      // Draw a face according to current mood:
+
+      if (happyPercent >= 0.95f)
+        display.drawBitmap(85, 75, img_HappinessMoodle_Blissful, 30, 30, color_fg);
+      else if (happyPercent >= 0.75f)
+        display.drawBitmap(85, 75, img_HappinessMoodle_Happy, 30, 30, color_fg);
+      else if (happyPercent >= 0.33f)
+        display.drawBitmap(85, 75, img_HappinessMoodle_Neutral, 30, 30, color_fg);
+      else
+        display.drawBitmap(85, 75, img_HappinessMoodle_Sad, 30, 30, color_fg);
     }
-      
+
+    /*# Happiness #*/
+    auto oldHappyPercent = happyPercent;
+    const float happinessFullyChangeDuration = 6 * 60 * 60;
+    // If starving, happiness instantly goes down to a low number and decreases thereafter
+    if (hunger <= 0.001f)
+    {
+      happyPercent = constrain(happyPercent, 0.f, 0.25f);
+      happyPercent -= timeDelta / happinessFullyChangeDuration;
+    }
+    // If hungry, not put to bed ontime, or there is active poop, happiness decreases
+    else if ((getTimeOfDay() == TimeOfDay::LateNight && isElectricLit()) || hunger <= 0.45f || hasPoop)
+      happyPercent -= timeDelta / happinessFullyChangeDuration;
+    // Otherwise, if I'm well-fed, happiness increases!
+    else if (hunger >= 0.6f)
+      happyPercent += timeDelta / happinessFullyChangeDuration;
+    happyPercent = constrain(happyPercent, 0.f, 1.f);
+    DBGPrintF("New happyPercent "); DBGPrint(happyPercent); DBGPrintF(", from old happy percent "); DBGPrint(oldHappyPercent); DBGPrintln();
 
 
     endProfileAndStart("Section 4: Clock digits");

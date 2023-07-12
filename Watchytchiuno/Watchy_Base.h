@@ -29,6 +29,8 @@ extern RTC_DATA_ATTR int numSecondsAlive;
 const String nvsKey_numSecondsAlive = "secsAlive";
 extern RTC_DATA_ATTR float hunger;
 const String nvsKey_hunger = "hunger";
+extern RTC_DATA_ATTR float happyPercent;
+const String nvsKey_happyPercent = "happyPercent";
 extern RTC_DATA_ATTR bool hasPoop;
 const String nvsKey_hasPoop = "hasPoop";
 extern RTC_DATA_ATTR int lastPoopHour;

@@ -15,6 +15,7 @@ RTC_DATA_ATTR bool invertColors = false;
 RTC_DATA_ATTR CreatureSpecies species = CreatureSpecies::Hog;
 RTC_DATA_ATTR int numSecondsAlive = 0;
 RTC_DATA_ATTR float hunger = 1.f;
+RTC_DATA_ATTR float happyPercent = 0.5f;
 RTC_DATA_ATTR bool hasPoop = false;
 RTC_DATA_ATTR int lastPoopHour = -1;
 RTC_DATA_ATTR int nextAlertTs = -1;
