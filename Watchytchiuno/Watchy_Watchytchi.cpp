@@ -8,7 +8,7 @@ const unsigned char* flower_stages[6] = { img_GrowingFlower1, img_GrowingFlower2
   img_GrowingFlower4, img_GrowingFlower5, img_GrowingFlower6};
 
 const float k_secDurationToFullyDepleteHunger = 4.f * 60.f * 60.f;
-const int k_maxSecondsDeltaForUpdate = 24 * 60 * 60;
+const int k_maxSecondsDeltaForUpdate = 24 * 60 * 60; // TODO: Make this much smaller, like 5 minutes
 const int k_alertInterval = 3 * 60 * 60;
 const int k_alertExpirationWindow = 30 * 60;
 
@@ -238,7 +238,7 @@ void Watchytchi::drawWatchFace(){
     hunger = NVS.getFloat("hunger", 1.f);
     hasPoop = 1 == NVS.getInt("hasPoop", 0);
     lastPoopHour = NVS.getInt("lastPoopHour", -1);
-    dayBorn = NVS.getInt("dayBorn", -1);
+    numSecondsAlive = NVS.getInt("secsAlive", 0);
     invertColors = 1 == NVS.getInt("invertColors", 0);
     lastUpdateTsEpoch = NVS.getInt("lastTs", -1);
     nextAlertTs = NVS.getInt("nextAlertTs", -1);
@@ -312,21 +312,14 @@ void Watchytchi::drawWatchFace(){
 
     endProfileAndStart("Section 3: UI");
 
-    // Calculate Age:
-    if (dayBorn == -1)
-      dayBorn = currentTime.Day;
-    auto age = currentTime.Day - dayBorn;
-    if (age > 9)
-      age = 9;
+    // Calculate number of days alive
+    numSecondsAlive += timeDelta;
+    auto age = (int)(numSecondsAlive / (24 * 60 * 60));
     
     // Draw a flower that grows a little bit every day:
-    auto flowerGrowthIdx = age;
-    if (flowerGrowthIdx > 5)
-      flowerGrowthIdx = 5;
-    else if (flowerGrowthIdx < 0)
-      flowerGrowthIdx = 0;
+    auto flowerGrowthIdx = constrain(age, 0, 9);
     display.drawBitmap(156, 91, flower_stages[flowerGrowthIdx], 30, 45, color_fg);
-    
+    DBGPrintF("numSecondsAlive is "); DBGPrint(numSecondsAlive); DBGPrintF(", age in days is "); DBGPrint(age);
 
     endProfileAndStart("Section 3.5: Age Flower");
 
@@ -356,7 +349,7 @@ void Watchytchi::drawWatchFace(){
     if (hasStatusDisplay)
     {
       display.drawBitmap(10, 110, dk_nums[hungerNumIdx], 28, 26, color_fg); //first digit
-      display.drawBitmap(158, 110, dk_nums[age], 28, 26, color_fg);
+      display.drawBitmap(158, 110, dk_nums[constrain(age, 0, 9)], 28, 26, color_fg);
     }
       
 
@@ -434,7 +427,7 @@ void Watchytchi::drawWatchFace(){
     NVS.setFloat("hunger", hunger, false);
     NVS.setInt("hasPoop", hasPoop ? 1 : 0, false);
     NVS.setInt("lastPoopHour", lastPoopHour, false);
-    NVS.setInt("dayBorn", dayBorn, false);
+    NVS.setInt("secsAlive", numSecondsAlive, false);
     NVS.setInt("invertColors", invertColors ? 1 : 0, false);
     NVS.setInt("lastTs", (int64_t)currentEpochTime);
     NVS.setInt("nextAlertTs", nextAlertTs);

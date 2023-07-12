@@ -26,7 +26,7 @@ extern RTC_DATA_ATTR int lastHungerCryMinute;
 extern RTC_DATA_ATTR int lastSecMatch;
 extern RTC_DATA_ATTR int lastAnimateMinute;
 extern RTC_DATA_ATTR bool isPeriodicAnim;
-extern RTC_DATA_ATTR int dayBorn;
+extern RTC_DATA_ATTR int numSecondsAlive;
 extern RTC_DATA_ATTR int nextAlertTs;
 extern RTC_DATA_ATTR bool isExecutingAlertInteraction;
 extern RTC_DATA_ATTR bool isStrokingMode;
