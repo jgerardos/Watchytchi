@@ -50,7 +50,7 @@ extern RTC_DATA_ATTR bool isStrokingLeftSide;
 extern RTC_DATA_ATTR int lastAnimateMinute;
 
 // Compile out macros to increase speed of serial printing
-#define VERBOSE_LOGGING_ENABLED 1
+#define VERBOSE_LOGGING_ENABLED 0
 #define DBGPrint(content) if (VERBOSE_LOGGING_ENABLED) {Serial.print(content);}
 #define DBGPrintF(content) if (VERBOSE_LOGGING_ENABLED) {Serial.print(F(content));}
 #define DBGPrintln() if (VERBOSE_LOGGING_ENABLED) {Serial.println();}
