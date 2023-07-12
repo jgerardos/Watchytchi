@@ -247,6 +247,7 @@ void Watchytchi::drawWatchFace(){
     invertColors = 1 == NVS.getInt(nvsKey_invertColors, 0);
     numSecondsAlive = NVS.getInt(nvsKey_numSecondsAlive, 0);
     hunger = NVS.getFloat(nvsKey_hunger, 1.f);
+    happyPercent = NVS.getFloat(nvsKey_happyPercent, 0.5f);
     hasPoop = 1 == NVS.getInt(nvsKey_hasPoop, 0);
     lastPoopHour = NVS.getInt(nvsKey_lastPoopHour, -1);
     lastUpdateTsEpoch = NVS.getInt(nvsKey_lastUpdateTsEpoch, -1);
@@ -463,6 +464,7 @@ void Watchytchi::drawWatchFace(){
     NVS.setInt(nvsKey_invertColors, invertColors ? 1 : 0, false);
     NVS.setInt(nvsKey_numSecondsAlive, numSecondsAlive, false);
     NVS.setFloat(nvsKey_hunger, hunger, false);
+    NVS.setFloat(nvsKey_happyPercent, happyPercent, false);
     NVS.setInt(nvsKey_hasPoop, hasPoop ? 1 : 0, false);
     NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
     NVS.setInt(nvsKey_nextAlertTs, nextAlertTs);
