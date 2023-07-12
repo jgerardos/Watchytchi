@@ -67,6 +67,34 @@ TimeOfDay Watchytchi::getTimeOfDay(const tmElements_t &tm)
     return TimeOfDay::Daytime;
 }
 
+HappyTier Watchytchi::getHappyTier()
+{
+  return getHappyTier(happyPercent);
+}
+
+HappyTier Watchytchi::getHappyTier(float hPercent)
+{
+  if (hPercent >= 0.95f)
+    return HappyTier::Blissful;
+  if (hPercent >= 0.66f)
+    return HappyTier::Happy;
+  if (hPercent >= 0.33f)
+    return HappyTier::Neutral;
+  
+  return HappyTier::Sad;
+}
+
+int Watchytchi::getHappyTrendingDirection()
+{
+  // If hungry, not put to bed ontime, or there is active poop, happiness decreases
+  if ((getTimeOfDay() == TimeOfDay::LateNight && isElectricLit()) || hunger <= 0.45f || hasPoop)
+    return -1;
+  // Otherwise, if I'm well-fed, happiness increases!
+  else if (hunger >= 0.6f)
+    return 1;
+  return 0;
+}
+
 bool Watchytchi::isElectricLit()
 {
   return getTimeOfDay() == TimeOfDay::LateNight && !invertColors;
@@ -362,11 +390,12 @@ void Watchytchi::drawWatchFace(){
       display.drawBitmap(158, 110, dk_nums[constrain(age, 0, 9)], 28, 26, color_fg);
       // Draw a face according to current mood:
 
-      if (happyPercent >= 0.95f)
+      auto happyTier = getHappyTier();
+      if (happyTier == HappyTier::Blissful)
         display.drawBitmap(85, 75, img_HappinessMoodle_Blissful, 30, 30, color_fg);
-      else if (happyPercent >= 0.75f)
+      else if (happyTier == HappyTier::Happy)
         display.drawBitmap(85, 75, img_HappinessMoodle_Happy, 30, 30, color_fg);
-      else if (happyPercent >= 0.33f)
+      else if (happyTier == HappyTier::Neutral)
         display.drawBitmap(85, 75, img_HappinessMoodle_Neutral, 30, 30, color_fg);
       else
         display.drawBitmap(85, 75, img_HappinessMoodle_Sad, 30, 30, color_fg);
@@ -375,18 +404,14 @@ void Watchytchi::drawWatchFace(){
     /*# Happiness #*/
     auto oldHappyPercent = happyPercent;
     const float happinessFullyChangeDuration = 6 * 60 * 60;
-    // If starving, happiness instantly goes down to a low number and decreases thereafter
+    // If starving, happiness instantly goes down to a low number
     if (hunger <= 0.001f)
-    {
       happyPercent = constrain(happyPercent, 0.f, 0.25f);
-      happyPercent -= timeDelta / happinessFullyChangeDuration;
-    }
-    // If hungry, not put to bed ontime, or there is active poop, happiness decreases
-    else if ((getTimeOfDay() == TimeOfDay::LateNight && isElectricLit()) || hunger <= 0.45f || hasPoop)
-      happyPercent -= timeDelta / happinessFullyChangeDuration;
-    // Otherwise, if I'm well-fed, happiness increases!
-    else if (hunger >= 0.6f)
-      happyPercent += timeDelta / happinessFullyChangeDuration;
+
+    // Move happiness up or down depending on state:
+    auto happyTrendDir = getHappyTrendingDirection();
+    happyPercent += timeDelta * happyTrendDir / happinessFullyChangeDuration;
+    
     happyPercent = constrain(happyPercent, 0.f, 1.f);
     DBGPrintF("New happyPercent "); DBGPrint(happyPercent); DBGPrintF(", from old happy percent "); DBGPrint(oldHappyPercent); DBGPrintln();
 
@@ -594,11 +619,18 @@ void Watchytchi::drawIdleCreature(){
     {
       display.drawBitmap(100 - 36, 110, img_DaisyHog_Hungry1, 72, 55, color_fg);
     }
+    // Unhappy: Sulking pose
+    else if (getHappyTier() <= HappyTier::Sad)
+    {
+      display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Sulking1 : img_DaisyHog_Sulking2, 72, 55, color_fg);
+      if (getHappyTrendingDirection() < 0)
+        display.drawBitmap(100 - 36 + 25, 85, idleAnimIdx % 2 == 0 ? img_Emote_Stormcloud1 : img_Emote_Stormcloud2, 28, 28, color_fg);
+    }
     // Afternoon special: hind legs
-    else if (currentTime.Hour >= 12 && currentTime.Hour < 14)
+    else if (getHappyTier() >= HappyTier::Happy && currentTime.Hour >= 12 && currentTime.Hour < 14)
       display.drawBitmap(100 - 36, 93 + 4, idleAnimIdx % 2 == 0 ? img_DaisyHog_HindLegs1 : img_DaisyHog_HindLegs2, 72, 72, color_fg);
     // Every couple of hours: special idle
-    else if (currentTime.Hour % 2 == 0 && currentTime.Minute >= 20 && currentTime.Minute <= 40)
+    else if (getHappyTier() >= HappyTier::Happy && currentTime.Hour % 2 == 0 && currentTime.Minute >= 20 && currentTime.Minute <= 40)
     {
       display.drawBitmap(100 - 36, 110 + 4, idleAnimIdx % 2 == 0 ? img_DaisyHog_SkyGaze1 : img_DaisyHog_SkyGaze2, 72, 55, color_fg);
       display.drawBitmap(112, 110, idleAnimIdx % 2 == 0 ? img_Emote_Music1 : img_Emote_Music2, 28, 19, color_fg);
@@ -607,6 +639,8 @@ void Watchytchi::drawIdleCreature(){
     else if (isPeriodicAnim)
     {
       display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Twitch1 : img_DaisyHog_Twitch2, 80, 55, color_fg);
+      if (getHappyTier() >= HappyTier::Blissful)
+        display.drawBitmap(100 - 36 + 25, 110-16+7, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
     }
     // Default: Standing idle
     else
@@ -636,8 +670,15 @@ void Watchytchi::drawIdleCreature(){
     {
       display.drawBitmap(100 - 36, 97, img_MugSnake_Hungry, 72, 72, color_fg);
     }
+    // Unhappy: Suking pose
+    else if (getHappyTier() <= HappyTier::Sad)
+    {
+      display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_Sulking1 : img_MugSnake_Sulking2, 72, 72, color_fg);
+      if (getHappyTrendingDirection() < 0)
+        display.drawBitmap(100 - 36 + 25, 95, idleAnimIdx % 2 == 0 ? img_Emote_Stormcloud1 : img_Emote_Stormcloud2, 28, 28, color_fg);
+    }
     // Every couple of hours: special idle
-    else if (currentTime.Hour % 2 == 0 && currentTime.Minute >= 20 && currentTime.Minute <= 40)
+    else if (getHappyTier() >= HappyTier::Happy && currentTime.Hour % 2 == 0 && currentTime.Minute >= 20 && currentTime.Minute <= 40)
     {
       display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_TippedOverIdle1 : img_MugSnake_TippedOverIdle2, 72, 72, color_fg);
       display.drawBitmap(120, 130, idleAnimIdx % 2 == 0 ? img_Emote_Music1 : img_Emote_Music2, 28, 19, color_fg);
@@ -645,7 +686,11 @@ void Watchytchi::drawIdleCreature(){
     // TODO: Periodic animation
     // Default: Standing idle
     else
+    {
       display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_Idle1 : img_MugSnake_Idle2, 72, 72, color_fg);
+      if (isPeriodicAnim && getHappyTier() >= HappyTier::Blissful)
+        display.drawBitmap(100 - 36 + 25, 95, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
+    }
   }
   idleAnimIdx = (idleAnimIdx + 1) % 2;
 }
