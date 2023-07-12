@@ -162,8 +162,8 @@ void Watchytchi::handleButtonPress() {
         lastPoopHour = currentTime.Hour; // Cleaning resets last poop hour in order to prevent immediate poop once again
         lastAnimateMinute = -99; // Do a little dance afterwards by resetting the last animate minute
         NVS.begin();
-        NVS.setInt("hasPoop", 0, false);
-        NVS.setInt("lastPoopHour", lastPoopHour, false);
+        NVS.setInt(nvsKey_hasPoop, 0, false);
+        NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
         NVS.commit();
         DBGPrintF("Cleaned poop! New lastPoopHour ="); DBGPrint(lastPoopHour); DBGPrintF(", previously it was"); DBGPrint(prevHour); DBGPrintln();
       }
@@ -172,7 +172,7 @@ void Watchytchi::handleButtonPress() {
       {
         invertColors = !invertColors;
         NVS.begin();
-        NVS.setInt("invertColors", invertColors ? 1 : 0, true);
+        NVS.setInt(nvsKey_invertColors, invertColors ? 1 : 0, true);
         NVS.commit();
         didPerformAction = true;
       }
@@ -235,13 +235,13 @@ void Watchytchi::drawWatchFace(){
 
     /*# Load Data: #*/
     NVS.begin();
-    hunger = NVS.getFloat("hunger", 1.f);
-    hasPoop = 1 == NVS.getInt("hasPoop", 0);
-    lastPoopHour = NVS.getInt("lastPoopHour", -1);
-    numSecondsAlive = NVS.getInt("secsAlive", 0);
-    invertColors = 1 == NVS.getInt("invertColors", 0);
-    lastUpdateTsEpoch = NVS.getInt("lastTs", -1);
-    nextAlertTs = NVS.getInt("nextAlertTs", -1);
+    nextAlertTs = NVS.getInt(nvsKey_nextAlertTs, -1);
+    invertColors = 1 == NVS.getInt(nvsKey_invertColors, 0);
+    numSecondsAlive = NVS.getInt(nvsKey_numSecondsAlive, 0);
+    hunger = NVS.getFloat(nvsKey_hunger, 1.f);
+    hasPoop = 1 == NVS.getInt(nvsKey_hasPoop, 0);
+    lastPoopHour = NVS.getInt(nvsKey_lastPoopHour, -1);
+    lastUpdateTsEpoch = NVS.getInt(nvsKey_lastUpdateTsEpoch, -1);
     DBGPrintF("Loaded lastUpdateTsEpoch "); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
 
     endProfileAndStart("Section 0: Load values");
@@ -423,14 +423,13 @@ void Watchytchi::drawWatchFace(){
     }
 
     /*# Save data #*/
-    NVS.setFloat("Hunger", hunger);
-    NVS.setFloat("hunger", hunger, false);
-    NVS.setInt("hasPoop", hasPoop ? 1 : 0, false);
-    NVS.setInt("lastPoopHour", lastPoopHour, false);
-    NVS.setInt("secsAlive", numSecondsAlive, false);
-    NVS.setInt("invertColors", invertColors ? 1 : 0, false);
-    NVS.setInt("lastTs", (int64_t)currentEpochTime);
-    NVS.setInt("nextAlertTs", nextAlertTs);
+    NVS.setInt(nvsKey_lastUpdateTsEpoch, (int64_t)currentEpochTime);
+    NVS.setInt(nvsKey_invertColors, invertColors ? 1 : 0, false);
+    NVS.setInt(nvsKey_numSecondsAlive, numSecondsAlive, false);
+    NVS.setFloat(nvsKey_hunger, hunger, false);
+    NVS.setInt(nvsKey_hasPoop, hasPoop ? 1 : 0, false);
+    NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
+    NVS.setInt(nvsKey_nextAlertTs, nextAlertTs);
     auto didSave = NVS.commit();
 
     DBGPrintF("Save success? "); DBGPrint(didSave); DBGPrintln();

@@ -11,27 +11,41 @@
 
 enum CreatureSpecies {Hog, Snake};
 
+/*# State #*/
+/*## State: System ##*/
 extern RTC_DATA_ATTR int lastUpdateTsEpoch;
-extern RTC_DATA_ATTR bool playAnim;
+const String nvsKey_lastUpdateTsEpoch = "lastTs";
+
+/*## State: UI ##*/
 extern RTC_DATA_ATTR int menuIdx;
-extern RTC_DATA_ATTR float hunger;
-extern RTC_DATA_ATTR bool isEating;
-extern RTC_DATA_ATTR bool hasPoop;
-extern RTC_DATA_ATTR int lastPoopHour;
-extern RTC_DATA_ATTR int idleAnimIdx;
-extern RTC_DATA_ATTR bool hasStatusDisplay;
 extern RTC_DATA_ATTR int lastAdvanceIdxMinute;
+extern RTC_DATA_ATTR bool hasStatusDisplay;
 extern RTC_DATA_ATTR bool invertColors;
-extern RTC_DATA_ATTR int lastHungerCryMinute;
-extern RTC_DATA_ATTR int lastSecMatch;
-extern RTC_DATA_ATTR int lastAnimateMinute;
-extern RTC_DATA_ATTR bool isPeriodicAnim;
+const String nvsKey_invertColors = "invertColors";
+
+/*## State: Saveable pet stats ##*/
+extern RTC_DATA_ATTR CreatureSpecies species;
 extern RTC_DATA_ATTR int numSecondsAlive;
+const String nvsKey_numSecondsAlive = "secsAlive";
+extern RTC_DATA_ATTR float hunger;
+const String nvsKey_hunger = "hunger";
+extern RTC_DATA_ATTR bool hasPoop;
+const String nvsKey_hasPoop = "hasPoop";
+extern RTC_DATA_ATTR int lastPoopHour;
+const String nvsKey_lastPoopHour = "lastPoopHour";
 extern RTC_DATA_ATTR int nextAlertTs;
+const String nvsKey_nextAlertTs = "nextAlertTs";
+
+/*## State: Game State ##*/
+extern RTC_DATA_ATTR bool playAnim;
+extern RTC_DATA_ATTR bool isEating;
+extern RTC_DATA_ATTR int idleAnimIdx;
+extern RTC_DATA_ATTR bool isPeriodicAnim;
+extern RTC_DATA_ATTR int lastHungerCryMinute;
 extern RTC_DATA_ATTR bool isExecutingAlertInteraction;
 extern RTC_DATA_ATTR bool isStrokingMode;
 extern RTC_DATA_ATTR bool isStrokingLeftSide;
-extern RTC_DATA_ATTR CreatureSpecies species;
+extern RTC_DATA_ATTR int lastAnimateMinute;
 
 // Compile out macros to increase speed of serial printing
 #define VERBOSE_LOGGING_ENABLED 0

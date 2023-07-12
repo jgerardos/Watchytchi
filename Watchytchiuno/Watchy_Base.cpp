@@ -1,29 +1,34 @@
 //Derived from peerdavid's source at: https://github.com/peerdavid/Watchy
 #include "Watchy_Base.h"
 
+/*# State #*/
+/*## State: System ##*/
 RTC_DATA_ATTR int lastUpdateTsEpoch = -1;
-RTC_DATA_ATTR int16_t alarm_timer = -1;
-RTC_DATA_ATTR bool sleep_mode = false;
-RTC_DATA_ATTR bool playAnim = false;
+
+/*## State: UI ##*/
 RTC_DATA_ATTR int menuIdx;
+RTC_DATA_ATTR int lastAdvanceIdxMinute = 0;
+RTC_DATA_ATTR bool hasStatusDisplay = false;
+RTC_DATA_ATTR bool invertColors = false;
+
+/*## State: Saveable pet stats ##*/
+RTC_DATA_ATTR CreatureSpecies species = CreatureSpecies::Hog;
+RTC_DATA_ATTR int numSecondsAlive = 0;
 RTC_DATA_ATTR float hunger = 1.f;
-RTC_DATA_ATTR bool isEating = false;
 RTC_DATA_ATTR bool hasPoop = false;
 RTC_DATA_ATTR int lastPoopHour = -1;
-RTC_DATA_ATTR int idleAnimIdx = 0;
-RTC_DATA_ATTR bool hasStatusDisplay = false;
-RTC_DATA_ATTR int lastAdvanceIdxMinute = 0;
-RTC_DATA_ATTR bool invertColors = false;
-RTC_DATA_ATTR int lastHungerCryMinute = -1;
-RTC_DATA_ATTR int lastSecMatch = 0;
-RTC_DATA_ATTR int lastAnimateMinute = 0;
-RTC_DATA_ATTR bool isPeriodicAnim = false;
-RTC_DATA_ATTR int numSecondsAlive = 0;
 RTC_DATA_ATTR int nextAlertTs = -1;
+
+/*## State: Game State ##*/
+RTC_DATA_ATTR bool playAnim = false;
+RTC_DATA_ATTR bool isEating = false;
+RTC_DATA_ATTR int idleAnimIdx = 0;
+RTC_DATA_ATTR bool isPeriodicAnim = false;
+RTC_DATA_ATTR int lastHungerCryMinute = -1;
 RTC_DATA_ATTR bool isExecutingAlertInteraction = false;
 RTC_DATA_ATTR bool isStrokingMode = false;
 RTC_DATA_ATTR bool isStrokingLeftSide = false;
-RTC_DATA_ATTR CreatureSpecies species = CreatureSpecies::Hog;
+RTC_DATA_ATTR int lastAnimateMinute = 0;
 
 
 void WatchyBase::handleButtonPress() {
