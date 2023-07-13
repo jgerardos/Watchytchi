@@ -209,13 +209,14 @@ void Watchytchi::handleButtonPress() {
         invertColors = !invertColors;
         NVS.begin();
         NVS.setInt(nvsKey_invertColors, invertColors ? 1 : 0, true);
-        NVS.commit();
         didPerformAction = true;
       }
       // HACK: for debugging purposes, the not-yet-implemented read icon will toggle the species
       if (menuIdx == MENUIDX_READ)
       {
         species = species == CreatureSpecies::Hog ? CreatureSpecies::Snake : CreatureSpecies::Hog;
+        NVS.begin();
+        NVS.setInt(nvsKey_species, (int)species, true);
         didPerformAction = true;
       }
       // Vibrate if this selection resulted in an action
@@ -273,6 +274,7 @@ void Watchytchi::drawWatchFace(){
     NVS.begin();
     nextAlertTs = NVS.getInt(nvsKey_nextAlertTs, -1);
     invertColors = 1 == NVS.getInt(nvsKey_invertColors, 0);
+    species = (CreatureSpecies)NVS.getInt(nvsKey_species, 0);
     numSecondsAlive = NVS.getInt(nvsKey_numSecondsAlive, 0);
     hunger = NVS.getFloat(nvsKey_hunger, 1.f);
     happyPercent = NVS.getFloat(nvsKey_happyPercent, 0.5f);
@@ -490,6 +492,7 @@ void Watchytchi::drawWatchFace(){
     /*# Save data #*/
     NVS.setInt(nvsKey_lastUpdateTsEpoch, (int64_t)currentEpochTime);
     NVS.setInt(nvsKey_invertColors, invertColors ? 1 : 0, false);
+    NVS.setInt(nvsKey_species, (int)species, false);
     NVS.setInt(nvsKey_numSecondsAlive, numSecondsAlive, false);
     NVS.setFloat(nvsKey_hunger, hunger, false);
     NVS.setFloat(nvsKey_happyPercent, happyPercent, false);
@@ -700,7 +703,13 @@ void Watchytchi::drawIdleCreature(bool isAnimating){
       else
         display.drawBitmap(120, 130, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
     }
-    // TODO: Periodic animation
+    // Do a special animation instead of the standing idle frames if we're on our periodic animation
+    else if (isAnimating)
+    {
+      display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_Rocking1 : img_MugSnake_Rocking2, 72, 72, color_fg);
+      if (getHappyTier() >= HappyTier::Blissful)
+        display.drawBitmap(119, 115, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
+    }
     // Default: Standing idle
     else
     {

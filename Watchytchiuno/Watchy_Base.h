@@ -25,6 +25,7 @@ const String nvsKey_invertColors = "invertColors";
 
 /*## State: Saveable pet stats ##*/
 extern RTC_DATA_ATTR CreatureSpecies species;
+const String nvsKey_species = "species";
 extern RTC_DATA_ATTR int numSecondsAlive;
 const String nvsKey_numSecondsAlive = "secsAlive";
 extern RTC_DATA_ATTR float hunger;
