@@ -18,7 +18,7 @@ class Watchytchi : public WatchyBase{
         void handleButtonPress();
         void drawWatchFace();
         void drawEatAnim();
-        void drawIdleCreature();
+        void drawIdleCreature(bool isAnimating);
         void drawWeather();
         void drawUIButton(int idx, bool quickCursorUpdate);
         void clearCreatureBackground();

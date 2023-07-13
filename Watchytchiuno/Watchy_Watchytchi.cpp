@@ -431,7 +431,7 @@ void Watchytchi::drawWatchFace(){
       for (auto i = 0; i < numAnimFrames; i++)
       {
         isPeriodicAnim &= (i != numAnimFrames - 1);
-        drawIdleCreature();
+        drawIdleCreature(i != numAnimFrames - 1);
         display.display(true);
         if (i != numAnimFrames - 1)
           clearCreatureBackground();
@@ -439,7 +439,7 @@ void Watchytchi::drawWatchFace(){
       lastAnimateMinute = currentTime.Minute;
     }
     else {
-      drawIdleCreature();
+      drawIdleCreature(false);
     }
     endProfileAndStart("Section 5: Drawing Critters");
 
@@ -595,7 +595,7 @@ void Watchytchi::drawWeather(){
   display.drawBitmap(cloud3X, 30, isDark ? img_DarkCloud3 : img_Cloud3, 130, 35, color_fg);
 }
 
-void Watchytchi::drawIdleCreature(){
+void Watchytchi::drawIdleCreature(bool isAnimating){
   auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
   auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
 
@@ -631,23 +631,34 @@ void Watchytchi::drawIdleCreature(){
     }
     // Afternoon special: hind legs
     else if (getHappyTier() >= HappyTier::Happy && currentTime.Hour >= 12 && currentTime.Hour < 14)
+    {
       display.drawBitmap(100 - 36, 93 + 4, idleAnimIdx % 2 == 0 ? img_DaisyHog_HindLegs1 : img_DaisyHog_HindLegs2, 72, 72, color_fg);
+      if (isAnimating && getHappyTier() >= HappyTier::Blissful)
+        display.drawBitmap(100 - 36 + 25, 95, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
+    }
     // Every couple of hours: special idle
     else if (getHappyTier() >= HappyTier::Happy && currentTime.Hour % 2 == 0 && currentTime.Minute >= 20 && currentTime.Minute <= 40)
     {
       display.drawBitmap(100 - 36, 110 + 4, idleAnimIdx % 2 == 0 ? img_DaisyHog_SkyGaze1 : img_DaisyHog_SkyGaze2, 72, 55, color_fg);
-      display.drawBitmap(112, 110, idleAnimIdx % 2 == 0 ? img_Emote_Music1 : img_Emote_Music2, 28, 19, color_fg);
+      if (!isAnimating || getHappyTier() < HappyTier::Blissful)
+        display.drawBitmap(112, 110, idleAnimIdx % 2 == 0 ? img_Emote_Music1 : img_Emote_Music2, 28, 19, color_fg);
+      else
+        display.drawBitmap(112, 110, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
     }
     // Do a twich instead of the standing idle frames if we're on our periodic animation
     else if (isPeriodicAnim)
     {
       display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Twitch1 : img_DaisyHog_Twitch2, 80, 55, color_fg);
       if (getHappyTier() >= HappyTier::Blissful)
-        display.drawBitmap(100 - 36 + 25, 110-16+7, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
+        display.drawBitmap(119, 115, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
     }
     // Default: Standing idle
     else
+    {
       display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Idle1 : img_DaisyHog_Idle2, 72, 55, color_fg);
+      if (isAnimating && getHappyTier() >= HappyTier::Blissful)
+        display.drawBitmap(119, 115, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
+    }
   }
   /*# MugSnake #*/
   else if (species == CreatureSpecies::Snake)
@@ -673,7 +684,7 @@ void Watchytchi::drawIdleCreature(){
     {
       display.drawBitmap(100 - 36, 97, img_MugSnake_Hungry, 72, 72, color_fg);
     }
-    // Unhappy: Suking pose
+    // Unhappy: Sulking pose
     else if (getHappyTier() <= HappyTier::Sad)
     {
       display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_Sulking1 : img_MugSnake_Sulking2, 72, 72, color_fg);
@@ -684,7 +695,10 @@ void Watchytchi::drawIdleCreature(){
     else if (getHappyTier() >= HappyTier::Happy && currentTime.Hour % 2 == 0 && currentTime.Minute >= 20 && currentTime.Minute <= 40)
     {
       display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_TippedOverIdle1 : img_MugSnake_TippedOverIdle2, 72, 72, color_fg);
-      display.drawBitmap(120, 130, idleAnimIdx % 2 == 0 ? img_Emote_Music1 : img_Emote_Music2, 28, 19, color_fg);
+      if (!isAnimating || getHappyTier() < HappyTier::Blissful)
+        display.drawBitmap(120, 130, idleAnimIdx % 2 == 0 ? img_Emote_Music1 : img_Emote_Music2, 28, 19, color_fg);
+      else
+        display.drawBitmap(120, 130, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
     }
     // TODO: Periodic animation
     // Default: Standing idle
@@ -719,7 +733,7 @@ void Watchytchi::drawEatAnim(){
      //Hide Ghosting
      for(uint8_t i=0; i<3; i++){
        display.fillRect(100 - 36, 97, 120, 72, color_bg);
-       drawIdleCreature();
+       drawIdleCreature(false);
        display.display(true);
      }
 }
