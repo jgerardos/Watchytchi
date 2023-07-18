@@ -2,8 +2,10 @@
 #include <stdlib.h>     //srand, rand
 
 const unsigned char *dk_nums [10] = {dk0, dk1, dk2, dk3, dk4, dk5, dk6, dk7, dk8, dk9};
-const unsigned char *food_stages[7] = {img_FoodBerry_Stage0, img_FoodBerry_Stage1, img_FoodBerry_Stage2, img_FoodBerry_Stage3, 
+const unsigned char *foodBerry_stages[7] = {img_FoodBerry_Stage0, img_FoodBerry_Stage1, img_FoodBerry_Stage2, img_FoodBerry_Stage3, 
   img_FoodBerry_Stage4, img_FoodBerry_Stage5, img_FoodBerry_Stage6};
+  const unsigned char *foodCucumber_stages[7] = {img_FoodCucumberPlate_Stage0, img_FoodCucumberPlate_Stage1, img_FoodCucumberPlate_Stage2, 
+  img_FoodCucumberPlate_Stage3, img_FoodCucumberPlate_Stage4, img_FoodCucumberPlate_Stage5, img_FoodCucumberPlate_Stage6};
 const unsigned char* flower_stages[6] = { img_GrowingFlower1, img_GrowingFlower2, img_GrowingFlower3, 
   img_GrowingFlower4, img_GrowingFlower5, img_GrowingFlower6};
 
@@ -359,7 +361,7 @@ void Watchytchi::drawWatchFace(){
     auto age = (int)(numSecondsAlive / (24 * 60 * 60));
     
     // Draw a flower that grows a little bit every day:
-    auto flowerGrowthIdx = constrain(age, 0, 9);
+    auto flowerGrowthIdx = constrain(age, 0, 5);
     display.drawBitmap(156, 91, flower_stages[flowerGrowthIdx], 30, 45, color_fg);
     DBGPrintF("numSecondsAlive is "); DBGPrint(numSecondsAlive); DBGPrintF(", age in days is "); DBGPrint(age);
 
@@ -724,15 +726,30 @@ void Watchytchi::drawIdleCreature(bool isAnimating){
 void Watchytchi::drawEatAnim(){    
     auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
     auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
+    int foodType;
+    int numFrames;
+    const int BERRIES = 0;
+    const int CUCUMBER = 1;
+    srand(lastUpdateTsEpoch);
+    if (rand() % 2 == 0)
+    {
+      foodType = BERRIES;
+      numFrames = 56;
+    }
+    else
+    {
+      foodType = CUCUMBER;
+      numFrames = 28;
+    }
+
      // Animate eating
-     int numFrames = 56;
      for (int i = 0; i < numFrames; i++)
      {
       if (species == CreatureSpecies::Hog)
         display.drawBitmap(100 - 36, 110, i % 2 == 0 ? img_DaisyHog_Eat1 : img_DaisyHog_Eat2, 72, 55, color_fg);
       else if (species == CreatureSpecies::Snake)
         display.drawBitmap(100 - 36, 97, i % 2 == 0 ? img_MugSnake_Eating1 : img_MugSnake_Eating2, 72, 72, color_fg);
-       display.drawBitmap(144 - 18, 126, food_stages[i / 8], 36, 36, color_fg);
+       display.drawBitmap(144 - 18, 126, foodType == BERRIES ? foodBerry_stages[i / 8] : foodCucumber_stages[i / 4], 36, 36, color_fg);
        display.display(true);
        clearCreatureBackground();
      }
@@ -750,5 +767,5 @@ void Watchytchi::drawEatAnim(){
 void Watchytchi::clearCreatureBackground()
 {
   auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
-  display.fillRect(100 - 36, 97, 156 - (100 - 36), 72, color_bg);
+  display.fillRect(100 - 36, 97, 156 - (100 - 36) + 8, 72, color_bg);
 }
