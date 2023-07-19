@@ -22,13 +22,11 @@ RTC_DATA_ATTR int nextAlertTs = -1;
 RTC_DATA_ATTR ScheduledAlertType nextAlertType = ScheduledAlertType::None;
 
 /*## State: Game State ##*/
+RTC_DATA_ATTR GameState gameState;
 RTC_DATA_ATTR bool playAnim = false;
-RTC_DATA_ATTR bool isEating = false;
 RTC_DATA_ATTR int idleAnimIdx = 0;
 RTC_DATA_ATTR bool isPeriodicAnim = false;
 RTC_DATA_ATTR int lastHungerCryMinute = -1;
-RTC_DATA_ATTR bool isExecutingAlertInteraction = false;
-RTC_DATA_ATTR bool isStrokingMode = false;
 RTC_DATA_ATTR bool isStrokingLeftSide = false;
 RTC_DATA_ATTR int lastAnimateMinute = 0;
 

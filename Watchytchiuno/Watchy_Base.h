@@ -11,6 +11,7 @@
 
 enum CreatureSpecies {Hog, Snake};
 enum ScheduledAlertType {None, CloseUp, HowWasYourDay};
+enum GameState {BaseMenu, Eating, AlertInteraction, StrokingMode};
 
 /*# State #*/
 /*## State: System ##*/
@@ -43,13 +44,11 @@ extern RTC_DATA_ATTR ScheduledAlertType nextAlertType;
 const String nvsKey_nextAlertType = "nextAlertType";
 
 /*## State: Game State ##*/
+extern RTC_DATA_ATTR GameState gameState;
 extern RTC_DATA_ATTR bool playAnim;
-extern RTC_DATA_ATTR bool isEating;
 extern RTC_DATA_ATTR int idleAnimIdx;
 extern RTC_DATA_ATTR bool isPeriodicAnim;
 extern RTC_DATA_ATTR int lastHungerCryMinute;
-extern RTC_DATA_ATTR bool isExecutingAlertInteraction;
-extern RTC_DATA_ATTR bool isStrokingMode;
 extern RTC_DATA_ATTR bool isStrokingLeftSide;
 extern RTC_DATA_ATTR int lastAnimateMinute;
 

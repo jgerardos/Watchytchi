@@ -128,7 +128,7 @@ void Watchytchi::handleButtonPress() {
   }
   RTC.read(currentTime);
 
-  if (isStrokingMode)
+  if (gameState == GameState::StrokingMode)
   {
     // In stroking mode, the left (cursor) and right (select) button moves the hand back and forth
     auto didPet = false;
@@ -158,7 +158,7 @@ void Watchytchi::handleButtonPress() {
     }
 
     if (IS_KEY_CANCEL) {
-      isStrokingMode = false;
+      gameState = GameState::BaseMenu;
       vibrate(1, 50);
       showWatchFace(true);
       return;
@@ -180,19 +180,19 @@ void Watchytchi::handleButtonPress() {
         hasStatusDisplay = false;
       if (menuIdx == MENUIDX_STROKE)
       {
-        isStrokingMode = true;
+        gameState = GameState::StrokingMode;
         DBGPrintF("Entering stroke mode!"); DBGPrintln();
       }      
       // Start feeding
       if (menuIdx == MENUIDX_FEED)
       {
-        isEating = true;
+        gameState = GameState::Eating;
         didPerformAction = true;
       }
       // React to alert
       if (menuIdx == MENUIDX_ALERT && hasActiveAlert())
       {
-        isExecutingAlertInteraction = true;
+        gameState = GameState::AlertInteraction;
         didPerformAction = false;
         scheduleNextAlert();
       }
@@ -320,10 +320,10 @@ void Watchytchi::drawWatchFace(){
     if (getHappyTier() <= HappyTier::Sad)
       scheduleNextAlert();
     // If the owner pressed the alert button while it was active, execute an animation
-    if (isExecutingAlertInteraction)
+    if (gameState == GameState::AlertInteraction)
     {
       scheduleNextAlert();
-      isExecutingAlertInteraction = false;
+      gameState = GameState::BaseMenu;
       display.fillScreen(color_bg);
       // Draw top row of menu buttons (bottom is covered up by critter)
       for (auto i = 0; i < 4; i++)
@@ -430,7 +430,7 @@ void Watchytchi::drawWatchFace(){
 
 
     endProfileAndStart("Section 4: Clock digits");
-    if(isEating) {
+    if(gameState == GameState::Eating) {
       drawEatAnim();
     } 
     // Animate an idle loop every 3 minutes
@@ -615,7 +615,7 @@ void Watchytchi::drawIdleCreature(bool isAnimating){
   if (species == CreatureSpecies::Hog)
   {
     // Stroking mode: do stroking animation
-    if (isStrokingMode)
+    if (gameState == GameState::StrokingMode)
       display.drawBitmap(100 - 36, 110, isStrokingLeftSide ? img_DaisyHog_BeingStroked1 : img_DaisyHog_BeingStroked2, 72, 55, color_fg);
     // Late night with lights on: Sleepy pose
     else if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
@@ -675,7 +675,7 @@ void Watchytchi::drawIdleCreature(bool isAnimating){
   /*# MugSnake #*/
   else if (species == CreatureSpecies::Snake)
   {
-    if (isStrokingMode)
+    if (gameState == GameState::StrokingMode)
       display.drawBitmap(100 - 36, 97, isStrokingLeftSide ? img_MugSnake_BeingPet1 : img_MugSnake_BeingPet2, 72, 72, color_fg);
     // Late night with lights on: Sleepy pose
     else if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
@@ -760,7 +760,7 @@ void Watchytchi::drawEatAnim(){
        display.display(true);
        clearCreatureBackground();
      }
-     isEating = false;
+     gameState = GameState::BaseMenu;
      hunger = 1.f;
 
      //Hide Ghosting
