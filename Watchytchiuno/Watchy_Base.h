@@ -10,6 +10,7 @@
 #endif
 
 enum CreatureSpecies {Hog, Snake};
+enum ScheduledAlertType {None, CloseUp, HowWasYourDay};
 
 /*# State #*/
 /*## State: System ##*/
@@ -38,6 +39,8 @@ extern RTC_DATA_ATTR int lastPoopHour;
 const String nvsKey_lastPoopHour = "lastPoopHour";
 extern RTC_DATA_ATTR int nextAlertTs;
 const String nvsKey_nextAlertTs = "nextAlertTs";
+extern RTC_DATA_ATTR ScheduledAlertType nextAlertType;
+const String nvsKey_nextAlertType = "nextAlertType";
 
 /*## State: Game State ##*/
 extern RTC_DATA_ATTR bool playAnim;

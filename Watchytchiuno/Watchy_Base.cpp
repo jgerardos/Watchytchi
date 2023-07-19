@@ -19,6 +19,7 @@ RTC_DATA_ATTR float happyPercent = 0.5f;
 RTC_DATA_ATTR bool hasPoop = false;
 RTC_DATA_ATTR int lastPoopHour = -1;
 RTC_DATA_ATTR int nextAlertTs = -1;
+RTC_DATA_ATTR ScheduledAlertType nextAlertType = ScheduledAlertType::None;
 
 /*## State: Game State ##*/
 RTC_DATA_ATTR bool playAnim = false;

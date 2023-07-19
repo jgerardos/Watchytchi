@@ -52,6 +52,11 @@ void Watchytchi::scheduleNextAlert()
     // Make sure we don't set an alert during the night:
     breakTime(nextAlertTs, alertTsElements);
   } while (getTimeOfDay(alertTsElements) == TimeOfDay::LateNight);
+
+  if (getTimeOfDay(alertTsElements) == TimeOfDay::Dusk)
+    nextAlertType = ScheduledAlertType::HowWasYourDay;
+  else
+    nextAlertType = ScheduledAlertType::CloseUp;
 }
 
 TimeOfDay Watchytchi::getTimeOfDay()
@@ -274,7 +279,7 @@ void Watchytchi::drawWatchFace(){
 
     /*# Load Data: #*/
     NVS.begin();
-    nextAlertTs = NVS.getInt(nvsKey_nextAlertTs, -1);
+    lastUpdateTsEpoch = NVS.getInt(nvsKey_lastUpdateTsEpoch, -1);
     invertColors = 1 == NVS.getInt(nvsKey_invertColors, 0);
     species = (CreatureSpecies)NVS.getInt(nvsKey_species, 0);
     numSecondsAlive = NVS.getInt(nvsKey_numSecondsAlive, 0);
@@ -282,7 +287,8 @@ void Watchytchi::drawWatchFace(){
     happyPercent = NVS.getFloat(nvsKey_happyPercent, 0.5f);
     hasPoop = 1 == NVS.getInt(nvsKey_hasPoop, 0);
     lastPoopHour = NVS.getInt(nvsKey_lastPoopHour, -1);
-    lastUpdateTsEpoch = NVS.getInt(nvsKey_lastUpdateTsEpoch, -1);
+    nextAlertTs = NVS.getInt(nvsKey_nextAlertTs, -1);
+    nextAlertType = (ScheduledAlertType)NVS.getInt(nvsKey_nextAlertType, 0);
     DBGPrintF("Loaded lastUpdateTsEpoch "); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
 
     endProfileAndStart("Section 0: Load values");
@@ -501,6 +507,7 @@ void Watchytchi::drawWatchFace(){
     NVS.setInt(nvsKey_hasPoop, hasPoop ? 1 : 0, false);
     NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
     NVS.setInt(nvsKey_nextAlertTs, nextAlertTs);
+    NVS.setInt(nvsKey_nextAlertType, (int)nextAlertType);
     auto didSave = NVS.commit();
 
     DBGPrintF("Save success? "); DBGPrint(didSave); DBGPrintln();
