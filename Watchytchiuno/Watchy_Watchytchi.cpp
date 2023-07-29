@@ -10,7 +10,7 @@ const unsigned char* flower_stages[6] = { img_GrowingFlower1, img_GrowingFlower2
   img_GrowingFlower4, img_GrowingFlower5, img_GrowingFlower6};
 
 const float k_secDurationToFullyDepleteHunger = 4.f * 60.f * 60.f;
-const int k_maxSecondsDeltaForUpdate = 24 * 60 * 60; // TODO: Make this much smaller, like 5 minutes
+const int k_maxSecondsDeltaForUpdate = 5 * 60;
 const int k_alertInterval = 3 * 60 * 60;
 const int k_alertExpirationWindow = 30 * 60;
 
