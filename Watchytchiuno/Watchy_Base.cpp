@@ -18,17 +18,22 @@ RTC_DATA_ATTR float hunger = 1.f;
 RTC_DATA_ATTR float happyPercent = 0.5f;
 RTC_DATA_ATTR bool hasPoop = false;
 RTC_DATA_ATTR int lastPoopHour = -1;
-RTC_DATA_ATTR int nextAlertTs = -1;
-RTC_DATA_ATTR ScheduledAlertType nextAlertType = ScheduledAlertType::None;
 
-/*## State: Game State ##*/
+/*## State: Game State (General) ##*/
 RTC_DATA_ATTR GameState gameState;
 RTC_DATA_ATTR bool playAnim = false;
 RTC_DATA_ATTR int idleAnimIdx = 0;
 RTC_DATA_ATTR bool isPeriodicAnim = false;
 RTC_DATA_ATTR int lastHungerCryMinute = -1;
-RTC_DATA_ATTR bool isStrokingLeftSide = false;
 RTC_DATA_ATTR int lastAnimateMinute = 0;
+
+/*## State: Game State (Stroking) ##*/
+RTC_DATA_ATTR bool isStrokingLeftSide = false;
+
+/*## State: Game State (Events & Alerts) ##*/
+RTC_DATA_ATTR int nextAlertTs = -1;
+RTC_DATA_ATTR ScheduledAlertType nextAlertType = ScheduledAlertType::None;
+RTC_DATA_ATTR int emotionSelectIdx = 0;
 
 
 void WatchyBase::handleButtonPress() {

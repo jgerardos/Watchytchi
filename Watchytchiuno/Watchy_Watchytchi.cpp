@@ -54,10 +54,90 @@ void Watchytchi::scheduleNextAlert()
   } while (getTimeOfDay(alertTsElements) == TimeOfDay::LateNight);
 
   if (getTimeOfDay(alertTsElements) == TimeOfDay::Dusk)
-    nextAlertType = ScheduledAlertType::HowWasYourDay;
+    nextAlertType = ScheduledAlertType::AskAboutDay;
   else
     nextAlertType = ScheduledAlertType::CloseUp;
 }
+
+void Watchytchi::executeCloseUp()
+{
+  auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
+  auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
+  display.fillScreen(color_bg);
+  // Draw top row of menu buttons (bottom is covered up by critter)
+  for (auto i = 0; i < 4; i++)
+    drawUIButton(i, false);
+
+  // Draw the two close up frames back and forth
+  const int numCloseUpFrames = 10;
+  for (auto i = 0; i < numCloseUpFrames; i++)
+  {
+    if (species == CreatureSpecies::Hog)
+      display.drawBitmap(0, 0, i % 2 == 0 ? img_CloseUp_Happy1 : img_CloseUp_Happy2, 200, 200, color_fg);
+    else
+      display.drawBitmap(0, 0, i % 2 == 0 ? img_MugSnake_CloseUp_Happy1 : img_MugSnake_CloseUp_Happy2, 200, 200, color_fg);
+    display.display(true);
+    display.fillRect(0, 32, 200, 200 - 32, color_bg);
+  }
+}
+
+void Watchytchi::poseHWYDQuestion()
+{
+  drawBgEnvironment();
+
+  auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
+  auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
+
+  // First, pose the question:
+  // TODO: Snake support
+  display.drawBitmap(100 - 36, 110, img_DaisyHog_PosingQuestion, 72, 55, color_fg);
+  display.drawBitmap(69, 83, img_HowWasYourDayIcon, 32, 32, color_fg);
+  display.drawBitmap(103, 85, img_MenuIcon_Placeholder_Active, 32, 32, color_fg);
+  display.display(true);
+
+  delay(2000);
+}
+
+void Watchytchi::drawHWYDMoodSelection()
+{
+  auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
+  auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
+
+  display.drawBitmap(37, 83, img_HappinessMoodle_Angry, 30, 30, color_fg);
+  display.drawBitmap(69, 83, img_HappinessMoodle_Sad, 30, 30, color_fg);
+  display.drawBitmap(101, 83, img_HappinessMoodle_Neutral, 30, 30, color_fg);
+  display.drawBitmap(133, 83, img_HappinessMoodle_Happy, 30, 30, color_fg);
+  auto cursorX = 46 + 32 * emotionSelectIdx;
+  display.drawBitmap(cursorX, 69, img_MoodSelectionCursor, 12, 12, color_fg);
+}
+
+void Watchytchi::executeHWYDResponse()
+{
+  auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
+  auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
+  const int EIDX_ANGRY = 0, EIDX_SAD = 1, EIDX_NEUTRAL = 2, EIDX_HAPPY = 3;
+
+  switch(emotionSelectIdx)
+  {
+    case EIDX_ANGRY:
+      // TODO: angry reaction with a lil knife
+      lastAnimateMinute = -1;
+      break;
+    case EIDX_SAD:
+      // TODO: sad reaction
+      lastAnimateMinute = -1;
+      break;
+    case EIDX_NEUTRAL:
+      // Do our little idle
+      lastAnimateMinute = -1;
+      break;
+    case EIDX_HAPPY:
+      // Do our happy close up!
+      executeCloseUp();
+      break;
+  }
+}
+
 
 TimeOfDay Watchytchi::getTimeOfDay()
 {
@@ -160,6 +240,29 @@ void Watchytchi::handleButtonPress() {
     if (IS_KEY_CANCEL) {
       gameState = GameState::BaseMenu;
       vibrate(1, 50);
+      showWatchFace(true);
+      return;
+    }
+  }
+  else if (gameState == GameState::HowWasYourDay)
+  {
+    if (IS_KEY_CURSOR) 
+    {
+        emotionSelectIdx = (emotionSelectIdx + 1) % 4;
+        showWatchFace(true);
+        return;
+    }
+    else if (IS_KEY_SELECT)
+    {
+      executeHWYDResponse();
+      gameState = GameState::BaseMenu;
+      showWatchFace(true);
+      lastAnimateMinute = -1;
+      return;
+    }
+    else if (IS_KEY_CANCEL)
+    {
+      gameState = GameState::BaseMenu;
       showWatchFace(true);
       return;
     }
@@ -270,6 +373,24 @@ void Watchytchi::handleButtonPress() {
   Watchy::handleButtonPress();
 }
 
+void Watchytchi::drawBgEnvironment()
+{
+  auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
+  auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
+  //BG
+  display.fillScreen(color_bg);
+
+  if (isElectricLit())
+    display.drawBitmap(0, 0, img_LightbulbLightGradient_1, 200, 200, color_fg);
+  else if (getTimeOfDay() == TimeOfDay::Dusk)
+    display.drawBitmap(0, 0, img_DuskLightGradient, 200, 200, color_fg);
+  
+  if (getTimeOfDay() == TimeOfDay::LateNight)
+    display.drawBitmap(100 - (9/2), 0, img_HangingLightbulb, 9, 81, color_fg); 
+  
+  drawWeather();
+}
+
 void Watchytchi::drawWatchFace(){
     // For some reason we need to clear alarm 1, otherwise the watch updates every single frame
     if (Watchy::RTC.rtcType == DS3231) {
@@ -322,37 +443,20 @@ void Watchytchi::drawWatchFace(){
     // If the owner pressed the alert button while it was active, execute an animation
     if (gameState == GameState::AlertInteraction)
     {
-      scheduleNextAlert();
       gameState = GameState::BaseMenu;
-      display.fillScreen(color_bg);
-      // Draw top row of menu buttons (bottom is covered up by critter)
-      for (auto i = 0; i < 4; i++)
-        drawUIButton(i, false);
-
-      // Draw the two close up frames back and forth
-      const int numCloseUpFrames = 10;
-      for (auto i = 0; i < numCloseUpFrames; i++)
+      if (nextAlertType == ScheduledAlertType::CloseUp)
+        executeCloseUp();
+      else if (nextAlertType == ScheduledAlertType::AskAboutDay)
       {
-        display.drawBitmap(0, 0, i % 2 == 0 ? img_CloseUp_Happy1 : img_CloseUp_Happy2, 200, 200, color_fg);
-        display.display(true);
-        display.fillRect(0, 32, 200, 200 - 32, color_bg);
+        poseHWYDQuestion();
+        gameState = GameState::HowWasYourDay;
       }
+      scheduleNextAlert();
     }
     DBGPrintF("Next Alert ts was "); DBGPrint(beforeAlertTs); DBGPrintF(", now it is "); DBGPrint(nextAlertTs); DBGPrintln();
     
-    //BG
-    display.fillScreen(color_bg);
-    endProfileAndStart("Section 1: Initialize and fillscreen");
-
-    if (isElectricLit())
-      display.drawBitmap(0, 0, img_LightbulbLightGradient_1, 200, 200, color_fg);
-    else if (getTimeOfDay() == TimeOfDay::Dusk)
-      display.drawBitmap(0, 0, img_DuskLightGradient, 200, 200, color_fg);
-    
-    if (getTimeOfDay() == TimeOfDay::LateNight)
-      display.drawBitmap(100 - (9/2), 0, img_HangingLightbulb, 9, 81, color_fg); 
-    
-    drawWeather();
+    endProfileAndStart("Section 1: Initialize");
+    drawBgEnvironment();
     endProfileAndStart("Section 2: Draw weather and maybe lighting");
 
     for (auto i = 0; i < 8; i++)
@@ -469,7 +573,13 @@ void Watchytchi::drawWatchFace(){
 
     if (hasPoop)    
       display.drawBitmap(32, 200 - 32 - 20 - 4, idleAnimIdx % 2 == 0 ? img_SmallPoop_1 : img_SmallPoop_2, 20, 20, color_fg);
-    endProfile("Section 6: Poop");
+    endProfileAndStart("Section 6: Poop");
+
+    if (gameState == GameState::HowWasYourDay)
+    {
+      drawHWYDMoodSelection();
+    }
+    endProfile("How was your day");
 
 
     if (getTimeOfDay() == TimeOfDay::Daytime && hunger <= 0.1f && (lastHungerCryMinute == -1 || currentTime.Minute - lastHungerCryMinute >= 5 || currentTime.Minute < lastHungerCryMinute))

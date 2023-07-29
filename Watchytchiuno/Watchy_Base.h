@@ -10,8 +10,8 @@
 #endif
 
 enum CreatureSpecies {Hog, Snake};
-enum ScheduledAlertType {None, CloseUp, HowWasYourDay};
-enum GameState {BaseMenu, Eating, AlertInteraction, StrokingMode};
+enum ScheduledAlertType {None, CloseUp, AskAboutDay};
+enum GameState {BaseMenu, Eating, AlertInteraction, StrokingMode, HowWasYourDay};
 
 /*# State #*/
 /*## State: System ##*/
@@ -38,19 +38,24 @@ extern RTC_DATA_ATTR bool hasPoop;
 const String nvsKey_hasPoop = "hasPoop";
 extern RTC_DATA_ATTR int lastPoopHour;
 const String nvsKey_lastPoopHour = "lastPoopHour";
-extern RTC_DATA_ATTR int nextAlertTs;
-const String nvsKey_nextAlertTs = "nextAlertTs";
-extern RTC_DATA_ATTR ScheduledAlertType nextAlertType;
-const String nvsKey_nextAlertType = "nextAlertType";
 
-/*## State: Game State ##*/
+/*## State: Game State (General) ##*/
 extern RTC_DATA_ATTR GameState gameState;
 extern RTC_DATA_ATTR bool playAnim;
 extern RTC_DATA_ATTR int idleAnimIdx;
 extern RTC_DATA_ATTR bool isPeriodicAnim;
 extern RTC_DATA_ATTR int lastHungerCryMinute;
-extern RTC_DATA_ATTR bool isStrokingLeftSide;
 extern RTC_DATA_ATTR int lastAnimateMinute;
+
+/*## State: Game State (Stroking) ##*/
+extern RTC_DATA_ATTR bool isStrokingLeftSide;
+
+/*## State: Game State (Events & Alerts) ##*/
+extern RTC_DATA_ATTR int nextAlertTs;
+const String nvsKey_nextAlertTs = "nextAlertTs";
+extern RTC_DATA_ATTR ScheduledAlertType nextAlertType;
+const String nvsKey_nextAlertType = "nextAlertType";
+extern RTC_DATA_ATTR int emotionSelectIdx;
 
 // Compile out macros to increase speed of serial printing
 #define VERBOSE_LOGGING_ENABLED 0

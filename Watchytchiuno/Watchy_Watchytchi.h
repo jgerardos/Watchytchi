@@ -15,7 +15,12 @@ class Watchytchi : public WatchyBase{
         bool isElectricLit();
         bool hasActiveAlert();
         void scheduleNextAlert();
+        void executeCloseUp();
+        void poseHWYDQuestion();
+        void drawHWYDMoodSelection();
+        void executeHWYDResponse();
         void handleButtonPress();
+        void drawBgEnvironment();
         void drawWatchFace();
         void drawEatAnim();
         void drawIdleCreature(bool isAnimating);
