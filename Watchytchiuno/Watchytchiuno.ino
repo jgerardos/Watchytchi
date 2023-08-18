@@ -1,4 +1,4 @@
-#include "Watchy_Watchytchi.h";
+#include "Watchy_Watchytchi.h"
 #include "Settings.h"
 
 Watchytchi watchy(settings);
