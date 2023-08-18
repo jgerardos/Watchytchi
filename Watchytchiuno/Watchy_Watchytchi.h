@@ -1,3 +1,4 @@
+#pragma once
 #include "Watchy_Base.h"
 #include "ImageAssets.h"
 

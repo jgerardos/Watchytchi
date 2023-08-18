@@ -1,7 +1,7 @@
+#pragma once
 //Derived from peerdavid's source at: https://github.com/peerdavid/Watchy
 #ifndef WATCHY_BASE_H
 #define WATCHY_BASE_H
-
 #include <Watchy.h>
 #include "ArduinoNvs.h"
 

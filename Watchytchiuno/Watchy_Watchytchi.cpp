@@ -1,5 +1,7 @@
+#pragma once
 #include "Watchy_Watchytchi.h"
 #include <stdlib.h>     //srand, rand
+#include "SpeciesCode.h"
 
 const unsigned char *dk_nums [10] = {dk0, dk1, dk2, dk3, dk4, dk5, dk6, dk7, dk8, dk9};
 const unsigned char *foodBerry_stages[7] = {img_FoodBerry_Stage0, img_FoodBerry_Stage1, img_FoodBerry_Stage2, img_FoodBerry_Stage3, 
@@ -13,6 +15,10 @@ const float k_secDurationToFullyDepleteHunger = 4.f * 60.f * 60.f;
 const int k_maxSecondsDeltaForUpdate = 5 * 60;
 const int k_alertInterval = 3 * 60 * 60;
 const int k_alertExpirationWindow = 30 * 60;
+
+DaisyHog hog = DaisyHog();
+MugSnake snake = MugSnake();
+SpeciesBase* critter = nullptr;
 
 const unsigned char *img_smallFontArr[10] = {
   img_smallFont_0,
@@ -72,10 +78,7 @@ void Watchytchi::executeCloseUp()
   const int numCloseUpFrames = 10;
   for (auto i = 0; i < numCloseUpFrames; i++)
   {
-    if (species == CreatureSpecies::Hog)
-      display.drawBitmap(0, 0, i % 2 == 0 ? img_CloseUp_Happy1 : img_CloseUp_Happy2, 200, 200, color_fg);
-    else
-      display.drawBitmap(0, 0, i % 2 == 0 ? img_MugSnake_CloseUp_Happy1 : img_MugSnake_CloseUp_Happy2, 200, 200, color_fg);
+    critter->DrawCloseUpFrame(i, true);
     display.display(true);
     display.fillRect(0, 32, 200, 200 - 32, color_bg);
   }
@@ -392,6 +395,12 @@ void Watchytchi::drawBgEnvironment()
 }
 
 void Watchytchi::drawWatchFace(){
+    if (species == CreatureSpecies::Hog)
+      critter = &hog;
+    else if (species == CreatureSpecies::Snake)
+      critter = &snake;
+    critter->owner = this;
+
     // For some reason we need to clear alarm 1, otherwise the watch updates every single frame
     if (Watchy::RTC.rtcType == DS3231) {
       Watchy::RTC.rtc_ds.clearAlarm(DS3232RTC::ALARM_1);
@@ -720,123 +729,31 @@ void Watchytchi::drawWeather(){
 void Watchytchi::drawIdleCreature(bool isAnimating){
   auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
   auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
+  // Stroking mode: do stroking animation
+  if (gameState == GameState::StrokingMode)
+    critter->DrawStrokingPose(idleAnimIdx, isAnimating);
+  // Late night with lights on: Sleepy pose
+  else if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
+    critter->DrawSleepyPose(idleAnimIdx, isAnimating);
+  // Late night lights off: Asleep pose
+  else if (getTimeOfDay() == TimeOfDay::LateNight && invertColors)
+    critter->DrawAsleepPose(idleAnimIdx, isAnimating);
+  // Extreme hunger: Starving pose
+  else if (hunger <= 0.1f)
+    critter->DrawStarvingPose(idleAnimIdx, isAnimating);
+  // Medium hunger: Hungry pose
+  else if (hunger <= 0.45f)
+    critter->DrawHungryPose(idleAnimIdx, isAnimating);
+  // Unhappy: Sulking pose
+  else if (getHappyTier() <= HappyTier::Sad)
+    critter->DrawSadPose(idleAnimIdx, isAnimating);
+  // Do a twich instead of the standing idle frames if we're on our periodic animation
+  else if (isPeriodicAnim)
+    critter->DrawTwitchAnimationPose(idleAnimIdx, isAnimating);
+  // Default: Standing idle
+  else
+    critter->DrawIdlePose(idleAnimIdx, isAnimating);
 
-  /*# DaisyHog #*/
-  if (species == CreatureSpecies::Hog)
-  {
-    // Stroking mode: do stroking animation
-    if (gameState == GameState::StrokingMode)
-      display.drawBitmap(100 - 36, 110, isStrokingLeftSide ? img_DaisyHog_BeingStroked1 : img_DaisyHog_BeingStroked2, 72, 55, color_fg);
-    // Late night with lights on: Sleepy pose
-    else if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
-      display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Sleepy1 : img_DaisyHog_Sleepy2, 72, 55, color_fg);
-    // Late night lights off: Asleep pose
-    else if (getTimeOfDay() == TimeOfDay::LateNight && invertColors)
-      display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Sleep1 : img_DaisyHog_Sleep2, 72, 55, color_fg);
-    // Extreme hunger: Starving pose
-    else if (hunger <= 0.1f)
-    {
-      display.drawBitmap(100 - 36, 110, img_DaisyHog_VeryHungry1, 72, 55, color_fg);
-      display.drawBitmap(100 - 36 + 25, 110-16+7, idleAnimIdx % 2 == 0 ? img_Emote_Hungry1 : img_Emote_Hungry2, 28, 19, color_fg);
-    }
-    // Medium hunger: Hungry pose
-    else if (hunger <= 0.45f)
-    {
-      display.drawBitmap(100 - 36, 110, img_DaisyHog_Hungry1, 72, 55, color_fg);
-    }
-    // Unhappy: Sulking pose
-    else if (getHappyTier() <= HappyTier::Sad)
-    {
-      display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Sulking1 : img_DaisyHog_Sulking2, 72, 55, color_fg);
-      if (getHappyTrendingDirection() < 0)
-        display.drawBitmap(100 - 36 + 25, 85, idleAnimIdx % 2 == 0 ? img_Emote_Stormcloud1 : img_Emote_Stormcloud2, 28, 28, color_fg);
-    }
-    // Afternoon special: hind legs
-    else if (getHappyTier() >= HappyTier::Happy && currentTime.Hour >= 12 && currentTime.Hour < 14)
-    {
-      display.drawBitmap(100 - 36, 93 + 4, idleAnimIdx % 2 == 0 ? img_DaisyHog_HindLegs1 : img_DaisyHog_HindLegs2, 72, 72, color_fg);
-      if (isAnimating && getHappyTier() >= HappyTier::Blissful)
-        display.drawBitmap(100 - 36 + 25, 95, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
-    }
-    // Every couple of hours: special idle
-    else if (getHappyTier() >= HappyTier::Happy && currentTime.Hour % 2 == 0 && currentTime.Minute >= 20 && currentTime.Minute <= 40)
-    {
-      display.drawBitmap(100 - 36, 110 + 4, idleAnimIdx % 2 == 0 ? img_DaisyHog_SkyGaze1 : img_DaisyHog_SkyGaze2, 72, 55, color_fg);
-      if (!isAnimating || getHappyTier() < HappyTier::Blissful)
-        display.drawBitmap(112, 110, idleAnimIdx % 2 == 0 ? img_Emote_Music1 : img_Emote_Music2, 28, 19, color_fg);
-      else
-        display.drawBitmap(112, 110, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
-    }
-    // Do a twich instead of the standing idle frames if we're on our periodic animation
-    else if (isPeriodicAnim)
-    {
-      display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Twitch1 : img_DaisyHog_Twitch2, 80, 55, color_fg);
-      if (getHappyTier() >= HappyTier::Blissful)
-        display.drawBitmap(119, 115, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
-    }
-    // Default: Standing idle
-    else
-    {
-      display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Idle1 : img_DaisyHog_Idle2, 72, 55, color_fg);
-      if (isAnimating && getHappyTier() >= HappyTier::Blissful)
-        display.drawBitmap(119, 115, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
-    }
-  }
-  /*# MugSnake #*/
-  else if (species == CreatureSpecies::Snake)
-  {
-    if (gameState == GameState::StrokingMode)
-      display.drawBitmap(100 - 36, 97, isStrokingLeftSide ? img_MugSnake_BeingPet1 : img_MugSnake_BeingPet2, 72, 72, color_fg);
-    // Late night with lights on: Sleepy pose
-    else if (getTimeOfDay() == TimeOfDay::LateNight && !invertColors)
-    {
-      display.drawBitmap(100 - 36, 97, img_MugSnake_Hungry, 72, 72, color_fg); // TODO: bespoke mugsnake animation for 
-    }
-    // Late night lights off: Asleep pose
-    else if (getTimeOfDay() == TimeOfDay::LateNight && invertColors)
-      display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_Sleeping1 : img_MugSnake_Sleeping2, 72, 72, color_fg);
-    // Extreme hunger: Starving pose
-    else if (hunger <= 0.1f)
-    {
-      display.drawBitmap(100 - 36, 97, img_MugSnake_VeryHungry, 72, 72, color_fg);
-      display.drawBitmap(100 - 36 + 25, 97, idleAnimIdx % 2 == 0 ? img_Emote_Hungry1 : img_Emote_Hungry2, 28, 19, color_fg);
-    }
-    // Medium hunger: Hungry pose
-    else if (hunger <= 0.45f)
-    {
-      display.drawBitmap(100 - 36, 97, img_MugSnake_Hungry, 72, 72, color_fg);
-    }
-    // Unhappy: Sulking pose
-    else if (getHappyTier() <= HappyTier::Sad)
-    {
-      display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_Sulking1 : img_MugSnake_Sulking2, 72, 72, color_fg);
-      if (getHappyTrendingDirection() < 0)
-        display.drawBitmap(100 - 36 + 25, 95, idleAnimIdx % 2 == 0 ? img_Emote_Stormcloud1 : img_Emote_Stormcloud2, 28, 28, color_fg);
-    }
-    // Every couple of hours: special idle
-    else if (getHappyTier() >= HappyTier::Happy && currentTime.Hour % 2 == 0 && currentTime.Minute >= 20 && currentTime.Minute <= 40)
-    {
-      display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_TippedOverIdle1 : img_MugSnake_TippedOverIdle2, 72, 72, color_fg);
-      if (!isAnimating || getHappyTier() < HappyTier::Blissful)
-        display.drawBitmap(120, 130, idleAnimIdx % 2 == 0 ? img_Emote_Music1 : img_Emote_Music2, 28, 19, color_fg);
-      else
-        display.drawBitmap(120, 130, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
-    }
-    // Do a special animation instead of the standing idle frames if we're on our periodic animation
-    else if (isAnimating)
-    {
-      display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_Rocking1 : img_MugSnake_Rocking2, 72, 72, color_fg);
-      if (getHappyTier() >= HappyTier::Blissful)
-        display.drawBitmap(119, 115, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
-    }
-    // Default: Standing idle
-    else
-    {
-      display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_Idle1 : img_MugSnake_Idle2, 72, 72, color_fg);
-      if (isPeriodicAnim && getHappyTier() >= HappyTier::Blissful)
-        display.drawBitmap(100 - 36 + 25, 95, idleAnimIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, color_fg);
-    }
-  }
   idleAnimIdx = (idleAnimIdx + 1) % 2;
 }
 
@@ -862,10 +779,7 @@ void Watchytchi::drawEatAnim(){
      // Animate eating
      for (int i = 0; i < numFrames; i++)
      {
-      if (species == CreatureSpecies::Hog)
-        display.drawBitmap(100 - 36, 110, i % 2 == 0 ? img_DaisyHog_Eat1 : img_DaisyHog_Eat2, 72, 55, color_fg);
-      else if (species == CreatureSpecies::Snake)
-        display.drawBitmap(100 - 36, 97, i % 2 == 0 ? img_MugSnake_Eating1 : img_MugSnake_Eating2, 72, 72, color_fg);
+      critter->DrawEatingPose(i, true);
        display.drawBitmap(144 - 18, 126, foodType == BERRIES ? foodBerry_stages[i / 8] : foodCucumber_stages[i / 4], 36, 36, color_fg);
        display.display(true);
        clearCreatureBackground();
