@@ -71,7 +71,7 @@ void WatchyBase::startProfile()
   DBGPrintF("after starting a new profile, nextProfileIdx is "); DBGPrint(nextProfileIdx); DBGPrintln();
 }
 
-void WatchyBase::endProfile(char* label)
+void WatchyBase::endProfile(const char* label)
 {
   DBGPrintF("Before endProfile, nextProfileIdx is "); DBGPrint(nextProfileIdx); DBGPrintln();
 
@@ -81,7 +81,7 @@ void WatchyBase::endProfile(char* label)
   DBGPrintF("After endProfile, nextProfileIdx is "); DBGPrint(nextProfileIdx); DBGPrintln();
 }
 
-void WatchyBase::endProfileAndStart(char* label)
+void WatchyBase::endProfileAndStart(const char* label)
 {
   endProfile(label);
   startProfile();

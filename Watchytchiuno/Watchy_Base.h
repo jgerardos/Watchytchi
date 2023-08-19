@@ -91,8 +91,8 @@ class WatchyBase : public Watchy {
         void vibrate(uint8_t times=1, uint32_t delay_time=40);
         esp_sleep_wakeup_cause_t wakeup_reason;
         void startProfile();
-        void endProfile(char* label);
-        void endProfileAndStart(char* label);
+        void endProfile(const char* label);
+        void endProfileAndStart(const char* label);
         int profileMs[16];
         int nextProfileIdx;
         virtual void drawUIButton(int idx, bool quickCursorUpdate) {}
