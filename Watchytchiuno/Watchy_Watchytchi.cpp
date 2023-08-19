@@ -18,6 +18,7 @@ const int k_alertExpirationWindow = 30 * 60;
 
 DaisyHog hog = DaisyHog();
 MugSnake snake = MugSnake();
+DeerSlug deerSlug = DeerSlug();
 SpeciesBase* critter = nullptr;
 
 const unsigned char *img_smallFontArr[10] = {
@@ -327,7 +328,7 @@ void Watchytchi::handleButtonPress() {
       // HACK: for debugging purposes, the not-yet-implemented read icon will toggle the species
       if (menuIdx == MENUIDX_READ)
       {
-        species = species == CreatureSpecies::Hog ? CreatureSpecies::Snake : CreatureSpecies::Hog;
+        species = (CreatureSpecies)(((int)species + 1) % (int)CreatureSpecies::COUNT);
         NVS.begin();
         NVS.setInt(nvsKey_species, (int)species, true);
         didPerformAction = true;
@@ -395,12 +396,6 @@ void Watchytchi::drawBgEnvironment()
 }
 
 void Watchytchi::drawWatchFace(){
-    if (species == CreatureSpecies::Hog)
-      critter = &hog;
-    else if (species == CreatureSpecies::Snake)
-      critter = &snake;
-    critter->owner = this;
-
     // For some reason we need to clear alarm 1, otherwise the watch updates every single frame
     if (Watchy::RTC.rtcType == DS3231) {
       Watchy::RTC.rtc_ds.clearAlarm(DS3232RTC::ALARM_1);
@@ -420,6 +415,21 @@ void Watchytchi::drawWatchFace(){
     nextAlertTs = NVS.getInt(nvsKey_nextAlertTs, -1);
     nextAlertType = (ScheduledAlertType)NVS.getInt(nvsKey_nextAlertType, 0);
     DBGPrintF("Loaded lastUpdateTsEpoch "); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
+
+    if ((int)species < 0 || (int)species >= (int)CreatureSpecies::COUNT)
+    {
+      species = (CreatureSpecies)constrain((int)species, 0, (int)CreatureSpecies::COUNT - 1);
+      NVS.begin();
+      NVS.setInt(nvsKey_species, (int)species, true);
+    }
+
+    if (species == CreatureSpecies::Hog)
+      critter = &hog;
+    else if (species == CreatureSpecies::Snake)
+      critter = &snake;
+    else if (species == CreatureSpecies::Deer)
+      critter = &deerSlug;
+    critter->owner = this;
 
     endProfileAndStart("Section 0: Load values");
 
