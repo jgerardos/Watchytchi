@@ -175,8 +175,7 @@ class DeerSlug : public SpeciesBase
   }
   void DrawAsleepPose(int idleIdx, bool isAnimating) override
   {
-    // TODO: bespoke version of animation
-    owner->display.drawBitmap(100 - 36, 110, img_DeerSlug_Idle, 72, 55, getColor_fg());
+    owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DeerSlug_Sleeping1 : img_DeerSlug_Sleeping2, 72, 55, getColor_fg());
   }
   void DrawStarvingPose(int idleIdx, bool isAnimating) override
   {
