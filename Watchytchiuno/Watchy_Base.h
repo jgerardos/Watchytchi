@@ -4,6 +4,7 @@
 #define WATCHY_BASE_H
 #include <Watchy.h>
 #include "ArduinoNvs.h"
+#include "DebugSettings.h"
 
 #if __has_include("config.h") && __has_include(<stdint.h>)
 # include "config.h"
@@ -58,7 +59,6 @@ const String nvsKey_nextAlertType = "nextAlertType";
 extern RTC_DATA_ATTR int emotionSelectIdx;
 
 // Compile out macros to increase speed of serial printing
-#define VERBOSE_LOGGING_ENABLED 0
 #define DBGPrint(content) if (VERBOSE_LOGGING_ENABLED) {Serial.print(content);}
 #define DBGPrintF(content) if (VERBOSE_LOGGING_ENABLED) {Serial.print(F(content));}
 #define DBGPrintln() if (VERBOSE_LOGGING_ENABLED) {Serial.println();}
