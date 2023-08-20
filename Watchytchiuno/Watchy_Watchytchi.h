@@ -5,9 +5,14 @@
 enum TimeOfDay {Daytime, Dusk, LateNight};
 enum HappyTier {Sad, Neutral, Happy, Blissful};
 
+class SpeciesBase; // Needed to prevent circular include
+
 class Watchytchi : public WatchyBase{
     using WatchyBase::WatchyBase;
     public:
+        SpeciesBase* critter = nullptr;
+        const int k_alertInterval = 3 * 60 * 60;
+        const int k_alertExpirationWindow = 30 * 60;
         TimeOfDay getTimeOfDay();
         TimeOfDay getTimeOfDay(const tmElements_t &tm);
         HappyTier getHappyTier();
