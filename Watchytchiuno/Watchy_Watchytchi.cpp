@@ -340,9 +340,11 @@ void Watchytchi::drawWatchFace(){
     auto timeDelta = (float)(currentEpochTime - lastUpdateTsEpoch);
     if (timeDelta < 0.f)
       timeDelta = 0.f;
+#if !DISABLE_MAX_TIMESTAMP
     if (timeDelta > k_maxSecondsDeltaForUpdate)
       timeDelta = k_maxSecondsDeltaForUpdate;
-    
+#endif
+
     DBGPrintF("Current epoch time "); DBGPrint(currentEpochTime); DBGPrintF(", new epoch time "); DBGPrint(lastUpdateTsEpoch); DBGPrintF(", delta of "); DBGPrint(timeDelta); DBGPrintln();
 
     /*# Background and environment: #*/
