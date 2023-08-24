@@ -180,9 +180,7 @@ void DeerSlug::DrawAsleepPose(int idleIdx, bool isAnimating)
 }
 void DeerSlug::DrawStarvingPose(int idleIdx, bool isAnimating)
 {
-  // TODO: bespoke version of animation
-  owner->display.drawBitmap(100 - 36, 110, img_DeerSlug_Hungry1, 72, 55, getColor_fg());
-  owner->display.drawBitmap(100 - 36 + 25, 97, idleIdx % 2 == 0 ? img_Emote_Hungry1 : img_Emote_Hungry2, 28, 19, getColor_fg());
+  owner->display.drawBitmap(100 - 36, 110, img_DeerSlug_Starving, 72, 55, getColor_fg());
 }
 void DeerSlug::DrawHungryPose(int idleIdx, bool isAnimating)
 {
