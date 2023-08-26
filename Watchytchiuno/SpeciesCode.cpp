@@ -167,7 +167,7 @@ void DeerSlug::DrawStrokingPose(int idleIdx, bool isAnimating)
 }
 void DeerSlug::DrawEatingPose(int idleIdx, bool isAnimating)
 {
-  owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DeerSlug_Eating1 : img_DeerSlug_Idle, 72, 55, getColor_fg());
+  owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DeerSlug_Eating1 : img_DeerSlug_Idle1, 72, 55, getColor_fg());
 }
 void DeerSlug::DrawSleepyPose(int idleIdx, bool isAnimating)
 {
@@ -195,14 +195,14 @@ void DeerSlug::DrawSadPose(int idleIdx, bool isAnimating)
 void DeerSlug::DrawTwitchAnimationPose(int idleIdx, bool isAnimating)
 {
   // TODO: bespoke version of animation
-  owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DeerSlug_Eating1 : img_DeerSlug_Idle, 72, 55, getColor_fg());
+  owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DeerSlug_Eating1 : img_DeerSlug_Idle1, 72, 55, getColor_fg());
   if (owner->getHappyTier() >= HappyTier::Blissful)
     owner->display.drawBitmap(119, 115, idleIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, getColor_fg());
 }
 void DeerSlug::DrawIdlePose(int idleIdx, bool isAnimating)
 {
   // TODO: Special idles
-  owner->display.drawBitmap(100 - 36, 110, img_DeerSlug_Idle, 72, 55, getColor_fg());
+  owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DeerSlug_Idle1 : img_DeerSlug_Idle2, 72, 55, getColor_fg());
 }
 void DeerSlug::DrawCloseUpFrame(int idleIdx, bool isAnimating)
 {
