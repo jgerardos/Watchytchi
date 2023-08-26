@@ -4,6 +4,7 @@
 /*# State #*/
 /*## State: System ##*/
 RTC_DATA_ATTR int lastUpdateTsEpoch = -1;
+RTC_DATA_ATTR int numResetPresses = 0;
 
 /*## State: UI ##*/
 RTC_DATA_ATTR int menuIdx;
@@ -12,7 +13,7 @@ RTC_DATA_ATTR bool hasStatusDisplay = false;
 RTC_DATA_ATTR bool invertColors = false;
 
 /*## State: Saveable pet stats ##*/
-RTC_DATA_ATTR CreatureSpecies species = CreatureSpecies::Hog;
+RTC_DATA_ATTR CreatureSpecies species = CreatureSpecies::Deer;
 RTC_DATA_ATTR int numSecondsAlive = 0;
 RTC_DATA_ATTR float hunger = 1.f;
 RTC_DATA_ATTR float happyPercent = 0.5f;

@@ -18,6 +18,7 @@ enum GameState {BaseMenu, Eating, AlertInteraction, StrokingMode, HowWasYourDay}
 /*## State: System ##*/
 extern RTC_DATA_ATTR int lastUpdateTsEpoch;
 const String nvsKey_lastUpdateTsEpoch = "lastTs";
+extern RTC_DATA_ATTR int numResetPresses;
 
 /*## State: UI ##*/
 extern RTC_DATA_ATTR int menuIdx;
@@ -81,8 +82,8 @@ const int MENUIDX_FEED = 2;
 const int MENUIDX_ALERT = 3;
 const int MENUIDX_CLEAN = 4;
 const int MENUIDX_LIGHT = 5;
-const int MENUIDX_PLACEHOLDER6 = 6;
-const int MENUIDX_READ = 7;
+const int MENUIDX_READ = 6;
+const int MENUIDX_RESET = 7;
 
 class WatchyBase : public Watchy {
     using Watchy::Watchy;

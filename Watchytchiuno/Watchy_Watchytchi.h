@@ -13,6 +13,7 @@ class Watchytchi : public WatchyBase{
         SpeciesBase* critter = nullptr;
         const int k_alertInterval = 3 * 60 * 60;
         const int k_alertExpirationWindow = 30 * 60;
+        void resetSaveData();
         TimeOfDay getTimeOfDay();
         TimeOfDay getTimeOfDay(const tmElements_t &tm);
         HappyTier getHappyTier();

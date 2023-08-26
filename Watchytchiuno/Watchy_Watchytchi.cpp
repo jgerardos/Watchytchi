@@ -10,6 +10,7 @@ const unsigned char *foodBerry_stages[7] = {img_FoodBerry_Stage0, img_FoodBerry_
   img_FoodCucumberPlate_Stage3, img_FoodCucumberPlate_Stage4, img_FoodCucumberPlate_Stage5, img_FoodCucumberPlate_Stage6};
 const unsigned char* flower_stages[6] = { img_GrowingFlower1, img_GrowingFlower2, img_GrowingFlower3, 
   img_GrowingFlower4, img_GrowingFlower5, img_GrowingFlower6};
+const unsigned char *menu_reset_press_stages[4] = {img_MenuIcon_ResetSave_Active, img_MenuIcon_ResetSave_ActivePress1, img_MenuIcon_ResetSave_ActivePress2, img_MenuIcon_ResetSave_ActivePress3};
 
 const float k_secDurationToFullyDepleteHunger = 4.f * 60.f * 60.f;
 const int k_maxSecondsDeltaForUpdate = 5 * 60;
@@ -30,6 +31,33 @@ const unsigned char *img_smallFontArr[10] = {
   img_smallFont_8,
   img_smallFont_9
 };
+
+void Watchytchi::resetSaveData()
+{
+  NVS.begin();
+  NVS.setInt(nvsKey_lastUpdateTsEpoch, -1);
+  menuIdx = 0;
+  lastAdvanceIdxMinute = 0;
+  hasStatusDisplay = false;
+  NVS.setInt(nvsKey_invertColors, false);
+  NVS.setInt(nvsKey_species, (int)CreatureSpecies::Deer, false);
+  NVS.setInt(nvsKey_numSecondsAlive, 0, false);
+  NVS.setFloat(nvsKey_hunger, 1.f, false);
+  NVS.setFloat(nvsKey_happyPercent, 0.5f, false);
+  NVS.setInt(nvsKey_hasPoop, 0, false);
+  NVS.setInt(nvsKey_lastPoopHour, -1, false);
+  gameState = GameState::BaseMenu;
+  playAnim = false;
+  idleAnimIdx = 0;
+  isPeriodicAnim = false;
+  lastHungerCryMinute = -1;
+  lastAnimateMinute = 0;
+  isStrokingLeftSide = false;
+  NVS.setInt(nvsKey_nextAlertTs, -1);
+  NVS.setInt(nvsKey_nextAlertType, (int)ScheduledAlertType::None);
+  emotionSelectIdx = 0;
+  auto didSave = NVS.commit();
+}
 
 static float floatMap(float val, float fromLow, float fromHigh, float toLow, float toHigh, float precision = 1000.f)
 {
@@ -233,6 +261,14 @@ void Watchytchi::handleButtonPress() {
         NVS.setInt(nvsKey_species, (int)species, true);
         didPerformAction = true;
       }
+      // HACK: until we have a settings menu, resetting save data is an option from one of the 8 care buttons
+      if (menuIdx == MENUIDX_RESET)
+      {
+        numResetPresses++;
+        didPerformAction = true;
+        if (numResetPresses >= 4)
+          resetSaveData();
+      }
       // Vibrate if this selection resulted in an action
       if (didPerformAction)
         vibrate(1, 50);
@@ -243,7 +279,7 @@ void Watchytchi::handleButtonPress() {
     if (IS_KEY_CURSOR) {
       menuIdx = (menuIdx + 1) % 8;
       // Skip icons for not-yet-implemented functions, and skip the alert icon if there is no active alert
-      while (menuIdx == MENUIDX_PLACEHOLDER6 || (!hasActiveAlert() && menuIdx == MENUIDX_ALERT))
+      while (!hasActiveAlert() && menuIdx == MENUIDX_ALERT)
         menuIdx = (menuIdx + 1) % 8;
       vibrate();
       lastAdvanceIdxMinute = currentTime.Minute;
@@ -395,6 +431,9 @@ void Watchytchi::drawWatchFace(){
     auto flowerGrowthIdx = constrain(age, 0, 5);
     display.drawBitmap(156, 91, flower_stages[flowerGrowthIdx], 30, 45, color_fg);
     DBGPrintF("numSecondsAlive is "); DBGPrint(numSecondsAlive); DBGPrintF(", age in days is "); DBGPrint(age);
+
+    if (menuIdx != MENUIDX_RESET)
+      numResetPresses = 0;
 
     endProfileAndStart("Section 3.5: Age Flower");
 
@@ -597,6 +636,13 @@ void Watchytchi::drawUIButton(int idx, bool quickCursorUpdate)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Lights_Active : img_MenuIcon_Lights_Inactive, 32, 32, iconColor);
     else if (idx == MENUIDX_READ)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Read_Active : img_MenuIcon_Read_Inactive, 32, 32, iconColor);
+    else if (idx == MENUIDX_RESET)
+    {
+      if (idx != menuIdx)
+        display.drawBitmap(xPos, yPos, img_MenuIcon_ResetSave_Inactive, 32, 32, iconColor);
+      else
+        display.drawBitmap(xPos, yPos, menu_reset_press_stages[constrain(numResetPresses, 0, 4)], 32, 32, iconColor);
+    }
     else
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Placeholder_Active : img_MenuIcon_Placeholder_Inactive, 32, 32, iconColor);
 }
