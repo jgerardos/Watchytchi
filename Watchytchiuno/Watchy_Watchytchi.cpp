@@ -119,13 +119,6 @@ bool Watchytchi::isElectricLit()
   return getTimeOfDay() == TimeOfDay::LateNight && !invertColors;
 }
 
-bool Watchytchi::hasActiveAlert()
-{
-  time_t currentEpochTime = makeTime(currentTime);
-  // The alert is active if it is scheduled in the past, but not so far in the past that we've missed it entirely
-  return (nextAlertTs > 0 && currentEpochTime > nextAlertTs && currentEpochTime < nextAlertTs + k_alertExpirationWindow);
-}
-
 void Watchytchi::handleButtonPress() {
   uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
 
@@ -434,6 +427,13 @@ void Watchytchi::drawWatchFace(){
 
     if (menuIdx != MENUIDX_RESET)
       numResetPresses = 0;
+
+    // Grow up into a bigger critter!
+    if (species == CreatureSpecies::Deer && numSecondsAlive >= 2.5 * 24 * 60 * 60)
+    {
+      srand(lastUpdateTsEpoch);
+      species = rand() == 0 ? CreatureSpecies::Hog : CreatureSpecies::Snake;
+    }
 
     endProfileAndStart("Section 3.5: Age Flower");
 

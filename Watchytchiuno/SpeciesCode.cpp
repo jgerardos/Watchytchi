@@ -207,5 +207,5 @@ void DeerSlug::DrawIdlePose(int idleIdx, bool isAnimating)
 void DeerSlug::DrawCloseUpFrame(int idleIdx, bool isAnimating)
 {
   // TODO: DeerSlug version of animation
-  owner->display.drawBitmap(0, 0, idleIdx % 2 == 0 ? img_CloseUp_Happy1 : img_CloseUp_Happy2, 200, 200, getColor_fg());
+  owner->display.drawBitmap(0, 0, idleIdx % 2 == 0 ? img_DeerSlug_CloseUpHappy1 : img_DeerSlug_CloseUpHappy2, 200, 200, getColor_fg());
 }

@@ -2,6 +2,13 @@
 #include <stdlib.h>     //srand, rand
 #include "SpeciesCode.h"
 
+bool Watchytchi::hasActiveAlert()
+{
+  time_t currentEpochTime = makeTime(currentTime);
+  // The alert is active if it is scheduled in the past, but not so far in the past that we've missed it entirely
+  return (nextAlertTs > 0 && currentEpochTime > nextAlertTs && currentEpochTime < nextAlertTs + k_alertExpirationWindow);
+}
+
 /// @brief Schedule the next "alert" to take place in the future, skipping nighttime alerts
 void Watchytchi::scheduleNextAlert()
 {
@@ -9,17 +16,23 @@ void Watchytchi::scheduleNextAlert()
   time_t currentEpochTime = makeTime(currentTime);
   nextAlertTs = currentEpochTime;
 
-  do
-  {
-    nextAlertTs += k_alertInterval;
-    // Make sure we don't set an alert during the night:
-    breakTime(nextAlertTs, alertTsElements);
-  } while (getTimeOfDay(alertTsElements) == TimeOfDay::LateNight);
-
-  if (getTimeOfDay(alertTsElements) == TimeOfDay::Dusk)
-    nextAlertType = ScheduledAlertType::AskAboutDay;
-  else
+  #if FORCE_NEXT_EVENT
     nextAlertType = ScheduledAlertType::CloseUp;
+    nextAlertTs += 1;
+  #else
+    do
+    {
+      nextAlertTs += k_alertInterval;
+      // Make sure we don't set an alert during the night:
+      breakTime(nextAlertTs, alertTsElements);
+    } while (getTimeOfDay(alertTsElements) == TimeOfDay::LateNight);
+
+    if (getTimeOfDay(alertTsElements) == TimeOfDay::Dusk)
+      nextAlertType = ScheduledAlertType::AskAboutDay;
+    else
+      nextAlertType = ScheduledAlertType::CloseUp;
+  #endif
+  DBGPrintF("Scheduled event! nextAlertType is"); DBGPrint(nextAlertType); DBGPrintF("NextAlertTs is "); DBGPrint(nextAlertTs); DBGPrintF("Epoch time is "); DBGPrint(currentEpochTime); DBGPrintln(); 
 }
 
 void Watchytchi::executeCloseUp()
