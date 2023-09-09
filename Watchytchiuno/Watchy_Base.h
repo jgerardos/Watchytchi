@@ -12,7 +12,7 @@
 
 enum CreatureSpecies {Hog, Snake, Deer, COUNT};
 enum ScheduledAlertType {None, CloseUp, AskAboutDay};
-enum GameState {BaseMenu, Eating, AlertInteraction, StrokingMode, HowWasYourDay};
+enum GameState {BaseMenu, Eating, AlertInteraction, StrokingMode, HowWasYourDay, CNT};
 
 /*# State #*/
 /*## State: System ##*/

@@ -34,4 +34,22 @@ class Watchytchi : public WatchyBase{
         void drawWeather();
         void drawUIButton(int idx, bool quickCursorUpdate);
         void clearCreatureBackground();
+    
+        // State-based handlers:
+        bool dummy_handleButtonPress(uint64_t wakeupBit);
+        void baseMenu_draw();
+        bool baseMenu_handleButtonPress(uint64_t wakeupBit);
+        void stroking_draw();
+        bool stroking_handleButtonPress(uint64_t wakeupBit);
+        void howWasYourDay_draw();
+        bool howWasYourDay_handleButtonPress(uint64_t wakeupBit);
+        
+        typedef bool (Watchytchi::*ButtonFunc)(long long unsigned int);
+        ButtonFunc handleButtonFuncsByState[(int)GameState::CNT] = {
+            &Watchytchi::baseMenu_handleButtonPress, // BASEMENU
+            &Watchytchi::dummy_handleButtonPress, // EATING
+            &Watchytchi::dummy_handleButtonPress, // ALERT INTERACTION
+            &Watchytchi::stroking_handleButtonPress, // STROKING
+            &Watchytchi::howWasYourDay_handleButtonPress // HOW WAS YOUR DAY
+        }; 
 };

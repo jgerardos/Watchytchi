@@ -119,6 +119,11 @@ bool Watchytchi::isElectricLit()
   return getTimeOfDay() == TimeOfDay::LateNight && !invertColors;
 }
 
+void Watchytchi::stroking_draw()
+{
+  // TODO: Stroking draw function
+}
+
 void Watchytchi::handleButtonPress() {
   uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
 
@@ -127,15 +132,135 @@ void Watchytchi::handleButtonPress() {
       // Wait until interrupt is cleared.
       // Otherwise it will fire again and again.
     }
-
-    // To be defined in the watch face what we want exactly
-    // to do. Therefore, no return;
   }
   RTC.read(currentTime);
+  // Call the active handle button press function depending on my gamestate
+  auto didHandlePress = (this->*handleButtonFuncsByState[(int)gameState])(wakeupBit);
 
-  if (gameState == GameState::StrokingMode)
-  {
-    // In stroking mode, the left (cursor) and right (select) button moves the hand back and forth
+  if (didHandlePress)
+    return;
+  else
+    Watchy::handleButtonPress();
+}
+
+bool Watchytchi::dummy_handleButtonPress(uint64_t)
+{
+  return false;
+}
+
+bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
+{
+  // Process selection
+  if (IS_KEY_SELECT) {
+    auto didPerformAction = false;
+    // Open up the menu UI
+    if (menuIdx == MENUIDX_INSPECT)
+    {
+      hasStatusDisplay = true;
+      didPerformAction = true;
+    }
+    else
+      hasStatusDisplay = false;
+    if (menuIdx == MENUIDX_STROKE)
+    {
+      gameState = GameState::StrokingMode;
+      DBGPrintF("Entering stroke mode!"); DBGPrintln();
+    }      
+    // Start feeding
+    if (menuIdx == MENUIDX_FEED)
+    {
+      gameState = GameState::Eating;
+      didPerformAction = true;
+    }
+    // React to alert
+    if (menuIdx == MENUIDX_ALERT && hasActiveAlert())
+    {
+      gameState = GameState::AlertInteraction;
+      didPerformAction = false;
+      scheduleNextAlert();
+    }
+    // Clean Poop
+    if (hasPoop && menuIdx == MENUIDX_CLEAN)
+    {
+      hasPoop = false;
+      didPerformAction = true;
+      auto prevHour = lastPoopHour;
+      lastPoopHour = currentTime.Hour; // Cleaning resets last poop hour in order to prevent immediate poop once again
+      lastAnimateMinute = -99; // Do a little dance afterwards by resetting the last animate minute
+      NVS.begin();
+      NVS.setInt(nvsKey_hasPoop, 0, false);
+      NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
+      NVS.commit();
+      DBGPrintF("Cleaned poop! New lastPoopHour ="); DBGPrint(lastPoopHour); DBGPrintF(", previously it was"); DBGPrint(prevHour); DBGPrintln();
+    }
+    // Toggle Light
+    if (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6))
+    {
+      invertColors = !invertColors;
+      NVS.begin();
+      NVS.setInt(nvsKey_invertColors, invertColors ? 1 : 0, true);
+      didPerformAction = true;
+    }
+    // HACK: for debugging purposes, the not-yet-implemented read icon will toggle the species
+    if (menuIdx == MENUIDX_READ)
+    {
+      species = (CreatureSpecies)(((int)species + 1) % (int)CreatureSpecies::COUNT);
+      NVS.begin();
+      NVS.setInt(nvsKey_species, (int)species, true);
+      didPerformAction = true;
+    }
+    // HACK: until we have a settings menu, resetting save data is an option from one of the 8 care buttons
+    if (menuIdx == MENUIDX_RESET)
+    {
+      numResetPresses++;
+      didPerformAction = true;
+      if (numResetPresses >= 4)
+        resetSaveData();
+    }
+    // Vibrate if this selection resulted in an action
+    if (didPerformAction)
+      vibrate(1, 50);
+    showWatchFace(true);
+    return true;
+  }
+
+  if (IS_KEY_CURSOR) {
+    menuIdx = (menuIdx + 1) % 8;
+    // Skip icons for not-yet-implemented functions, and skip the alert icon if there is no active alert
+    while (!hasActiveAlert() && menuIdx == MENUIDX_ALERT)
+      menuIdx = (menuIdx + 1) % 8;
+    vibrate();
+    lastAdvanceIdxMinute = currentTime.Minute;
+
+    // Partial redraw
+    startProfile();
+//    display.init(0, false); //_initial_refresh to false to prevent full update on init
+//    display.setFullWindow();
+//    showWatchFace(true);
+//    //drawUIButton(menuIdx-1, true);
+//    //drawUIButton(menuIdx, true);
+//    //display.display(true); //partial refresh
+//    // display.hibernate();
+//    guiState = WATCHFACE_STATE;
+    showWatchFace(true);
+
+    endProfile("Partial cursor update");
+    return true;
+  }
+
+  if (IS_KEY_CANCEL) {
+    vibrate();
+    menuIdx = MENUIDX_NOTHING;
+    vibrate(1, 30);
+    showWatchFace(true);
+    return true;
+  }
+  return false;
+}
+
+bool Watchytchi::stroking_handleButtonPress(uint64_t wakeupBit)
+{
+  // In stroking mode, the left (cursor) and right (select) button moves the hand back and forth
     auto didPet = false;
     if (IS_KEY_SELECT && isStrokingLeftSide) 
     {
@@ -159,151 +284,17 @@ void Watchytchi::handleButtonPress() {
         vibrate(1, 30);
       }
       showWatchFace(true);
-      return;
+      return true;
     }
 
     if (IS_KEY_CANCEL) {
       gameState = GameState::BaseMenu;
       vibrate(1, 50);
       showWatchFace(true);
-      return;
-    }
-  }
-  else if (gameState == GameState::HowWasYourDay)
-  {
-    if (IS_KEY_CURSOR) 
-    {
-        emotionSelectIdx = (emotionSelectIdx + 1) % 4;
-        showWatchFace(true);
-        return;
-    }
-    else if (IS_KEY_SELECT)
-    {
-      executeHWYDResponse();
-      gameState = GameState::BaseMenu;
-      showWatchFace(true);
-      lastAnimateMinute = -1;
-      return;
-    }
-    else if (IS_KEY_CANCEL)
-    {
-      gameState = GameState::BaseMenu;
-      showWatchFace(true);
-      return;
-    }
-  }
-  // Default button behaviors
-  else
-  {
-    // Process selection
-    if (IS_KEY_SELECT) {
-      auto didPerformAction = false;
-      // Open up the menu UI
-      if (menuIdx == MENUIDX_INSPECT)
-      {
-        hasStatusDisplay = true;
-        didPerformAction = true;
-      }
-      else
-        hasStatusDisplay = false;
-      if (menuIdx == MENUIDX_STROKE)
-      {
-        gameState = GameState::StrokingMode;
-        DBGPrintF("Entering stroke mode!"); DBGPrintln();
-      }      
-      // Start feeding
-      if (menuIdx == MENUIDX_FEED)
-      {
-        gameState = GameState::Eating;
-        didPerformAction = true;
-      }
-      // React to alert
-      if (menuIdx == MENUIDX_ALERT && hasActiveAlert())
-      {
-        gameState = GameState::AlertInteraction;
-        didPerformAction = false;
-        scheduleNextAlert();
-      }
-      // Clean Poop
-      if (hasPoop && menuIdx == MENUIDX_CLEAN)
-      {
-        hasPoop = false;
-        didPerformAction = true;
-        auto prevHour = lastPoopHour;
-        lastPoopHour = currentTime.Hour; // Cleaning resets last poop hour in order to prevent immediate poop once again
-        lastAnimateMinute = -99; // Do a little dance afterwards by resetting the last animate minute
-        NVS.begin();
-        NVS.setInt(nvsKey_hasPoop, 0, false);
-        NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
-        NVS.commit();
-        DBGPrintF("Cleaned poop! New lastPoopHour ="); DBGPrint(lastPoopHour); DBGPrintF(", previously it was"); DBGPrint(prevHour); DBGPrintln();
-      }
-      // Toggle Light
-      if (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6))
-      {
-        invertColors = !invertColors;
-        NVS.begin();
-        NVS.setInt(nvsKey_invertColors, invertColors ? 1 : 0, true);
-        didPerformAction = true;
-      }
-      // HACK: for debugging purposes, the not-yet-implemented read icon will toggle the species
-      if (menuIdx == MENUIDX_READ)
-      {
-        species = (CreatureSpecies)(((int)species + 1) % (int)CreatureSpecies::COUNT);
-        NVS.begin();
-        NVS.setInt(nvsKey_species, (int)species, true);
-        didPerformAction = true;
-      }
-      // HACK: until we have a settings menu, resetting save data is an option from one of the 8 care buttons
-      if (menuIdx == MENUIDX_RESET)
-      {
-        numResetPresses++;
-        didPerformAction = true;
-        if (numResetPresses >= 4)
-          resetSaveData();
-      }
-      // Vibrate if this selection resulted in an action
-      if (didPerformAction)
-        vibrate(1, 50);
-      showWatchFace(true);
-      return;
+      return true;
     }
 
-    if (IS_KEY_CURSOR) {
-      menuIdx = (menuIdx + 1) % 8;
-      // Skip icons for not-yet-implemented functions, and skip the alert icon if there is no active alert
-      while (!hasActiveAlert() && menuIdx == MENUIDX_ALERT)
-        menuIdx = (menuIdx + 1) % 8;
-      vibrate();
-      lastAdvanceIdxMinute = currentTime.Minute;
-
-      // Partial redraw
-      startProfile();
-  //    display.init(0, false); //_initial_refresh to false to prevent full update on init
-  //    display.setFullWindow();
-  //    showWatchFace(true);
-  //    //drawUIButton(menuIdx-1, true);
-  //    //drawUIButton(menuIdx, true);
-  //    //display.display(true); //partial refresh
-  //    // display.hibernate();
-  //    guiState = WATCHFACE_STATE;
-      showWatchFace(true);
-
-      endProfile("Partial cursor update");
-      return;
-    }
-
-    if (IS_KEY_CANCEL) {
-      vibrate();
-      menuIdx = MENUIDX_NOTHING;
-      vibrate(1, 30);
-      showWatchFace(true);
-      return;
-    }
-  }
-
-
-  Watchy::handleButtonPress();
+    return false;
 }
 
 void Watchytchi::drawBgEnvironment()

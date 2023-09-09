@@ -16,10 +16,13 @@ void Watchytchi::scheduleNextAlert()
   time_t currentEpochTime = makeTime(currentTime);
   nextAlertTs = currentEpochTime;
 
-  #if FORCE_NEXT_EVENT
-    nextAlertType = ScheduledAlertType::CloseUp;
+  if (FORCED_NEXT_EVENT != -1)
+  {
+    nextAlertType = (ScheduledAlertType)(FORCED_NEXT_EVENT);
     nextAlertTs += 1;
-  #else
+  }
+  else
+  {
     do
     {
       nextAlertTs += k_alertInterval;
@@ -31,7 +34,7 @@ void Watchytchi::scheduleNextAlert()
       nextAlertType = ScheduledAlertType::AskAboutDay;
     else
       nextAlertType = ScheduledAlertType::CloseUp;
-  #endif
+  }
   DBGPrintF("Scheduled event! nextAlertType is"); DBGPrint(nextAlertType); DBGPrintF("NextAlertTs is "); DBGPrint(nextAlertTs); DBGPrintF("Epoch time is "); DBGPrint(currentEpochTime); DBGPrintln(); 
 }
 
@@ -109,4 +112,34 @@ void Watchytchi::executeHWYDResponse()
       executeCloseUp();
       break;
   }
+}
+
+bool Watchytchi::howWasYourDay_handleButtonPress(uint64_t wakeupBit)
+{
+  if (IS_KEY_CURSOR) 
+  {
+      emotionSelectIdx = (emotionSelectIdx + 1) % 4;
+      showWatchFace(true);
+      return true;
+  }
+  else if (IS_KEY_SELECT)
+  {
+    executeHWYDResponse();
+    gameState = GameState::BaseMenu;
+    showWatchFace(true);
+    lastAnimateMinute = -1;
+    return true;
+  }
+  else if (IS_KEY_CANCEL)
+  {
+    gameState = GameState::BaseMenu;
+    showWatchFace(true);
+    return true;
+  }
+  return false;
+}
+
+void Watchytchi::howWasYourDay_draw()
+{
+  // TODO: draw how was your day screen
 }
