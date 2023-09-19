@@ -89,7 +89,9 @@ class WatchyBase : public Watchy {
     using Watchy::Watchy;
     public:
         virtual void handleButtonPress();
+        void scheduleVibration(uint8_t times=1, uint32_t delay_time=40);
         void vibrate(uint8_t times=1, uint32_t delay_time=40);
+        void executeScheduledVibration();
         esp_sleep_wakeup_cause_t wakeup_reason;
         void startProfile();
         void endProfile(const char* label);

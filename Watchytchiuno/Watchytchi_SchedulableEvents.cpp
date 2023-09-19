@@ -16,7 +16,7 @@ void Watchytchi::scheduleNextAlert()
   time_t currentEpochTime = makeTime(currentTime);
   nextAlertTs = currentEpochTime;
 
-  if (FORCED_NEXT_EVENT != -1)
+  if (FORCED_NEXT_EVENT > (int)ScheduledAlertType::None)
   {
     nextAlertType = (ScheduledAlertType)(FORCED_NEXT_EVENT);
     nextAlertTs += 1;
@@ -74,21 +74,11 @@ void Watchytchi::poseHWYDQuestion()
   delay(2000);
 }
 
-void Watchytchi::drawHWYDMoodSelection()
-{
-  auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
-  auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
-
-  display.drawBitmap(37, 83, img_HappinessMoodle_Angry, 30, 30, color_fg);
-  display.drawBitmap(69, 83, img_HappinessMoodle_Sad, 30, 30, color_fg);
-  display.drawBitmap(101, 83, img_HappinessMoodle_Neutral, 30, 30, color_fg);
-  display.drawBitmap(133, 83, img_HappinessMoodle_Happy, 30, 30, color_fg);
-  auto cursorX = 46 + 32 * emotionSelectIdx;
-  display.drawBitmap(cursorX, 69, img_MoodSelectionCursor, 12, 12, color_fg);
-}
-
 void Watchytchi::executeHWYDResponse()
 {
+  // New Alert!
+  scheduleNextAlert();
+
   auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
   auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
   const int EIDX_ANGRY = 0, EIDX_SAD = 1, EIDX_NEUTRAL = 2, EIDX_HAPPY = 3;
@@ -112,6 +102,30 @@ void Watchytchi::executeHWYDResponse()
       executeCloseUp();
       break;
   }
+}
+
+void Watchytchi::alertInteraction_draw()
+{
+  DBGPrintF("alertInteraction_draw! nextAlertType is "); DBGPrint(nextAlertType); DBGPrintln();
+  auto beforeAlertTs = nextAlertTs;
+  if (nextAlertType == ScheduledAlertType::CloseUp)
+  {
+    executeCloseUp();
+    gameState = GameState::BaseMenu;
+    // After executing the alert, draw the base menu
+    baseMenu_draw();
+    scheduleNextAlert();
+  }
+  else if (nextAlertType == ScheduledAlertType::AskAboutDay)
+  {
+    poseHWYDQuestion();
+    gameState = GameState::HowWasYourDay;
+    howWasYourDay_draw();
+  }
+  else
+    gameState = GameState::BaseMenu;
+
+  DBGPrintF("Next Alert ts was "); DBGPrint(beforeAlertTs); DBGPrintF(", now it is "); DBGPrint(nextAlertTs); DBGPrintln();
 }
 
 bool Watchytchi::howWasYourDay_handleButtonPress(uint64_t wakeupBit)
@@ -141,5 +155,20 @@ bool Watchytchi::howWasYourDay_handleButtonPress(uint64_t wakeupBit)
 
 void Watchytchi::howWasYourDay_draw()
 {
-  // TODO: draw how was your day screen
+  drawBgEnvironment();
+  drawWeather();
+  drawDebugClock();
+
+  // Draw happiness options
+  auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
+  auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
+  display.drawBitmap(37, 83, img_HappinessMoodle_Angry, 30, 30, color_fg);
+  display.drawBitmap(69, 83, img_HappinessMoodle_Sad, 30, 30, color_fg);
+  display.drawBitmap(101, 83, img_HappinessMoodle_Neutral, 30, 30, color_fg);
+  display.drawBitmap(133, 83, img_HappinessMoodle_Happy, 30, 30, color_fg);
+  auto cursorX = 46 + 32 * emotionSelectIdx;
+  display.drawBitmap(cursorX, 69, img_MoodSelectionCursor, 12, 12, color_fg);
+  
+  drawIdleCreature(false);
+  drawPoop();
 }

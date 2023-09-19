@@ -37,8 +37,21 @@ RTC_DATA_ATTR ScheduledAlertType nextAlertType = ScheduledAlertType::None;
 RTC_DATA_ATTR int emotionSelectIdx = 0;
 
 
+uint8_t scheduledVibrationTimes;
+uint32_t scheduledVibrationDelay;
+
 void WatchyBase::handleButtonPress() {
   // Handled in base class
+}
+void WatchyBase::_rtcConfig() {
+  RTC.read(currentTime);
+}
+
+void WatchyBase::scheduleVibration(uint8_t times, uint32_t delay_time) {
+  if (times > scheduledVibrationTimes)
+    scheduledVibrationTimes = times;
+  if (delay_time > scheduledVibrationDelay)
+    scheduledVibrationDelay = delay_time;
 }
 
 void WatchyBase::vibrate(uint8_t times, uint32_t delay_time) {
@@ -57,8 +70,13 @@ void WatchyBase::vibrate(uint8_t times, uint32_t delay_time) {
   sensor.enableFeature(BMA423_WAKEUP, true);
 }
 
-void WatchyBase::_rtcConfig() {
-  RTC.read(currentTime);
+void WatchyBase::executeScheduledVibration()
+{
+  if (scheduledVibrationTimes <= 0 || scheduledVibrationDelay <= 0)
+    return;
+  vibrate(scheduledVibrationTimes, scheduledVibrationDelay);
+  scheduledVibrationTimes = 0;
+  scheduledVibrationDelay = 0;
 }
 
 void WatchyBase::startProfile()
