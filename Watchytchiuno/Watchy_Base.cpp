@@ -35,6 +35,7 @@ RTC_DATA_ATTR bool isStrokingLeftSide = false;
 RTC_DATA_ATTR int nextAlertTs = -1;
 RTC_DATA_ATTR ScheduledAlertType nextAlertType = ScheduledAlertType::None;
 RTC_DATA_ATTR int emotionSelectIdx = 0;
+RTC_DATA_ATTR bool hasExecutedEnding = false;
 
 
 uint8_t scheduledVibrationTimes;

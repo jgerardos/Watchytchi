@@ -12,7 +12,7 @@
 
 enum CreatureSpecies {Hog, Snake, Deer, COUNT};
 enum ScheduledAlertType {None, CloseUp, AskAboutDay};
-enum GameState {BaseMenu, Eating, AlertInteraction, StrokingMode, HowWasYourDay, CNT};
+enum GameState {BaseMenu, Eating, AlertInteraction, StrokingMode, HowWasYourDay, Ending, CNT};
 
 /*# State #*/
 /*## State: System ##*/
@@ -58,6 +58,10 @@ const String nvsKey_nextAlertTs = "nextAlertTs";
 extern RTC_DATA_ATTR ScheduledAlertType nextAlertType;
 const String nvsKey_nextAlertType = "nextAlertType";
 extern RTC_DATA_ATTR int emotionSelectIdx;
+
+/*## State: Game State (Ending) ##*/
+extern RTC_DATA_ATTR bool hasExecutedEnding;
+
 
 // Compile out macros to increase speed of serial printing
 #define DBGPrint(content) if (VERBOSE_LOGGING_ENABLED) {Serial.print(content);}

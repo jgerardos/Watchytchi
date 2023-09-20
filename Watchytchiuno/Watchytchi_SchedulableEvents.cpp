@@ -172,3 +172,103 @@ void Watchytchi::howWasYourDay_draw()
   drawIdleCreature(false);
   drawPoop();
 }
+
+bool Watchytchi::ending_handleButtonPress(uint64_t wakeupBit)
+{
+  if (IS_KEY_CURSOR || IS_KEY_SELECT || IS_KEY_CANCEL) 
+  {
+    hasExecutedEnding = true;
+    showWatchFace(true);
+    return true;
+  }
+}
+
+void Watchytchi::ending_draw()
+{
+  if (!hasExecutedEnding)
+  {
+    display.fillScreen(GxEPD_WHITE);
+    display.drawBitmap(0, 0, img_GoodEnd_DaisyHog_PackedBags, 200, 200, GxEPD_BLACK);
+  }
+  else
+  {
+    /*# Ending animation! #*/
+
+    // Phase 0: Show the packed bags a little longer
+    vibrate(1, 30);
+    display.fillScreen(GxEPD_WHITE);
+    display.drawBitmap(0, 0, img_GoodEnd_DaisyHog_PackedBags, 200, 200, GxEPD_BLACK);
+    display.display(true);
+    delay(1000);
+
+    // Phase 1: Hike up a mountain!
+    vibrate(1, 50);
+    for (auto i = 0; i < 10; i++)
+    {
+      display.fillScreen(GxEPD_WHITE);
+      display.drawBitmap(0, 0, i % 2 == 0 ? img_GoodEnd_DaisyHog_Hike1 : img_GoodEnd_DaisyHog_Hike2, 200, 200, GxEPD_BLACK);
+      display.display(true);
+    }
+    delay(2000);
+
+    // Phase 2: Discover the wacky bonfire
+    vibrate(1, 50);
+    for (auto i = 0; i < 24; i++)
+    {
+      display.fillScreen(GxEPD_WHITE);
+      display.drawBitmap(0, 0, i % 2 == 0 ? img_GoodEnd_DaisyHog_IntroBonfire1 : img_GoodEnd_DaisyHog_IntroBonfire2, 200, 200, GxEPD_BLACK);
+      if (i < 3)
+        display.fillScreen(GxEPD_BLACK);
+      else if (i < 6)
+        display.drawBitmap(0, 0, img_GoodEnd_FadeOut3, 200, 200, GxEPD_BLACK);
+      else if (i < 9)
+        display.drawBitmap(0, 0, img_GoodEnd_FadeOut2, 200, 200, GxEPD_BLACK);
+      else if (i < 12)
+        display.drawBitmap(0, 0, img_GoodEnd_FadeOut1, 200, 200, GxEPD_BLACK);
+      display.display(true);
+    }
+    delay(2000);
+
+    // Phase 3: Hug the caretaker goodbye :')
+    vibrate(1, 50);
+    display.fillScreen(GxEPD_WHITE);
+    display.drawBitmap(0, 0, img_GoodEnd_DaisyHog_HugIntro, 200, 200, GxEPD_BLACK);
+    display.display(true);
+    delay(2000);
+    for (auto i = 0; i < 10; i++)
+    {
+      display.fillScreen(GxEPD_WHITE);
+      display.drawBitmap(0, 0, i % 2 == 0 ? img_GoodEnd_DaisyHog_Hugging1 : img_GoodEnd_DaisyHog_Hugging2, 200, 200, GxEPD_BLACK);
+      display.display(true);
+      vibrate(1, 10);
+    }
+    delay(2000);
+
+    // Phase 4: Snuggling up with my new friends!
+    vibrate(1, 50);
+    for (auto i = 0; i < 24; i++)
+    {
+      display.fillScreen(GxEPD_WHITE);
+      display.drawBitmap(0, 0, i % 2 == 0 ? img_GoodEnd_DaisyHog_OutroBonfire1 : img_GoodEnd_DaisyHog_OutroBonfire2, 200, 200, GxEPD_BLACK);
+      
+      if (i >= 21)
+        display.fillScreen(GxEPD_BLACK);
+      else if (i >= 18)
+        display.drawBitmap(0, 0, img_GoodEnd_FadeOut3, 200, 200, GxEPD_BLACK);
+      else if (i >= 15)
+        display.drawBitmap(0, 0, img_GoodEnd_FadeOut2, 200, 200, GxEPD_BLACK);
+      else if (i >= 12)
+        display.drawBitmap(0, 0, img_GoodEnd_FadeOut1, 200, 200, GxEPD_BLACK);
+      
+      display.display(true);
+    }
+    delay(2000);
+    display.fillScreen(GxEPD_WHITE);
+    display.drawBitmap(0, 0, img_GoodEnd_EndTitleCard, 200, 200, GxEPD_BLACK);
+    display.display(true);
+    delay(5000);
+    hasExecutedEnding = false;
+    resetSaveData();
+    loadSaveData();
+  }
+}

@@ -141,6 +141,7 @@ void Watchytchi::resetSaveData()
   NVS.setInt(nvsKey_nextAlertTs, -1);
   NVS.setInt(nvsKey_nextAlertType, (int)ScheduledAlertType::None);
   emotionSelectIdx = 0;
+  hasExecutedEnding = false;
   auto didSave = NVS.commit();
 }
 
@@ -198,8 +199,15 @@ void Watchytchi::tickCreatureState()
   if (species == CreatureSpecies::Deer && numSecondsAlive >= 2.5 * 24 * 60 * 60)
   {
     srand(lastUpdateTsEpoch);
-    species = rand() == 0 ? CreatureSpecies::Hog : CreatureSpecies::Snake;
+    species = rand() % 2 == 0 ? CreatureSpecies::Hog : CreatureSpecies::Snake;
   }
+
+  // Handle the ending!
+  auto maximumAge = 6 * 24 * 60 * 60;
+  if (gameState != GameState::Ending && numSecondsAlive >= maximumAge)
+    gameState = GameState::Ending;
+  if (gameState == GameState::Ending)
+    return;
 
   // Clear the number of reset button presses if the player navigates away in the menu
   if (menuIdx != MENUIDX_RESET)
