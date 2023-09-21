@@ -73,6 +73,7 @@ void Watchytchi::handleButtonPress() {
     }
   }
   RTC.read(currentTime);
+  loadSaveData();
   // Call the active handle button press function depending on my gamestate
   DBGPrintF("Handling button press ins state "); DBGPrint(gameState); DBGPrintln();
   auto didHandlePress = (this->*handleButtonFuncsByState[(int)gameState])(wakeupBit);
@@ -85,6 +86,14 @@ void Watchytchi::handleButtonPress() {
 
 void Watchytchi::loadSaveData()
 {
+  // Prevent redundant loads from disk within a single wakeup. This value will reset each sleep cycle
+  if (hasLoadedThisWake)
+  {
+    DBGPrintF("Skipping redundant load!"); DBGPrintln();
+    return;
+  }
+  hasLoadedThisWake = true;
+
   NVS.begin();
   lastUpdateTsEpoch = NVS.getInt(nvsKey_lastUpdateTsEpoch, -1);
   invertColors = 1 == NVS.getInt(nvsKey_invertColors, 0);
@@ -97,6 +106,15 @@ void Watchytchi::loadSaveData()
   nextAlertTs = NVS.getInt(nvsKey_nextAlertTs, -1);
   nextAlertType = (ScheduledAlertType)NVS.getInt(nvsKey_nextAlertType, 0);
   DBGPrintF("Loaded lastUpdateTsEpoch "); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
+  
+  // Assign creature (TODO: convert to map or enum-linked array)
+  if (species == CreatureSpecies::Hog)
+    critter = &hog;
+  else if (species == CreatureSpecies::Snake)
+    critter = &snake;
+  else if (species == CreatureSpecies::Deer)
+    critter = &deerSlug;
+  critter->owner = this;
 }
 
 void Watchytchi::writeSaveData()
@@ -120,17 +138,25 @@ void Watchytchi::writeSaveData()
 void Watchytchi::resetSaveData()
 {
   NVS.begin();
-  NVS.setInt(nvsKey_lastUpdateTsEpoch, -1);
+  lastUpdateTsEpoch = -1;
+  NVS.setInt(nvsKey_lastUpdateTsEpoch, lastUpdateTsEpoch);
   menuIdx = 0;
   lastAdvanceIdxMinute = 0;
   hasStatusDisplay = false;
-  NVS.setInt(nvsKey_invertColors, false);
-  NVS.setInt(nvsKey_species, (int)CreatureSpecies::Deer, false);
-  NVS.setInt(nvsKey_numSecondsAlive, 0, false);
-  NVS.setFloat(nvsKey_hunger, 1.f, false);
-  NVS.setFloat(nvsKey_happyPercent, 0.5f, false);
+  invertColors = false;
+  NVS.setInt(nvsKey_invertColors, invertColors);
+  species = CreatureSpecies::Deer;
+  NVS.setInt(nvsKey_species, (int)species, false);
+  numSecondsAlive = 0;
+  NVS.setInt(nvsKey_numSecondsAlive, numSecondsAlive, false);
+  hunger = 1.f;
+  NVS.setFloat(nvsKey_hunger, hunger, false);
+  happyPercent = 0.5f;
+  NVS.setFloat(nvsKey_happyPercent, happyPercent, false);
+  hasPoop = false;
   NVS.setInt(nvsKey_hasPoop, 0, false);
-  NVS.setInt(nvsKey_lastPoopHour, -1, false);
+  lastPoopHour = -1;
+  NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
   gameState = GameState::BaseMenu;
   playAnim = false;
   idleAnimIdx = 0;
@@ -138,8 +164,10 @@ void Watchytchi::resetSaveData()
   lastHungerCryMinute = -1;
   lastAnimateMinute = 0;
   isStrokingLeftSide = false;
-  NVS.setInt(nvsKey_nextAlertTs, -1);
-  NVS.setInt(nvsKey_nextAlertType, (int)ScheduledAlertType::None);
+  nextAlertTs = -1;
+  NVS.setInt(nvsKey_nextAlertTs, nextAlertTs);
+  nextAlertType = ScheduledAlertType::None;
+  NVS.setInt(nvsKey_nextAlertType, (int)nextAlertType);
   emotionSelectIdx = 0;
   hasExecutedEnding = false;
   auto didSave = NVS.commit();
@@ -147,15 +175,6 @@ void Watchytchi::resetSaveData()
 
 void Watchytchi::tickCreatureState()
 {
-    // Assign creature (TODO: convert to map or enum-linked array)
-    if (species == CreatureSpecies::Hog)
-      critter = &hog;
-    else if (species == CreatureSpecies::Snake)
-      critter = &snake;
-    else if (species == CreatureSpecies::Deer)
-      critter = &deerSlug;
-    critter->owner = this;
-
   /*# Track time changes #*/
   time_t currentEpochTime = makeTime(currentTime);
   if (lastUpdateTsEpoch <= 0)
@@ -694,9 +713,12 @@ bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
 
   if (IS_KEY_CURSOR) {
     menuIdx = (menuIdx + 1) % 8;
-    // Skip icons for not-yet-implemented functions, and skip the alert icon if there is no active alert
-    while (!hasActiveAlert() && menuIdx == MENUIDX_ALERT)
+    // Skip the alert icon if there is no active alert. Disallow certain care actions while it's night
+    while ((!hasActiveAlert() && menuIdx == MENUIDX_ALERT)
+      || (getTimeOfDay() == TimeOfDay::LateNight && (menuIdx == MENUIDX_FEED || menuIdx == MENUIDX_STROKE || menuIdx == MENUIDX_CLEAN)))
+    {
       menuIdx = (menuIdx + 1) % 8;
+    }
     vibrate();
     lastAdvanceIdxMinute = currentTime.Minute;
 

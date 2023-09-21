@@ -20,6 +20,7 @@ class Watchytchi : public WatchyBase{
         void handleButtonPress();
 
         /*# Save/load #*/
+        bool hasLoadedThisWake = false;
         void loadSaveData();
         void writeSaveData();
         void resetSaveData();

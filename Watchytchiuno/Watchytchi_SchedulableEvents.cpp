@@ -66,7 +66,8 @@ void Watchytchi::poseHWYDQuestion()
 
   // First, pose the question:
   // TODO: Snake support
-  display.drawBitmap(100 - 36, 110, img_DaisyHog_PosingQuestion, 72, 55, color_fg);
+  critter->DrawPosingQuestionPose(idleAnimIdx, false);
+  idleAnimIdx = (idleAnimIdx + 1) % 2;
   display.drawBitmap(69, 83, img_HowWasYourDayIcon, 32, 32, color_fg);
   display.drawBitmap(103, 85, img_MenuIcon_Placeholder_Active, 32, 32, color_fg);
   display.display(true);

@@ -76,6 +76,12 @@ void DaisyHog::DrawIdlePose(int idleIdx, bool isAnimating)
       owner->display.drawBitmap(119, 115, idleIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, getColor_fg());
   }
 }
+
+void DaisyHog::DrawPosingQuestionPose(int idleIdx, bool isAnimating)
+{
+  owner->display.drawBitmap(100 - 36, 110, img_DaisyHog_PosingQuestion, 72, 55, getColor_fg());
+}
+
 void DaisyHog::DrawCloseUpFrame(int idleIdx, bool isAnimating)
 {
   owner->display.drawBitmap(0, 0, idleIdx % 2 == 0 ? img_CloseUp_Happy1 : img_CloseUp_Happy2, 200, 200, getColor_fg());
@@ -145,6 +151,11 @@ void MugSnake::DrawIdlePose(int idleIdx, bool isAnimating)
       owner->display.drawBitmap(100 - 36 + 25, 95, idleIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, getColor_fg());
   }
 }
+void MugSnake::DrawPosingQuestionPose(int idleIdx, bool isAnimating)
+{
+  // TODO: bespoke version of animation
+  owner->display.drawBitmap(100 - 36, 97, idleAnimIdx % 2 == 0 ? img_MugSnake_TippedOverIdle1 : img_MugSnake_TippedOverIdle2, 72, 72, getColor_fg());
+}
 void MugSnake::DrawCloseUpFrame(int idleIdx, bool isAnimating)
 {
   owner->display.drawBitmap(0, 0, idleIdx % 2 == 0 ? img_MugSnake_CloseUp_Happy1 : img_MugSnake_CloseUp_Happy2, 200, 200, getColor_fg());
@@ -204,8 +215,12 @@ void DeerSlug::DrawIdlePose(int idleIdx, bool isAnimating)
   // TODO: Special idles
   owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DeerSlug_Idle1 : img_DeerSlug_Idle2, 72, 55, getColor_fg());
 }
+void DeerSlug::DrawPosingQuestionPose(int idleIdx, bool isAnimating)
+{
+  // TODO: bespoke version of animation
+  owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DeerSlug_Idle1 : img_DeerSlug_Idle2, 72, 55, getColor_fg());
+}
 void DeerSlug::DrawCloseUpFrame(int idleIdx, bool isAnimating)
 {
-  // TODO: DeerSlug version of animation
   owner->display.drawBitmap(0, 0, idleIdx % 2 == 0 ? img_DeerSlug_CloseUpHappy1 : img_DeerSlug_CloseUpHappy2, 200, 200, getColor_fg());
 }
