@@ -182,6 +182,9 @@ void Watchytchi::tickCreatureState()
   // Reschedule alerts if we're unhappy
   if (getHappyTier() <= HappyTier::Sad)
     scheduleNextAlert();
+  // If we have a forced alert that isn't already scheduled, schedule one
+  if (FORCED_NEXT_EVENT != -1 && (!hasActiveAlert() || nextAlertType != (ScheduledAlertType)FORCED_NEXT_EVENT))
+    scheduleNextAlert();
 
   // Automatically turn off lights if its daytime
   if (getTimeOfDay() != TimeOfDay::LateNight)
