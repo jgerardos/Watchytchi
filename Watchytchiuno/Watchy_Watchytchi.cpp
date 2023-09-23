@@ -614,7 +614,7 @@ void Watchytchi::baseMenu_draw()
     drawStatusDisplay();
 
   // Animate an idle loop every 3 minutes
-  else if (currentTime.Hour >= 6 && (currentTime.Minute - lastAnimateMinute > 3 || lastAnimateMinute > currentTime.Minute))
+  if (currentTime.Hour >= 6 && (currentTime.Minute - lastAnimateMinute > 3 || lastAnimateMinute > currentTime.Minute))
   {
     isPeriodicAnim = currentTime.Minute % 4 == 0;
     const int numAnimFrames = isPeriodicAnim ? 10 : 16;
