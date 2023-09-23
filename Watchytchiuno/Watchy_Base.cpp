@@ -82,7 +82,6 @@ void WatchyBase::executeScheduledVibration()
 
 void WatchyBase::startProfile()
 {
-  return; // TODO: remove this early out, this was a temporary debug measure that was not supposed to be pushed
   DBGPrintF("startprofile!"); DBGPrintln();
 
   DBGPrintF("before starting a new profile, nextProfileIdx is "); DBGPrint(nextProfileIdx); DBGPrintln();

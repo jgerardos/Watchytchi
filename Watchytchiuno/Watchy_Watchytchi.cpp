@@ -722,8 +722,7 @@ bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
     vibrate();
     lastAdvanceIdxMinute = currentTime.Minute;
 
-    // Partial redraw
-    startProfile();
+    // Partial redraw -- commented out because it wasn't working
 //    display.init(0, false); //_initial_refresh to false to prevent full update on init
 //    display.setFullWindow();
 //    showWatchFace(true);
@@ -733,8 +732,6 @@ bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
 //    // display.hibernate();
 //    guiState = WATCHFACE_STATE;
     showWatchFace(true);
-
-    endProfile("Partial cursor update");
     return true;
   }
 
