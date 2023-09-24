@@ -182,6 +182,7 @@ bool Watchytchi::ending_handleButtonPress(uint64_t wakeupBit)
     showWatchFace(true);
     return true;
   }
+  return false;
 }
 
 void Watchytchi::ending_draw()
