@@ -12,7 +12,7 @@
 
 enum CreatureSpecies {Hog, Snake, Deer, COUNT};
 enum ScheduledAlertType {None, CloseUp, AskAboutDay};
-enum GameState {BaseMenu, Eating, AlertInteraction, StrokingMode, HowWasYourDay, Ending, CNT};
+enum GameState {BaseMenu, Eating, AlertInteraction, StrokingMode, HowWasYourDay, Ending, SharedWalk, CNT};
 
 /*# State #*/
 /*## State: System ##*/
@@ -62,6 +62,8 @@ extern RTC_DATA_ATTR int emotionSelectIdx;
 /*## State: Game State (Ending) ##*/
 extern RTC_DATA_ATTR bool hasExecutedEnding;
 
+/*## State: Shared Walk ##*/
+extern RTC_DATA_ATTR int bmaStepsAtWalkStart;
 
 // Compile out macros to increase speed of serial printing
 #define DBGPrint(content) if (VERBOSE_LOGGING_ENABLED) {Serial.print(content);}
@@ -85,8 +87,8 @@ const int MENUIDX_STROKE = 1;
 const int MENUIDX_FEED = 2;
 const int MENUIDX_ALERT = 3;
 const int MENUIDX_CLEAN = 4;
-const int MENUIDX_LIGHT = 5;
-const int MENUIDX_READ = 6;
+const int MENUIDX_WALK = 5;
+const int MENUIDX_LIGHT = 6;
 const int MENUIDX_RESET = 7;
 
 class WatchyBase : public Watchy {

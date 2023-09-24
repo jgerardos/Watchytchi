@@ -37,6 +37,9 @@ RTC_DATA_ATTR ScheduledAlertType nextAlertType = ScheduledAlertType::None;
 RTC_DATA_ATTR int emotionSelectIdx = 0;
 RTC_DATA_ATTR bool hasExecutedEnding = false;
 
+/*## State: Shared Walk ##*/
+RTC_DATA_ATTR int bmaStepsAtWalkStart;
+
 
 uint8_t scheduledVibrationTimes;
 uint32_t scheduledVibrationDelay;

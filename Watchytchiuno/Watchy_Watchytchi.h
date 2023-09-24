@@ -67,6 +67,9 @@ class Watchytchi : public WatchyBase{
         bool howWasYourDay_handleButtonPress(uint64_t wakeupBit);
         void ending_draw();
         bool ending_handleButtonPress(uint64_t wakeupBit);
+        void sharedWalk_draw();
+        bool sharedWalk_handleButtonPress(uint64_t wakeupBit);
+
         
         typedef void (Watchytchi::*DrawFunc)();
         DrawFunc drawFuncsByState[(int)GameState::CNT] = {
@@ -75,7 +78,8 @@ class Watchytchi : public WatchyBase{
             &Watchytchi::alertInteraction_draw, // ALERT INTERACTION
             &Watchytchi::stroking_draw, // STROKING
             &Watchytchi::howWasYourDay_draw, // HOW WAS YOUR DAY
-            &Watchytchi::ending_draw // ENDING
+            &Watchytchi::ending_draw, // ENDING
+            &Watchytchi::sharedWalk_draw // SHARED WALK
         };
 
         typedef bool (Watchytchi::*ButtonFunc)(long long unsigned int);
@@ -85,6 +89,7 @@ class Watchytchi : public WatchyBase{
             &Watchytchi::dummy_handleButtonPress, // ALERT INTERACTION
             &Watchytchi::stroking_handleButtonPress, // STROKING
             &Watchytchi::howWasYourDay_handleButtonPress, // HOW WAS YOUR DAY
-            &Watchytchi::ending_handleButtonPress // ENDING
+            &Watchytchi::ending_handleButtonPress, // ENDING
+            &Watchytchi::sharedWalk_handleButtonPress
         };
 };

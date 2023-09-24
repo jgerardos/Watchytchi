@@ -402,8 +402,8 @@ void Watchytchi::drawUIButton(int idx, bool quickCursorUpdate)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Clean_Active : img_MenuIcon_Clean_Inactive, 32, 32, iconColor);
     else if (idx == MENUIDX_LIGHT)
       display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Lights_Active : img_MenuIcon_Lights_Inactive, 32, 32, iconColor);
-    else if (idx == MENUIDX_READ)
-      display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Read_Active : img_MenuIcon_Read_Inactive, 32, 32, iconColor);
+    else if (idx == MENUIDX_WALK)
+      display.drawBitmap(xPos, yPos, idx == menuIdx ? img_MenuIcon_Walk_Active : img_MenuIcon_Walk_Inactive, 32, 32, iconColor);
     else if (idx == MENUIDX_RESET)
     {
       if (idx != menuIdx)
@@ -595,6 +595,13 @@ void Watchytchi::drawStatusDisplay()
     display.drawBitmap(85, 75, img_HappinessMoodle_Neutral, 30, 30, color_fg);
   else
     display.drawBitmap(85, 75, img_HappinessMoodle_Sad, 30, 30, color_fg);
+
+  // Steps!
+  uint32_t stepCount = sensor.getCounter();
+  display.setFont(&FreeMonoBold9pt7b);
+  display.setTextColor(GxEPD_BLACK);
+  display.setCursor(40, 55);
+  display.println(stepCount);
 }
 
 bool Watchytchi::dummy_handleButtonPress(uint64_t)
@@ -649,6 +656,7 @@ bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
     }
     else
       hasStatusDisplay = false;
+    // Start stroking
     if (menuIdx == MENUIDX_STROKE)
     {
       gameState = GameState::StrokingMode;
@@ -688,12 +696,11 @@ bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
       NVS.setInt(nvsKey_invertColors, invertColors ? 1 : 0, true);
       didPerformAction = true;
     }
-    // HACK: for debugging purposes, the not-yet-implemented read icon will toggle the species
-    if (menuIdx == MENUIDX_READ)
+    // Enter Walking mode
+    if (menuIdx == MENUIDX_WALK)
     {
-      species = (CreatureSpecies)(((int)species + 1) % (int)CreatureSpecies::COUNT);
-      NVS.begin();
-      NVS.setInt(nvsKey_species, (int)species, true);
+      bmaStepsAtWalkStart = sensor.getCounter();
+      gameState = GameState::SharedWalk;
       didPerformAction = true;
     }
     // HACK: until we have a settings menu, resetting save data is an option from one of the 8 care buttons
@@ -715,7 +722,8 @@ bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
     menuIdx = (menuIdx + 1) % 8;
     // Skip the alert icon if there is no active alert. Disallow certain care actions while it's night
     while ((!hasActiveAlert() && menuIdx == MENUIDX_ALERT)
-      || (getTimeOfDay() == TimeOfDay::LateNight && (menuIdx == MENUIDX_FEED || menuIdx == MENUIDX_STROKE || menuIdx == MENUIDX_CLEAN)))
+      || (getTimeOfDay() == TimeOfDay::LateNight && (menuIdx == MENUIDX_FEED || menuIdx == MENUIDX_STROKE 
+        || menuIdx == MENUIDX_CLEAN || menuIdx == MENUIDX_WALK)))
     {
       menuIdx = (menuIdx + 1) % 8;
     }
@@ -809,3 +817,72 @@ bool Watchytchi::stroking_handleButtonPress(uint64_t wakeupBit)
   return false;
 }
 
+void Watchytchi::sharedWalk_draw()
+{
+  drawBgEnvironment();
+  drawWeather();
+
+  // Draw the critter in the center! (TODO: custon animation poses)
+  critter->DrawIdlePose(idleAnimIdx, false);
+  idleAnimIdx = (idleAnimIdx + 1) % 2;
+
+  // Draw a row of flowers representing the player's walking progress
+  auto stepPercent = (float)stepsDuringWalk / 2000.f;
+  const int flowerWidth = 25;
+  srand(currentTime.Day);
+  for (auto i = 0; i < 200 / flowerWidth; i++)
+  {
+    auto idxT = (float)i / (200.f / flowerWidth);
+
+    // If the player has gotten this far, draw a flower (random with day as seed for continuity)
+    auto diceRoll = rand() % 3;
+    if (stepPercent >= idxT)
+    {
+      if (diceRoll == 0)      
+        display.drawBitmap(i * flowerWidth, 170, img_WalkingFlower_1, 25, 30, GxEPD_BLACK);
+      else if (diceRoll == 1)
+        display.drawBitmap(i * flowerWidth, 170, img_WalkingFlower_2, 25, 30, GxEPD_BLACK);
+      else if (diceRoll == 2)
+        display.drawBitmap(i * flowerWidth, 170, img_WalkingFlower_3, 25, 30, GxEPD_BLACK);
+    }
+    // Otherwise, draw an un-bloomed bud
+    else
+      display.drawBitmap(i * flowerWidth, 170, img_WalkingFlower_Bud, 25, 30, GxEPD_BLACK);
+  }
+
+  // Draw raw # of steps (TODO: decide whether this is debug or permanent)
+  auto stepCount = sensor.getCounter();
+  auto stepsDuringWalk = stepCount - bmaStepsAtWalkStart;
+  display.setFont(&FreeMonoBold9pt7b);
+  display.setTextColor(GxEPD_BLACK);
+  display.setCursor(140, 30);
+  display.println(stepsDuringWalk);
+
+  // Once you bloom all of the flowers, (+ margin so the player can see their work),
+  //  add to happiness and exit the walk
+  if (stepPercent >= 1.02f)
+  {
+    happyPercent += 0.33f;
+    gameState = GameState::BaseMenu;
+  }
+}
+
+bool Watchytchi::sharedWalk_handleButtonPress(uint64_t wakeupBit)
+{
+  // Redraw on button presses so the player can refresh their step count
+  if (IS_KEY_CURSOR || IS_KEY_SELECT) 
+  {
+    showWatchFace(true);
+    return true;
+  }
+
+  // Cancel exits the walk
+  if (IS_KEY_CANCEL)
+  {
+    gameState = GameState::BaseMenu;
+    showWatchFace(true);
+    return true;
+  }
+
+  return false;
+}
