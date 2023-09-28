@@ -14,6 +14,7 @@ const unsigned char *menu_reset_press_stages[4] = {img_MenuIcon_ResetSave_Active
 
 const float k_secDurationToFullyDepleteHunger = 4.f * 60.f * 60.f;
 const int k_maxSecondsDeltaForUpdate = 5 * 60;
+const float k_happinessFullyChangeDuration = 4 * 60 * 60;
 
 DaisyHog hog = DaisyHog();
 MugSnake snake = MugSnake();
@@ -100,7 +101,11 @@ void Watchytchi::loadSaveData()
   species = (CreatureSpecies)NVS.getInt(nvsKey_species, 0);
   numSecondsAlive = NVS.getInt(nvsKey_numSecondsAlive, 0);
   hunger = NVS.getFloat(nvsKey_hunger, 1.f);
-  happyPercent = NVS.getFloat(nvsKey_happyPercent, 0.5f);
+  foodHappy.LoadSaveData(nvsKey_foodHappy);
+  strokeHappy.LoadSaveData(nvsKey_strokeHappy);
+  walkHappy.LoadSaveData(nvsKey_walkHappy);
+  poopHappy.LoadSaveData(nvsKey_poopHappy);
+  sleepHappy.LoadSaveData(nvsKey_sleepHappy);
   hasPoop = 1 == NVS.getInt(nvsKey_hasPoop, 0);
   lastPoopHour = NVS.getInt(nvsKey_lastPoopHour, -1);
   nextAlertTs = NVS.getInt(nvsKey_nextAlertTs, -1);
@@ -126,7 +131,11 @@ void Watchytchi::writeSaveData()
   NVS.setInt(nvsKey_species, (int)species, false);
   NVS.setInt(nvsKey_numSecondsAlive, numSecondsAlive, false);
   NVS.setFloat(nvsKey_hunger, hunger, false);
-  NVS.setFloat(nvsKey_happyPercent, happyPercent, false);
+  foodHappy.WriteSaveData(nvsKey_foodHappy);
+  strokeHappy.WriteSaveData(nvsKey_strokeHappy);
+  walkHappy.WriteSaveData(nvsKey_walkHappy);
+  poopHappy.WriteSaveData(nvsKey_poopHappy);
+  sleepHappy.WriteSaveData(nvsKey_sleepHappy);
   NVS.setInt(nvsKey_hasPoop, hasPoop ? 1 : 0, false);
   NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
   NVS.setInt(nvsKey_nextAlertTs, nextAlertTs);
@@ -151,8 +160,16 @@ void Watchytchi::resetSaveData()
   NVS.setInt(nvsKey_numSecondsAlive, numSecondsAlive, false);
   hunger = 1.f;
   NVS.setFloat(nvsKey_hunger, hunger, false);
-  happyPercent = 0.5f;
-  NVS.setFloat(nvsKey_happyPercent, happyPercent, false);
+  foodHappy.value = foodHappy.defaultValue;
+  foodHappy.WriteSaveData(nvsKey_foodHappy);
+  strokeHappy.value = strokeHappy.defaultValue;
+  strokeHappy.WriteSaveData(nvsKey_strokeHappy);
+  walkHappy.value = walkHappy.defaultValue;
+  walkHappy.WriteSaveData(nvsKey_walkHappy);
+  poopHappy.value = poopHappy.defaultValue;
+  poopHappy.WriteSaveData(nvsKey_poopHappy);
+  sleepHappy.value = sleepHappy.defaultValue;
+  sleepHappy.WriteSaveData(nvsKey_sleepHappy);
   hasPoop = false;
   NVS.setInt(nvsKey_hasPoop, 0, false);
   lastPoopHour = -1;
@@ -262,19 +279,43 @@ void Watchytchi::tickCreatureState()
   }
 
 
-  /*# Atrophy happiness #*/
-  auto oldHappyPercent = happyPercent;
-  const float happinessFullyChangeDuration = 6 * 60 * 60;
-  // If starving, happiness instantly goes down to a low number
-  if (hunger <= 0.001f)
-    happyPercent = constrain(happyPercent, 0.f, 0.25f);
+  /*# Atrophy happiness! #*/
+  auto oldHappyPercent = getHappyPercent();
 
   // Move happiness up or down depending on state:
-  auto happyTrendDir = getHappyTrendingDirection();
-  happyPercent += timeDelta * happyTrendDir / happinessFullyChangeDuration;
+  auto happyDeltaAmt = timeDelta / k_happinessFullyChangeDuration;
   
-  happyPercent = constrain(happyPercent, 0.f, 1.f);
-  DBGPrintF("New happyPercent "); DBGPrint(happyPercent); DBGPrintF(", from old happy percent "); DBGPrint(oldHappyPercent); DBGPrintln();
+  // Not being asleep at night makes me unhappy
+  sleepHappy.AddTo((isElectricLit() ? -1.f : 1.f) * happyDeltaAmt);
+
+  // Except for sleep itself, happiness doesn't change while the creature sleeps
+  if (getTimeOfDay() != TimeOfDay::LateNight || isElectricLit())
+  {
+    // Food happy goes up or down based on whether I'm fed
+    if (hunger < 0.45f)
+      foodHappy.AddTo(-happyDeltaAmt);
+    else if (hunger >= 0.6f)
+      foodHappy.AddTo(happyDeltaAmt);
+
+    // If starving, clamp maximum happpiness from food
+    if (hunger <= 0.001f)
+      foodHappy.value = constrain(foodHappy.value, foodHappy.min, foodHappy.max / 2.f);
+
+    // Poop being out makes me unhappy
+    if (hasPoop)
+      poopHappy.AddTo(-happyDeltaAmt);
+    else
+      poopHappy.MoveTowards(0, happyDeltaAmt);
+
+    // Walk and stroke happy fades to 0 over time if you haven't done those options recently
+    walkHappy.MoveTowards(0, happyDeltaAmt);
+    strokeHappy.MoveTowards(0, happyDeltaAmt);
+  }
+
+  lastHappyDelta = getHappyPercent() - oldHappyPercent;
+  DBGPrintF("Happy Contributions: food "); DBGPrint(foodHappy.value); DBGPrintF(", stroke "); DBGPrint(strokeHappy.value); 
+    DBGPrintF(", walk "); DBGPrint(walkHappy.value); DBGPrintF(", poopHappy "); DBGPrint(poopHappy.value); DBGPrintF(", sleep "); DBGPrint(sleepHappy.value); DBGPrintln();
+  DBGPrintF("New happyPercent "); DBGPrint(getHappyPercent()); DBGPrintF(", from old happy percent "); DBGPrint(oldHappyPercent); DBGPrintln();
 
   /*# Atrophy poop: #*/
   if (!hasPoop && getTimeOfDay() != TimeOfDay::LateNight && (lastPoopHour == -1 || currentTime.Hour >= lastPoopHour + 4 || currentTime.Hour < lastPoopHour) 
@@ -306,9 +347,15 @@ TimeOfDay Watchytchi::getTimeOfDay(const tmElements_t &tm)
     return TimeOfDay::Daytime;
 }
 
+
+float Watchytchi::getHappyPercent()
+{
+  return constrain(foodHappy.value + strokeHappy.value + walkHappy.value + poopHappy.value + sleepHappy.value, 0, 1);
+}
+
 HappyTier Watchytchi::getHappyTier()
 {
-  return getHappyTier(happyPercent);
+  return getHappyTier(getHappyPercent());
 }
 
 HappyTier Watchytchi::getHappyTier(float hPercent)
@@ -321,17 +368,6 @@ HappyTier Watchytchi::getHappyTier(float hPercent)
     return HappyTier::Neutral;
   
   return HappyTier::Sad;
-}
-
-int Watchytchi::getHappyTrendingDirection()
-{
-  // If hungry, not put to bed ontime, or there is active poop, happiness decreases
-  if ((getTimeOfDay() == TimeOfDay::LateNight && isElectricLit()) || hunger <= 0.45f || hasPoop)
-    return -1;
-  // Otherwise, if I'm well-fed, happiness increases!
-  else if (hunger >= 0.6f)
-    return 1;
-  return 0;
 }
 
 bool Watchytchi::isElectricLit()
@@ -678,6 +714,7 @@ bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
     if (hasPoop && menuIdx == MENUIDX_CLEAN)
     {
       hasPoop = false;
+      poopHappy.value = poopHappy.max;
       didPerformAction = true;
       auto prevHour = lastPoopHour;
       lastPoopHour = currentTime.Hour; // Cleaning resets last poop hour in order to prevent immediate poop once again
@@ -685,6 +722,7 @@ bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
       NVS.begin();
       NVS.setInt(nvsKey_hasPoop, 0, false);
       NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
+      poopHappy.WriteSaveData(nvsKey_poopHappy);
       NVS.commit();
       DBGPrintF("Cleaned poop! New lastPoopHour ="); DBGPrint(lastPoopHour); DBGPrintF(", previously it was"); DBGPrint(prevHour); DBGPrintln();
     }
@@ -798,9 +836,10 @@ bool Watchytchi::stroking_handleButtonPress(uint64_t wakeupBit)
   {
     if (didPet)
     {
-      happyPercent += 0.025f;
+      strokeHappy.AddTo(0.0334f);
       NVS.begin();
-      NVS.setFloat(nvsKey_happyPercent, happyPercent, true);
+      strokeHappy.WriteSaveData(nvsKey_strokeHappy);
+      NVS.commit();
       vibrate(1, 30);
     }
     showWatchFace(true);
@@ -827,12 +866,13 @@ void Watchytchi::sharedWalk_draw()
   idleAnimIdx = (idleAnimIdx + 1) % 2;
 
   // Draw a row of flowers representing the player's walking progress
+  auto stepsDuringWalk = sensor.getCounter() - bmaStepsAtWalkStart;
   auto stepPercent = (float)stepsDuringWalk / 2000.f;
   const int flowerWidth = 25;
   srand(currentTime.Day);
   for (auto i = 0; i < 200 / flowerWidth; i++)
   {
-    auto idxT = (float)i / (200.f / flowerWidth);
+    auto idxT = (float)(i + 1.f) / (200.f / flowerWidth);
 
     // If the player has gotten this far, draw a flower (random with day as seed for continuity)
     auto diceRoll = rand() % 3;
@@ -851,8 +891,6 @@ void Watchytchi::sharedWalk_draw()
   }
 
   // Draw raw # of steps (TODO: decide whether this is debug or permanent)
-  auto stepCount = sensor.getCounter();
-  auto stepsDuringWalk = stepCount - bmaStepsAtWalkStart;
   display.setFont(&FreeMonoBold9pt7b);
   display.setTextColor(GxEPD_BLACK);
   display.setCursor(140, 30);
@@ -862,7 +900,7 @@ void Watchytchi::sharedWalk_draw()
   //  add to happiness and exit the walk
   if (stepPercent >= 1.02f)
   {
-    happyPercent += 0.33f;
+    walkHappy.AddTo(walkHappy.max * 0.75f); // Do 3/4rds of happiness so that player gets most of the happiness up front but stil benefits from an additional walk
     gameState = GameState::BaseMenu;
   }
 }

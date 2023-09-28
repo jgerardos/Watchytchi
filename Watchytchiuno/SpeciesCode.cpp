@@ -41,7 +41,7 @@ void DaisyHog::DrawHungryPose(int idleIdx, bool isAnimating)
 void DaisyHog::DrawSadPose(int idleIdx, bool isAnimating)
 {
   owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DaisyHog_Sulking1 : img_DaisyHog_Sulking2, 72, 55, getColor_fg());
-  if (owner->getHappyTrendingDirection() < 0)
+  if (lastHappyDelta < 0)
     owner->display.drawBitmap(100 - 36 + 25, 85, idleIdx % 2 == 0 ? img_Emote_Stormcloud1 : img_Emote_Stormcloud2, 28, 28, getColor_fg());
 }
 void DaisyHog::DrawTwitchAnimationPose(int idleIdx, bool isAnimating)
@@ -125,7 +125,7 @@ void MugSnake::DrawHungryPose(int idleIdx, bool isAnimating)
 void MugSnake::DrawSadPose(int idleIdx, bool isAnimating)
 {
   owner->display.drawBitmap(100 - 36, 97, idleIdx % 2 == 0 ? img_MugSnake_Sulking1 : img_MugSnake_Sulking2, 72, 72, getColor_fg());
-  if (owner->getHappyTrendingDirection() < 0)
+  if (lastHappyDelta < 0)
     owner->display.drawBitmap(100 - 36 + 25, 95, idleIdx % 2 == 0 ? img_Emote_Stormcloud1 : img_Emote_Stormcloud2, 28, 28, getColor_fg());
 }
 void MugSnake::DrawTwitchAnimationPose(int idleIdx, bool isAnimating)
@@ -200,7 +200,7 @@ void DeerSlug::DrawHungryPose(int idleIdx, bool isAnimating)
 void DeerSlug::DrawSadPose(int idleIdx, bool isAnimating)
 {
   owner->display.drawBitmap(100 - 36, 110, img_DeerSlug_Sad1, 72, 55, getColor_fg());
-  if (owner->getHappyTrendingDirection() < 0)
+  if (lastHappyDelta < 0)
     owner->display.drawBitmap(100 - 36 + 25, 85, idleIdx % 2 == 0 ? img_Emote_Stormcloud1 : img_Emote_Stormcloud2, 28, 28, getColor_fg());
 }
 void DeerSlug::DrawTwitchAnimationPose(int idleIdx, bool isAnimating)

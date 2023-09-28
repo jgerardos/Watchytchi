@@ -14,6 +14,20 @@ enum CreatureSpecies {Hog, Snake, Deer, COUNT};
 enum ScheduledAlertType {None, CloseUp, AskAboutDay};
 enum GameState {BaseMenu, Eating, AlertInteraction, StrokingMode, HowWasYourDay, Ending, SharedWalk, CNT};
 
+struct HappyContributor
+{
+    public: 
+        float defaultValue;
+        float value; 
+        float min; 
+        float max;
+        HappyContributor(float startVal, float min, float max);
+        void AddTo(float delta);
+        void MoveTowards(float target, float delta);
+        void WriteSaveData(String nvsKey);
+        void LoadSaveData(String nvsKey);
+};
+
 /*# State #*/
 /*## State: System ##*/
 extern RTC_DATA_ATTR int lastUpdateTsEpoch;
@@ -34,8 +48,18 @@ extern RTC_DATA_ATTR int numSecondsAlive;
 const String nvsKey_numSecondsAlive = "secsAlive";
 extern RTC_DATA_ATTR float hunger;
 const String nvsKey_hunger = "hunger";
-extern RTC_DATA_ATTR float happyPercent;
-const String nvsKey_happyPercent = "happyPercent";
+extern RTC_DATA_ATTR HappyContributor foodHappy;
+const String nvsKey_foodHappy = "foodHappy";
+extern RTC_DATA_ATTR HappyContributor strokeHappy;
+const String nvsKey_strokeHappy = "strokeHappy";
+extern RTC_DATA_ATTR HappyContributor walkHappy;
+const String nvsKey_walkHappy = "walkHappy";
+extern RTC_DATA_ATTR HappyContributor poopHappy;
+const String nvsKey_poopHappy = "poopHappy";
+extern RTC_DATA_ATTR HappyContributor sleepHappy;
+const String nvsKey_sleepHappy = "sleepHappy";
+static float lastHappyDelta;
+
 extern RTC_DATA_ATTR bool hasPoop;
 const String nvsKey_hasPoop = "hasPoop";
 extern RTC_DATA_ATTR int lastPoopHour;

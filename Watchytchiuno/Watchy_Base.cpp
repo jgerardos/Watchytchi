@@ -16,7 +16,11 @@ RTC_DATA_ATTR bool invertColors = false;
 RTC_DATA_ATTR CreatureSpecies species = CreatureSpecies::Deer;
 RTC_DATA_ATTR int numSecondsAlive = 0;
 RTC_DATA_ATTR float hunger = 1.f;
-RTC_DATA_ATTR float happyPercent = 0.5f;
+RTC_DATA_ATTR HappyContributor foodHappy (0.25f,  -0.334f, 0.4f);
+RTC_DATA_ATTR HappyContributor strokeHappy (0.f,  0.f, 0.334f);
+RTC_DATA_ATTR HappyContributor walkHappy (0.f,  0.f, 0.334f);
+RTC_DATA_ATTR HappyContributor poopHappy (0.f,  -0.334f, 0.2f);
+RTC_DATA_ATTR HappyContributor sleepHappy (0.f,  -0.334f, 0.f);
 RTC_DATA_ATTR bool hasPoop = false;
 RTC_DATA_ATTR int lastPoopHour = -1;
 
@@ -108,3 +112,35 @@ void WatchyBase::endProfileAndStart(const char* label)
   endProfile(label);
   startProfile();
 }
+
+HappyContributor::HappyContributor(float startValue, float min, float max)
+{
+  this->value = startValue;
+  this->defaultValue = startValue;
+  this->min = min;
+  this->max = max;
+}
+
+void HappyContributor::AddTo(float delta)
+{
+  value = constrain(value + delta, min, max);
+}
+
+void HappyContributor::MoveTowards(float target, float absoluteDelta)
+{
+  if (value > target)
+    value = constrain(value - absoluteDelta, target, max);
+  else if (value < target)
+    value = constrain(value + absoluteDelta, min, target);
+}
+
+void HappyContributor::WriteSaveData(String nvsKey)
+{
+  NVS.setFloat(nvsKey, value, false);
+}
+
+void HappyContributor::LoadSaveData(String nvsKey)
+{
+  value = NVS.getFloat(nvsKey, defaultValue);
+}
+

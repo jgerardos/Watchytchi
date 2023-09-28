@@ -29,9 +29,9 @@ class Watchytchi : public WatchyBase{
         void tickCreatureState();
         TimeOfDay getTimeOfDay();
         TimeOfDay getTimeOfDay(const tmElements_t &tm);
+        float getHappyPercent();
         HappyTier getHappyTier();
         HappyTier getHappyTier(float happyPercent);
-        int getHappyTrendingDirection();
         bool isElectricLit();
         /*## Game Logic (Schedulable Events) ##*/
         bool hasActiveAlert();
