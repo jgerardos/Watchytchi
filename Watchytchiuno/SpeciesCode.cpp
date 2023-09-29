@@ -174,7 +174,7 @@ void MugSnake::DrawCloseUpFrame(int idleIdx, bool isAnimating)
 void DeerSlug::DrawStrokingPose(int idleIdx, bool isAnimating)
 {
   // TODO: DeerSlug version of animation
-  owner->display.drawBitmap(100 - 36, 110, isStrokingLeftSide ? img_DaisyHog_BeingStroked1 : img_DaisyHog_BeingStroked2, 72, 55, getColor_fg());
+  owner->display.drawBitmap(100 - 36, 110, isStrokingLeftSide ? img_DeerSlug_BeingStroked1 : img_DeerSlug_BeingStroked2, 72, 55, getColor_fg());
 }
 void DeerSlug::DrawEatingPose(int idleIdx, bool isAnimating)
 {
