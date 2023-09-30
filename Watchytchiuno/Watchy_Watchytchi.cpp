@@ -878,12 +878,8 @@ void Watchytchi::sharedWalk_draw()
     auto diceRoll = rand() % 3;
     if (stepPercent >= idxT)
     {
-      if (diceRoll == 0)      
-        display.drawBitmap(i * flowerWidth, 170, img_WalkingFlower_1, 25, 30, GxEPD_BLACK);
-      else if (diceRoll == 1)
-        display.drawBitmap(i * flowerWidth, 170, img_WalkingFlower_2, 25, 30, GxEPD_BLACK);
-      else if (diceRoll == 2)
-        display.drawBitmap(i * flowerWidth, 170, img_WalkingFlower_3, 25, 30, GxEPD_BLACK);
+      display.drawBitmap(i * flowerWidth, 170, diceRoll == 0 ? img_WalkingFlower_1 
+        : (diceRoll == 1 ? img_WalkingFlower_2 : img_WalkingFlower_3), 25, 30, GxEPD_BLACK);
     }
     // Otherwise, draw an un-bloomed bud
     else
@@ -896,11 +892,25 @@ void Watchytchi::sharedWalk_draw()
   display.setCursor(140, 30);
   display.println(stepsDuringWalk);
 
-  // Once you bloom all of the flowers, (+ margin so the player can see their work),
-  //  add to happiness and exit the walk
+  // Add to happiness at pre-determined intervals
+  const int k_walkHappyPayoutIncrements = 8;
+  auto lastStepPercent = lastStepsDuringWalkCount / k_walkStepDuration;
+  auto lastIncrementValue = (int)(lastStepPercent * k_walkHappyPayoutIncrements);
+  auto newIncrementValue  = (int)(stepPercent * k_walkHappyPayoutIncrements);
+  if (newIncrementValue > lastIncrementValue)
+  {
+    auto happinessToAdd = walkHappy.max * 0.75f / k_walkHappyPayoutIncrements;
+    if (newIncrementValue == k_walkHappyPayoutIncrements)
+      happinessToAdd += walkHappy.max * 0.25f; // Extra payout at the end
+    walkHappy.AddTo(happinessToAdd);
+  }
+
+  lastStepsDuringWalkCount = stepsDuringWalk;
+
+  // Once you bloom all of the flowers, (+ margin so the player can see their work), exit the walk
+  // TODO: instead, linger on some kind of succes screen until user input
   if (stepPercent >= 1.02f)
   {
-    walkHappy.AddTo(walkHappy.max * 0.75f); // Do 3/4rds of happiness so that player gets most of the happiness up front but stil benefits from an additional walk
     gameState = GameState::BaseMenu;
   }
 }
