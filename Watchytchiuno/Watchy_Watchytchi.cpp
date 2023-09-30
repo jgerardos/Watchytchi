@@ -738,6 +738,7 @@ bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
     if (menuIdx == MENUIDX_WALK)
     {
       bmaStepsAtWalkStart = sensor.getCounter();
+      lastStepsDuringWalkCount = 0;
       gameState = GameState::SharedWalk;
       didPerformAction = true;
     }
@@ -866,8 +867,9 @@ void Watchytchi::sharedWalk_draw()
   idleAnimIdx = (idleAnimIdx + 1) % 2;
 
   // Draw a row of flowers representing the player's walking progress
+  const float k_walkStepDuration = 2000.f;
   auto stepsDuringWalk = sensor.getCounter() - bmaStepsAtWalkStart;
-  auto stepPercent = (float)stepsDuringWalk / 2000.f;
+  auto stepPercent = (float)stepsDuringWalk / k_walkStepDuration;
   const int flowerWidth = 25;
   srand(currentTime.Day);
   for (auto i = 0; i < 200 / flowerWidth; i++)
