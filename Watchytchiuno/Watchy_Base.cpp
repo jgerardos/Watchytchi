@@ -43,6 +43,7 @@ RTC_DATA_ATTR bool hasExecutedEnding = false;
 
 /*## State: Shared Walk ##*/
 RTC_DATA_ATTR int bmaStepsAtWalkStart;
+RTC_DATA_ATTR int lastStepsDuringWalkCount;
 
 
 uint8_t scheduledVibrationTimes;

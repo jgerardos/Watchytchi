@@ -86,8 +86,9 @@ extern RTC_DATA_ATTR int emotionSelectIdx;
 /*## State: Game State (Ending) ##*/
 extern RTC_DATA_ATTR bool hasExecutedEnding;
 
-/*## State: Shared Walk ##*/
+/*## State: Game State (Shared Walk) ##*/
 extern RTC_DATA_ATTR int bmaStepsAtWalkStart;
+extern RTC_DATA_ATTR int lastStepsDuringWalkCount;
 
 // Compile out macros to increase speed of serial printing
 #define DBGPrint(content) if (VERBOSE_LOGGING_ENABLED) {Serial.print(content);}
