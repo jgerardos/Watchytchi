@@ -14,7 +14,7 @@ const unsigned char *menu_reset_press_stages[4] = {img_MenuIcon_ResetSave_Active
 
 const float k_secDurationToFullyDepleteHunger = 4.f * 60.f * 60.f;
 const int k_maxSecondsDeltaForUpdate = 5 * 60;
-const float k_happinessFullyChangeDuration = 4 * 60 * 60;
+const float k_happinessFullyChangeDuration = 3 * 60 * 60;
 
 DaisyHog hog = DaisyHog();
 MugSnake snake = MugSnake();
@@ -297,7 +297,7 @@ void Watchytchi::tickCreatureState()
     else if (hunger >= 0.6f)
       foodHappy.AddTo(happyDeltaAmt);
 
-    // If starving, clamp maximum happpiness from food
+    // If starving, limit maximum food happpiness
     if (hunger <= 0.001f)
       foodHappy.value = constrain(foodHappy.value, foodHappy.min, foodHappy.max / 2.f);
 
@@ -307,9 +307,9 @@ void Watchytchi::tickCreatureState()
     else
       poopHappy.MoveTowards(0, happyDeltaAmt);
 
-    // Walk and stroke happy fades to 0 over time if you haven't done those options recently
-    walkHappy.MoveTowards(0, happyDeltaAmt);
-    strokeHappy.MoveTowards(0, happyDeltaAmt);
+    // Walk and stroke happy slowly fade to 0 over time if you haven't done those actions recently
+    walkHappy.MoveTowards(0, happyDeltaAmt * 0.25f);
+    strokeHappy.MoveTowards(0, happyDeltaAmt * 0.25f);
   }
 
   lastHappyDelta = getHappyPercent() - oldHappyPercent;
