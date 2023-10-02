@@ -77,6 +77,11 @@ void DaisyHog::DrawIdlePose(int idleIdx, bool isAnimating)
   }
 }
 
+void DaisyHog::DrawWalkingPose(int idleIdx, bool isAnimating)
+{
+  owner->display.drawBitmap(100 - 36, 110, idleAnimIdx % 2 == 0 ? img_DaisyHog_Walking1 : img_DaisyHog_Walking2, 72, 55, getColor_fg());
+}
+
 void DaisyHog::DrawPosingQuestionPose(int idleIdx, bool isAnimating)
 {
   owner->display.drawBitmap(100 - 36, 110, img_DaisyHog_PosingQuestion, 72, 55, getColor_fg());
@@ -151,6 +156,13 @@ void MugSnake::DrawIdlePose(int idleIdx, bool isAnimating)
       owner->display.drawBitmap(100 - 36 + 25, 95, idleIdx % 2 == 0 ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, getColor_fg());
   }
 }
+
+void MugSnake::DrawWalkingPose(int idleIdx, bool isAnimating)
+{
+  // TODO: Bespoke version of animation
+  owner->display.drawBitmap(100 - 36, 97, idleIdx % 2 == 0 ? img_MugSnake_Idle1 : img_MugSnake_Idle2, 72, 72, getColor_fg());
+}
+
 void MugSnake::DrawPosingQuestionPose(int idleIdx, bool isAnimating)
 {
   // TODO: bespoke version of animation
@@ -215,6 +227,13 @@ void DeerSlug::DrawIdlePose(int idleIdx, bool isAnimating)
   // TODO: Special idles
   owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DeerSlug_Idle1 : img_DeerSlug_Idle2, 72, 55, getColor_fg());
 }
+
+void DeerSlug::DrawWalkingPose(int idleIdx, bool isAnimating)
+{
+  // TODO: bespoke version of animation
+  owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DeerSlug_Idle1 : img_DeerSlug_Idle2, 72, 55, getColor_fg());
+}
+
 void DeerSlug::DrawPosingQuestionPose(int idleIdx, bool isAnimating)
 {
   // TODO: bespoke version of animation

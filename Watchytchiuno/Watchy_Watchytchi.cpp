@@ -862,8 +862,8 @@ void Watchytchi::sharedWalk_draw()
   drawBgEnvironment();
   drawWeather();
 
-  // Draw the critter in the center! (TODO: custon animation poses)
-  critter->DrawIdlePose(idleAnimIdx, false);
+  // Draw the critter in the center!
+  critter->DrawWalkingPose(idleAnimIdx, false);
   idleAnimIdx = (idleAnimIdx + 1) % 2;
 
   // Draw a row of flowers representing the player's walking progress

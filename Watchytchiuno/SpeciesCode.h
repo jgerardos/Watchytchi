@@ -21,6 +21,7 @@ class SpeciesBase
     virtual void DrawSadPose(int idleIdx, bool isAnimating) = 0;
     virtual void DrawTwitchAnimationPose(int idleIdx, bool isAnimating) = 0;
     virtual void DrawIdlePose(int idleIdx, bool isAnimating) = 0;
+    virtual void DrawWalkingPose(int idleIdx, bool isAnimating) = 0;
     virtual void DrawPosingQuestionPose(int idleIdx, bool isAnimating) = 0;
     virtual void DrawCloseUpFrame(int idleIdx, bool isAnimating) = 0;
 };
@@ -36,6 +37,7 @@ class DaisyHog : public SpeciesBase
   void DrawSadPose(int idleIdx, bool isAnimating) override;
   void DrawTwitchAnimationPose(int idleIdx, bool isAnimating) override;
   void DrawIdlePose(int idleIdx, bool isAnimating) override;
+  void DrawWalkingPose(int idleIdx, bool isAnimating) override;
   void DrawPosingQuestionPose(int idleIdx, bool isAnimating) override;
   void DrawCloseUpFrame(int idleIdx, bool isAnimating) override;
 };
@@ -51,6 +53,7 @@ class MugSnake : public SpeciesBase
   void DrawSadPose(int idleIdx, bool isAnimating) override;
   void DrawTwitchAnimationPose(int idleIdx, bool isAnimating) override;
   void DrawIdlePose(int idleIdx, bool isAnimating) override;
+  void DrawWalkingPose(int idleIdx, bool isAnimating) override;
   void DrawPosingQuestionPose(int idleIdx, bool isAnimating) override;
   void DrawCloseUpFrame(int idleIdx, bool isAnimating) override;
 };
@@ -66,6 +69,7 @@ class DeerSlug : public SpeciesBase
   void DrawSadPose(int idleIdx, bool isAnimating) override;
   void DrawTwitchAnimationPose(int idleIdx, bool isAnimating) override;
   void DrawIdlePose(int idleIdx, bool isAnimating) override;
+  void DrawWalkingPose(int idleIdx, bool isAnimating) override;
   void DrawPosingQuestionPose(int idleIdx, bool isAnimating) override;
   void DrawCloseUpFrame(int idleIdx, bool isAnimating) override;
 };
