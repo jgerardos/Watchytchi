@@ -31,7 +31,7 @@ struct HappyContributor
 /*# State #*/
 /*## State: System ##*/
 extern RTC_DATA_ATTR int lastUpdateTsEpoch;
-const String nvsKey_lastUpdateTsEpoch = "lastTs";
+const String nvsKey_lastUpdateTsEpoch = "prevTs";
 extern RTC_DATA_ATTR int numResetPresses;
 
 /*## State: UI ##*/
