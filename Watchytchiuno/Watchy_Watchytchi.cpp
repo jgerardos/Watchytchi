@@ -111,6 +111,7 @@ void Watchytchi::loadSaveData()
   nextAlertTs = NVS.getInt(nvsKey_nextAlertTs, -1);
   nextAlertType = (ScheduledAlertType)NVS.getInt(nvsKey_nextAlertType, 0);
   DBGPrintF("Loaded lastUpdateTsEpoch "); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
+  DBGPrintF("Loaded nextAlertType "); DBGPrint(nextAlertType); DBGPrintln();
   
   // Assign creature (TODO: convert to map or enum-linked array)
   if (species == CreatureSpecies::Hog)
@@ -814,6 +815,10 @@ void Watchytchi::stroking_draw()
   drawPoop();
   critter->DrawStrokingPose(idleAnimIdx, false);
   idleAnimIdx = (idleAnimIdx + 1) % 2;
+  if (isStrokingLeftSide)
+    display.drawBitmap(194, 0, img_StrokingButtonPrompt_R, 6, 46, GxEPD_BLACK);
+  else
+    display.drawBitmap(0, 0, img_StrokingButtonPrompt_L, 6, 46, GxEPD_BLACK);
   drawAgeFlower();
 }
 

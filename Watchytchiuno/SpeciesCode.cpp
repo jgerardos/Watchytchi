@@ -230,8 +230,7 @@ void DeerSlug::DrawIdlePose(int idleIdx, bool isAnimating)
 
 void DeerSlug::DrawWalkingPose(int idleIdx, bool isAnimating)
 {
-  // TODO: bespoke version of animation
-  owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DeerSlug_Idle1 : img_DeerSlug_Idle2, 72, 55, getColor_fg());
+  owner->display.drawBitmap(100 - 36, 110, idleIdx % 2 == 0 ? img_DeerSlug_Walking1 : img_DeerSlug_Walking2, 77, 55, getColor_fg());
 }
 
 void DeerSlug::DrawPosingQuestionPose(int idleIdx, bool isAnimating)
