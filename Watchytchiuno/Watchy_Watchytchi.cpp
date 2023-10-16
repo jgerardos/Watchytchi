@@ -729,6 +729,8 @@ void Watchytchi::baseMenu_draw()
 
 bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
 {
+  // Delay our 3 minute twitch animation so it doesn't happen while we're navigating in the menu
+  lastAnimateMinute = currentTime.Minute;
   // Process selection
   if (IS_KEY_SELECT) {
     auto didPerformAction = false;
