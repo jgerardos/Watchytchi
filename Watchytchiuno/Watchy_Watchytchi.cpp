@@ -356,7 +356,9 @@ void Watchytchi::tickCreatureState()
       poopHappy.MoveTowards(0, happyDeltaAmt);
 
     // Walk and stroke happy slowly fade to 0 over time if you haven't done those actions recently
+    if (gameState != GameState::SharedWalk)
     walkHappy.MoveTowards(0, happyDeltaAmt * 0.25f);
+    if (gameState != GameState::StrokingMode)
     strokeHappy.MoveTowards(0, happyDeltaAmt * 0.25f);
   }
 
