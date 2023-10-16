@@ -329,11 +329,16 @@ void Watchytchi::tickCreatureState()
   auto happyDeltaAmt = timeDelta / k_happinessFullyChangeDuration;
   
   // Not being asleep at night makes me unhappy
-  sleepHappy.AddTo((isElectricLit() ? -1.f : 1.f) * happyDeltaAmt);
+  if (isElectricLit())
+    sleepHappy.AddTo(-happyDeltaAmt);
 
   // Except for sleep itself, happiness doesn't change while the creature sleeps
   if (getTimeOfDay() != TimeOfDay::LateNight || isElectricLit())
   {
+    // If I'm cranky from a bad night of sleep, gradually have the mood wear off
+    if (!isElectricLit())
+      sleepHappy.MoveTowards(0.f, happyDeltaAmt);
+
     // Food happy goes up or down based on whether I'm fed
     if (hunger < 0.45f)
       foodHappy.AddTo(-happyDeltaAmt);
