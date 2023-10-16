@@ -113,9 +113,9 @@ void Watchytchi::alertInteraction_draw()
   {
     executeCloseUp();
     gameState = GameState::BaseMenu;
+    scheduleNextAlert();
     // After executing the alert, draw the base menu
     baseMenu_draw();
-    scheduleNextAlert();
   }
   else if (nextAlertType == ScheduledAlertType::AskAboutDay)
   {
