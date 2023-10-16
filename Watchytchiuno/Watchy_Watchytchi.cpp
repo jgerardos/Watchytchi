@@ -52,7 +52,7 @@ void Watchytchi::drawWatchFace(){
   }
 
   /*# Load Data: #*/
-  loadSaveData();
+  tryLoadSaveData(false);
 
   /*# Tick state! #*/
   tickCreatureState();
@@ -60,7 +60,7 @@ void Watchytchi::drawWatchFace(){
   // Execute the draw function appropriate to our current game state
   (this->*drawFuncsByState[(int)gameState])();
 
-  writeSaveData();
+  tryWriteSaveData(false);
   executeScheduledVibration();
 } 
 
@@ -74,9 +74,8 @@ void Watchytchi::handleButtonPress() {
     }
   }
   RTC.read(currentTime);
-  loadSaveData();
+  tryLoadSaveData(false);
   // Call the active handle button press function depending on my gamestate
-  DBGPrintF("Handling button press ins state "); DBGPrint(gameState); DBGPrintln();
   auto didHandlePress = (this->*handleButtonFuncsByState[(int)gameState])(wakeupBit);
 
   if (didHandlePress)
@@ -85,15 +84,23 @@ void Watchytchi::handleButtonPress() {
     Watchy::handleButtonPress();
 }
 
-void Watchytchi::loadSaveData()
+bool hasLoadedThisWake = false;
+void Watchytchi::tryLoadSaveData(bool force)
 {
-  // Prevent redundant loads from disk within a single wakeup. This value will reset each sleep cycle
   if (hasLoadedThisWake)
   {
-    DBGPrintF("Skipping redundant load!"); DBGPrintln();
+    DBGPrintF("Skipping redundant load within same frame!"); DBGPrintln();
     return;
   }
+
+  // Only load if we haven't yet saved since the device last lost power or was flashed
   hasLoadedThisWake = true;
+  if (!force && lastSaveTs > 0)
+  {
+    DBGPrintF("Skipping redundant load from NVS, still loading RTC!"); DBGPrintln();
+    loadFromRTC(); // However, we always load from RTC
+    return;
+  }
 
   NVS.begin();
   lastUpdateTsEpoch = NVS.getInt(nvsKey_lastUpdateTsEpoch, -1);
@@ -101,17 +108,29 @@ void Watchytchi::loadSaveData()
   species = (CreatureSpecies)NVS.getInt(nvsKey_species, 0);
   numSecondsAlive = NVS.getInt(nvsKey_numSecondsAlive, 0);
   hunger = NVS.getFloat(nvsKey_hunger, 1.f);
-  foodHappy.LoadSaveData(nvsKey_foodHappy);
-  strokeHappy.LoadSaveData(nvsKey_strokeHappy);
-  walkHappy.LoadSaveData(nvsKey_walkHappy);
-  poopHappy.LoadSaveData(nvsKey_poopHappy);
-  sleepHappy.LoadSaveData(nvsKey_sleepHappy);
+  foodHappy_rtc = NVS.getFloat(nvsKey_foodHappy, foodHappy.defaultValue);
+  strokeHappy_rtc = NVS.getFloat(nvsKey_strokeHappy, strokeHappy.defaultValue);
+  walkHappy_rtc = NVS.getFloat(nvsKey_walkHappy, walkHappy.defaultValue);
+  poopHappy_rtc = NVS.getFloat(nvsKey_poopHappy, poopHappy.defaultValue);
+  sleepHappy_rtc = NVS.getFloat(nvsKey_sleepHappy, sleepHappy.defaultValue);
   hasPoop = 1 == NVS.getInt(nvsKey_hasPoop, 0);
   lastPoopHour = NVS.getInt(nvsKey_lastPoopHour, -1);
   nextAlertTs = NVS.getInt(nvsKey_nextAlertTs, -1);
   nextAlertType = (ScheduledAlertType)NVS.getInt(nvsKey_nextAlertType, 0);
-  DBGPrintF("Loaded lastUpdateTsEpoch "); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
+  DBGPrintF("Loading!! lastUpdateTsEpoch "); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
   DBGPrintF("Loaded nextAlertType "); DBGPrint(nextAlertType); DBGPrintln();
+  
+  // Now that our RTC backing values have loaded from RTC, apply them to anything that uses them
+  loadFromRTC();
+}
+
+void Watchytchi::loadFromRTC()
+{
+  foodHappy.value = foodHappy_rtc;
+  strokeHappy.value = strokeHappy_rtc;
+  walkHappy.value = walkHappy_rtc;
+  poopHappy.value = poopHappy_rtc;
+  sleepHappy.value = sleepHappy_rtc;
   
   // Assign creature (TODO: convert to map or enum-linked array)
   if (species == CreatureSpecies::Hog)
@@ -123,26 +142,49 @@ void Watchytchi::loadSaveData()
   critter->owner = this;
 }
 
-void Watchytchi::writeSaveData()
+void Watchytchi::tryWriteSaveData(bool force)
 {
+  // Save only every couple of hours to avoid wearing out flash memory
+  const int k_saveInterval = 60 * 60 * 2; 
+  if (!force && lastUpdateTsEpoch < lastSaveTs + k_saveInterval)
+  {
+    DBGPrintF("Skipping NVS save because I saved too recently, still saving to RTC!");
+    DBGPrintln();
+    writeToRTC(); // Still write to RTC
+    return;
+  }
+  lastSaveTs = lastUpdateTsEpoch;
+
   /*# Save data #*/
+  NVS.begin();
   NVS.setInt(nvsKey_lastUpdateTsEpoch, (int64_t)lastUpdateTsEpoch);
   DBGPrintF("Saving lastUpdateTsEpoch as "); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
   NVS.setInt(nvsKey_invertColors, invertColors ? 1 : 0, false);
   NVS.setInt(nvsKey_species, (int)species, false);
   NVS.setInt(nvsKey_numSecondsAlive, numSecondsAlive, false);
   NVS.setFloat(nvsKey_hunger, hunger, false);
-  foodHappy.WriteSaveData(nvsKey_foodHappy);
-  strokeHappy.WriteSaveData(nvsKey_strokeHappy);
-  walkHappy.WriteSaveData(nvsKey_walkHappy);
-  poopHappy.WriteSaveData(nvsKey_poopHappy);
-  sleepHappy.WriteSaveData(nvsKey_sleepHappy);
+  NVS.setFloat(nvsKey_foodHappy, foodHappy.value);
+  NVS.setFloat(nvsKey_strokeHappy, strokeHappy.value);
+  NVS.setFloat(nvsKey_walkHappy, walkHappy.value);
+  NVS.setFloat(nvsKey_poopHappy, poopHappy.value);
+  NVS.setFloat(nvsKey_sleepHappy, sleepHappy.value);
   NVS.setInt(nvsKey_hasPoop, hasPoop ? 1 : 0, false);
   NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
   NVS.setInt(nvsKey_nextAlertTs, nextAlertTs);
   NVS.setInt(nvsKey_nextAlertType, (int)nextAlertType);
   auto didSave = NVS.commit();
   DBGPrintF("Save success? "); DBGPrint(didSave); DBGPrintln();
+  
+  writeToRTC();
+}
+
+void Watchytchi::writeToRTC()
+{
+  foodHappy_rtc = foodHappy.value;
+  strokeHappy_rtc = strokeHappy.value;
+  walkHappy_rtc = walkHappy.value;
+  poopHappy_rtc = poopHappy.value;
+  sleepHappy_rtc = sleepHappy.value;
 }
 
 void Watchytchi::resetSaveData()
@@ -161,16 +203,16 @@ void Watchytchi::resetSaveData()
   NVS.setInt(nvsKey_numSecondsAlive, numSecondsAlive, false);
   hunger = 1.f;
   NVS.setFloat(nvsKey_hunger, hunger, false);
-  foodHappy.value = foodHappy.defaultValue;
-  foodHappy.WriteSaveData(nvsKey_foodHappy);
-  strokeHappy.value = strokeHappy.defaultValue;
-  strokeHappy.WriteSaveData(nvsKey_strokeHappy);
-  walkHappy.value = walkHappy.defaultValue;
-  walkHappy.WriteSaveData(nvsKey_walkHappy);
-  poopHappy.value = poopHappy.defaultValue;
-  poopHappy.WriteSaveData(nvsKey_poopHappy);
-  sleepHappy.value = sleepHappy.defaultValue;
-  sleepHappy.WriteSaveData(nvsKey_sleepHappy);
+  foodHappy_rtc = foodHappy.defaultValue;
+  NVS.setFloat(nvsKey_foodHappy, foodHappy.defaultValue, false);
+  strokeHappy_rtc = strokeHappy.defaultValue;
+  NVS.setFloat(nvsKey_strokeHappy, strokeHappy.defaultValue, false);
+  walkHappy_rtc = walkHappy.defaultValue;
+  NVS.setFloat(nvsKey_walkHappy, walkHappy.defaultValue, false);
+  poopHappy_rtc = poopHappy.defaultValue;
+  NVS.setFloat(nvsKey_poopHappy, poopHappy.defaultValue, false);
+  sleepHappy_rtc = sleepHappy.defaultValue;
+  NVS.setFloat(nvsKey_sleepHappy, sleepHappy.defaultValue, false);
   hasPoop = false;
   NVS.setInt(nvsKey_hasPoop, 0, false);
   lastPoopHour = -1;
@@ -189,6 +231,8 @@ void Watchytchi::resetSaveData()
   emotionSelectIdx = 0;
   hasExecutedEnding = false;
   auto didSave = NVS.commit();
+
+  loadFromRTC(); // Apply any RTC saved values (i.e. happy backing values)
 }
 
 void Watchytchi::tickCreatureState()
@@ -231,8 +275,6 @@ void Watchytchi::tickCreatureState()
   if ((int)species < 0 || (int)species >= (int)CreatureSpecies::COUNT)
   {
     species = (CreatureSpecies)constrain((int)species, 0, (int)CreatureSpecies::COUNT - 1);
-    NVS.begin();
-    NVS.setInt(nvsKey_species, (int)species, true);
   }
 
   // Grow up into a bigger critter!
@@ -586,7 +628,7 @@ void Watchytchi::drawAgeFlower()
   auto age = (int)(numSecondsAlive / (24 * 60 * 60));
   auto flowerGrowthIdx = constrain(age, 0, 5);
   display.drawBitmap(156, 91, flower_stages[flowerGrowthIdx], 30, 45, color_fg);
-  DBGPrintF("numSecondsAlive is "); DBGPrint(numSecondsAlive); DBGPrintF(", age in days is "); DBGPrint(age);
+  DBGPrintF("numSecondsAlive is "); DBGPrint(numSecondsAlive); DBGPrintF(", age in days is "); DBGPrint(age); DBGPrintln();
 }
 
 void Watchytchi::drawDebugClock()
@@ -720,19 +762,12 @@ bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
       auto prevHour = lastPoopHour;
       lastPoopHour = currentTime.Hour; // Cleaning resets last poop hour in order to prevent immediate poop once again
       lastAnimateMinute = -99; // Do a little dance afterwards by resetting the last animate minute
-      NVS.begin();
-      NVS.setInt(nvsKey_hasPoop, 0, false);
-      NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
-      poopHappy.WriteSaveData(nvsKey_poopHappy);
-      NVS.commit();
       DBGPrintF("Cleaned poop! New lastPoopHour ="); DBGPrint(lastPoopHour); DBGPrintF(", previously it was"); DBGPrint(prevHour); DBGPrintln();
     }
     // Toggle Light
     if (menuIdx == MENUIDX_LIGHT && (currentTime.Hour >= 21 || currentTime.Hour <= 6))
     {
       invertColors = !invertColors;
-      NVS.begin();
-      NVS.setInt(nvsKey_invertColors, invertColors ? 1 : 0, true);
       didPerformAction = true;
     }
     // Enter Walking mode
@@ -750,6 +785,8 @@ bool Watchytchi::baseMenu_handleButtonPress(uint64_t wakeupBit)
       didPerformAction = true;
       if (numResetPresses >= 4)
         resetSaveData();
+      else
+        tryWriteSaveData(true); // HACK: Force a save otherwise (temporary manual save for use before flashing)
     }
     // Vibrate if this selection resulted in an action
     if (didPerformAction)
@@ -843,9 +880,6 @@ bool Watchytchi::stroking_handleButtonPress(uint64_t wakeupBit)
     if (didPet)
     {
       strokeHappy.AddTo(0.0334f);
-      NVS.begin();
-      strokeHappy.WriteSaveData(nvsKey_strokeHappy);
-      NVS.commit();
       vibrate(1, 30);
     }
     showWatchFace(true);

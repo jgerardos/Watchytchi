@@ -20,9 +20,10 @@ class Watchytchi : public WatchyBase{
         void handleButtonPress();
 
         /*# Save/load #*/
-        bool hasLoadedThisWake = false;
-        void loadSaveData();
-        void writeSaveData();
+        void tryLoadSaveData(bool force);
+        void loadFromRTC();
+        void tryWriteSaveData(bool force);
+        void writeToRTC();
         void resetSaveData();
 
         /*# Game Logic #*/

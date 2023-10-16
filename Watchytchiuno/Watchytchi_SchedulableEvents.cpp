@@ -271,6 +271,6 @@ void Watchytchi::ending_draw()
     delay(5000);
     hasExecutedEnding = false;
     resetSaveData();
-    loadSaveData();
+    tryLoadSaveData(true);
   }
 }

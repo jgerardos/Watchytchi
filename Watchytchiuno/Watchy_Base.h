@@ -24,8 +24,6 @@ struct HappyContributor
         HappyContributor(float startVal, float min, float max);
         void AddTo(float delta);
         void MoveTowards(float target, float delta);
-        void WriteSaveData(String nvsKey);
-        void LoadSaveData(String nvsKey);
 };
 
 /*# State #*/
@@ -33,6 +31,7 @@ struct HappyContributor
 extern RTC_DATA_ATTR int lastUpdateTsEpoch;
 const String nvsKey_lastUpdateTsEpoch = "prevTs";
 extern RTC_DATA_ATTR int numResetPresses;
+extern RTC_DATA_ATTR int lastSaveTs;
 
 /*## State: UI ##*/
 extern RTC_DATA_ATTR int menuIdx;
@@ -48,15 +47,15 @@ extern RTC_DATA_ATTR int numSecondsAlive;
 const String nvsKey_numSecondsAlive = "secsAlive";
 extern RTC_DATA_ATTR float hunger;
 const String nvsKey_hunger = "hunger";
-extern RTC_DATA_ATTR HappyContributor foodHappy;
+extern RTC_DATA_ATTR float foodHappy_rtc;
 const String nvsKey_foodHappy = "foodHappy";
-extern RTC_DATA_ATTR HappyContributor strokeHappy;
+extern RTC_DATA_ATTR float strokeHappy_rtc;
 const String nvsKey_strokeHappy = "strokeHappy";
-extern RTC_DATA_ATTR HappyContributor walkHappy;
+extern RTC_DATA_ATTR float walkHappy_rtc;
 const String nvsKey_walkHappy = "walkHappy";
-extern RTC_DATA_ATTR HappyContributor poopHappy;
+extern RTC_DATA_ATTR float poopHappy_rtc;
 const String nvsKey_poopHappy = "poopHappy";
-extern RTC_DATA_ATTR HappyContributor sleepHappy;
+extern RTC_DATA_ATTR float sleepHappy_rtc;
 const String nvsKey_sleepHappy = "sleepHappy";
 static float lastHappyDelta;
 
@@ -130,6 +129,12 @@ class WatchyBase : public Watchy {
         int profileMs[16];
         int nextProfileIdx;
         virtual void drawUIButton(int idx, bool quickCursorUpdate) {}
+
+        HappyContributor foodHappy = HappyContributor(0.25f,  -0.334f, 0.4f);
+        HappyContributor strokeHappy = HappyContributor(0.f,  0.f, 0.334f);
+        HappyContributor walkHappy = HappyContributor(0.f,  0.f, 0.334f);
+        HappyContributor poopHappy = HappyContributor(0.f,  -0.334f, 0.2f);
+        HappyContributor sleepHappy = HappyContributor(0.f,  -0.334f, 0.f);
     private:
         void _rtcConfig();
 };
