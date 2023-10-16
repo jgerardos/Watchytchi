@@ -357,9 +357,9 @@ void Watchytchi::tickCreatureState()
 
     // Walk and stroke happy slowly fade to 0 over time if you haven't done those actions recently
     if (gameState != GameState::SharedWalk)
-    walkHappy.MoveTowards(0, happyDeltaAmt * 0.25f);
+      walkHappy.MoveTowards(0, happyDeltaAmt * 0.25f);
     if (gameState != GameState::StrokingMode)
-    strokeHappy.MoveTowards(0, happyDeltaAmt * 0.25f);
+      strokeHappy.MoveTowards(0, happyDeltaAmt * 0.25f);
   }
 
   lastHappyDelta = getHappyPercent() - oldHappyPercent;
@@ -865,6 +865,10 @@ void Watchytchi::stroking_draw()
     display.drawBitmap(194, 0, img_StrokingButtonPrompt_R, 6, 46, GxEPD_BLACK);
   else
     display.drawBitmap(0, 0, img_StrokingButtonPrompt_L, 6, 46, GxEPD_BLACK);
+  // If this stroke contributed to my happiness, draw a little heart
+  if (strokeHappy.value < strokeHappy.max - 0.01f)
+    display.drawBitmap(125, 115, isStrokingLeftSide ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, GxEPD_BLACK);
+  
   drawAgeFlower();
 }
 
