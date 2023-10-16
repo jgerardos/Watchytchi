@@ -159,8 +159,7 @@ void MugSnake::DrawIdlePose(int idleIdx, bool isAnimating)
 
 void MugSnake::DrawWalkingPose(int idleIdx, bool isAnimating)
 {
-  // TODO: Bespoke version of animation
-  owner->display.drawBitmap(100 - 36, 97, idleIdx % 2 == 0 ? img_MugSnake_Idle1 : img_MugSnake_Idle2, 72, 72, getColor_fg());
+  owner->display.drawBitmap(100 - 36, 97, idleIdx % 2 == 0 ? img_MugSnake_Walking1 : img_MugSnake_Walking2, 72, 72, getColor_fg());
 }
 
 void MugSnake::DrawPosingQuestionPose(int idleIdx, bool isAnimating)
