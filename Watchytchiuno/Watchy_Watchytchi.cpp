@@ -285,7 +285,7 @@ void Watchytchi::tickCreatureState()
   }
 
   // Handle the ending!
-  auto maximumAge = 6 * 24 * 60 * 60;
+  auto maximumAge = 7 * 24 * 60 * 60;
   if (gameState != GameState::Ending && numSecondsAlive >= maximumAge)
     gameState = GameState::Ending;
   if (gameState == GameState::Ending)
