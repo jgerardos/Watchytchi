@@ -336,8 +336,17 @@ void Watchytchi::tickCreatureState()
   }
 
   /*# Manage Playmate state! #*/
-  // Playmates leave after a bit
   const int k_playmateStayDuration = 3 * 60 * 60;
+
+  // Force debug playmate option
+  if (FORCED_ACTIVE_PLAYMATE > (int)PlaymateSpecies::NoPlaymate)
+  {
+    activePlaymate = (PlaymateSpecies)FORCED_ACTIVE_PLAYMATE;
+    if (lastPlaymateJoinTs = -1 || lastUpdateTsEpoch > lastPlaymateJoinTs + k_playmateStayDuration)
+      lastPlaymateJoinTs = lastUpdateTsEpoch;
+  }
+
+  // Playmates leave after a bit
   if (hasActivePlaymate() && lastUpdateTsEpoch > lastPlaymateJoinTs + k_playmateStayDuration)
     activePlaymate = PlaymateSpecies::NoPlaymate;
 
@@ -468,6 +477,9 @@ void Watchytchi::clearCreatureBackground()
 {
   auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
   display.fillRect(getPlaymateXOffset() + 100 - 36, 97, 156 - (100 - 36) + 8, 72, color_bg);
+
+  if (hasActivePlaymate())
+    display.fillRect(120, 97, 106, 72, color_bg);
 }
 
 void Watchytchi::clearScreen()
@@ -655,7 +667,7 @@ void Watchytchi::drawEatAnim(){
        critter->DrawEatingPose(i, true);
        display.drawBitmap(144 - 18 + getPlaymateXOffset(), 126, foodType == BERRIES ? foodBerry_stages[i / 8] : foodCucumber_stages[i / 4], 36, 36, color_fg);
        if (hasActivePlaymate())
-        drawPlaymate();
+        drawPlaymate(i);
        display.display(true);
        clearCreatureBackground();
      }
@@ -668,7 +680,7 @@ void Watchytchi::drawEatAnim(){
      }
 }
 
-void Watchytchi::drawPlaymate()
+void Watchytchi::drawPlaymate(int idleIdx)
 {
   if (!hasActivePlaymate())
     return;
@@ -681,9 +693,14 @@ void Watchytchi::drawPlaymate()
   // Draw the playmate!
   // TODO: make data classes for playmate instead of hardcoding
   if (activePlaymate == PlaymateSpecies::JuncoSnake)
-    display.drawBitmap(120, 97, img_Playmate_JuncoSnake_Idle1, 106, 72, color_fg);
+  {
+    if (gameState == GameState::Eating)
+      display.drawBitmap(120, 97, idleIdx % 2 == 0 ? img_Playmate_JuncoSnake_Eating1 : img_Playmate_JuncoSnake_Eating2, 106, 72, color_fg);
+    else
+      display.drawBitmap(120, 97, idleIdx % 2 == 0 ? img_Playmate_JuncoSnake_Idle1 : img_Playmate_JuncoSnake_Idle2, 106, 72, color_fg);
+  }
   else if (activePlaymate == PlaymateSpecies::SnappyLog)
-    display.drawBitmap(120, 97, img_Playmate_SnappyLog_Idle1, 106, 72, color_fg);
+    display.drawBitmap(120, 97, idleIdx % 2 == 0 ? img_Playmate_SnappyLog_Idle1 : img_Playmate_SnappyLog_Idle2, 106, 72, color_fg);
 }
 
 void Watchytchi::drawAgeFlower()
@@ -715,8 +732,12 @@ void Watchytchi::drawPoop()
 {
   auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
   auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
+  auto xPos = 32;
+  if (hasActivePlaymate())
+    xPos = 0;
+
   if (hasPoop)    
-    display.drawBitmap(32, 200 - 32 - 20 - 4, idleAnimIdx % 2 == 0 ? img_SmallPoop_1 : img_SmallPoop_2, 20, 20, color_fg);
+    display.drawBitmap(xPos, 200 - 32 - 20 - 4, idleAnimIdx % 2 == 0 ? img_SmallPoop_1 : img_SmallPoop_2, 20, 20, color_fg);
 }
 
 void Watchytchi::drawStatusDisplay()
@@ -774,6 +795,8 @@ void Watchytchi::baseMenu_draw()
     {
       isPeriodicAnim &= (i != numAnimFrames - 1);
       drawIdleCreature(i != numAnimFrames - 1);
+      if (hasActivePlaymate())
+        drawPlaymate(idleAnimIdx);
       display.display(true);
       if (i != numAnimFrames - 1)
         clearCreatureBackground();
@@ -782,12 +805,12 @@ void Watchytchi::baseMenu_draw()
   }
   else {
     drawIdleCreature(false);
+    if (hasActivePlaymate())
+      drawPlaymate(idleAnimIdx);
+    else
+      drawAgeFlower();
   }
 
-  if (hasActivePlaymate())
-    drawPlaymate();
-  else
-    drawAgeFlower();
   drawPoop();    
 }
 
@@ -932,7 +955,7 @@ void Watchytchi::stroking_draw()
     display.drawBitmap(125, 115, isStrokingLeftSide ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, GxEPD_BLACK);
   
   if (hasActivePlaymate())
-    drawPlaymate();
+    drawPlaymate(idleAnimIdx);
   else
     drawAgeFlower();
 }

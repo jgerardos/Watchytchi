@@ -52,7 +52,7 @@ class Watchytchi : public WatchyBase{
         void drawWeather();
         void drawIdleCreature(bool isAnimating);
         void drawEatAnim();
-        void drawPlaymate();
+        void drawPlaymate(int idleIdx);
         void drawAgeFlower();
         void drawDebugClock();
         void drawPoop();
