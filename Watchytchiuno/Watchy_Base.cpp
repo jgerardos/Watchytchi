@@ -22,6 +22,7 @@ RTC_DATA_ATTR float strokeHappy_rtc = 0.f;
 RTC_DATA_ATTR float walkHappy_rtc = 0.f;
 RTC_DATA_ATTR float poopHappy_rtc = 0.f;
 RTC_DATA_ATTR float sleepHappy_rtc = 0.f;
+RTC_DATA_ATTR float playmateHappy_rtc = 0.f;
 RTC_DATA_ATTR bool hasPoop = false;
 RTC_DATA_ATTR int lastPoopHour = -1;
 
@@ -46,6 +47,9 @@ RTC_DATA_ATTR bool hasExecutedEnding = false;
 RTC_DATA_ATTR int bmaStepsAtWalkStart;
 RTC_DATA_ATTR int lastStepsDuringWalkCount;
 
+/*## State: Game State (Playmate) ##*/
+RTC_DATA_ATTR PlaymateSpecies activePlaymate = PlaymateSpecies::NoPlaymate;
+RTC_DATA_ATTR int lastPlaymateJoinTs = -1;
 
 uint8_t scheduledVibrationTimes;
 uint32_t scheduledVibrationDelay;

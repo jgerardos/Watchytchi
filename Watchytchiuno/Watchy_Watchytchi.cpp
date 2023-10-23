@@ -113,10 +113,13 @@ void Watchytchi::tryLoadSaveData(bool force)
   walkHappy_rtc = NVS.getFloat(nvsKey_walkHappy, walkHappy.defaultValue);
   poopHappy_rtc = NVS.getFloat(nvsKey_poopHappy, poopHappy.defaultValue);
   sleepHappy_rtc = NVS.getFloat(nvsKey_sleepHappy, sleepHappy.defaultValue);
+  playmateHappy_rtc = NVS.getFloat(nvsKey_playmateHappy, playmateHappy.defaultValue);
   hasPoop = 1 == NVS.getInt(nvsKey_hasPoop, 0);
   lastPoopHour = NVS.getInt(nvsKey_lastPoopHour, -1);
   nextAlertTs = NVS.getInt(nvsKey_nextAlertTs, -1);
   nextAlertType = (ScheduledAlertType)NVS.getInt(nvsKey_nextAlertType, 0);
+  activePlaymate = (PlaymateSpecies)NVS.getInt(nvsKey_activePlaymate, (int)PlaymateSpecies::NoPlaymate);
+  lastPlaymateJoinTs = NVS.getInt(nvsKey_lastPlaymateJoinTs, -1);
   DBGPrintF("Loading!! lastUpdateTsEpoch "); DBGPrint(lastUpdateTsEpoch); DBGPrintln();
   DBGPrintF("Loaded nextAlertType "); DBGPrint(nextAlertType); DBGPrintln();
   
@@ -131,6 +134,7 @@ void Watchytchi::loadFromRTC()
   walkHappy.value = walkHappy_rtc;
   poopHappy.value = poopHappy_rtc;
   sleepHappy.value = sleepHappy_rtc;
+  playmateHappy.value = playmateHappy_rtc;
   
   // Assign creature (TODO: convert to map or enum-linked array)
   if (species == CreatureSpecies::Hog)
@@ -168,10 +172,13 @@ void Watchytchi::tryWriteSaveData(bool force)
   NVS.setFloat(nvsKey_walkHappy, walkHappy.value);
   NVS.setFloat(nvsKey_poopHappy, poopHappy.value);
   NVS.setFloat(nvsKey_sleepHappy, sleepHappy.value);
+  NVS.setFloat(nvsKey_playmateHappy, playmateHappy.value);
   NVS.setInt(nvsKey_hasPoop, hasPoop ? 1 : 0, false);
   NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
-  NVS.setInt(nvsKey_nextAlertTs, nextAlertTs);
-  NVS.setInt(nvsKey_nextAlertType, (int)nextAlertType);
+  NVS.setInt(nvsKey_nextAlertTs, nextAlertTs, false);
+  NVS.setInt(nvsKey_nextAlertType, (int)nextAlertType, false);
+  NVS.setInt(nvsKey_activePlaymate, (int)activePlaymate, false);
+  NVS.setInt(nvsKey_lastPlaymateJoinTs, lastPlaymateJoinTs, false);
   auto didSave = NVS.commit();
   DBGPrintF("Save success? "); DBGPrint(didSave); DBGPrintln();
   
@@ -185,6 +192,7 @@ void Watchytchi::writeToRTC()
   walkHappy_rtc = walkHappy.value;
   poopHappy_rtc = poopHappy.value;
   sleepHappy_rtc = sleepHappy.value;
+  playmateHappy_rtc = playmateHappy.value;
 }
 
 void Watchytchi::resetSaveData()
@@ -213,6 +221,8 @@ void Watchytchi::resetSaveData()
   NVS.setFloat(nvsKey_poopHappy, poopHappy.defaultValue, false);
   sleepHappy_rtc = sleepHappy.defaultValue;
   NVS.setFloat(nvsKey_sleepHappy, sleepHappy.defaultValue, false);
+  playmateHappy_rtc = playmateHappy.defaultValue;
+  NVS.setFloat(nvsKey_playmateHappy, playmateHappy.defaultValue, false);
   hasPoop = false;
   NVS.setInt(nvsKey_hasPoop, 0, false);
   lastPoopHour = -1;
@@ -225,9 +235,13 @@ void Watchytchi::resetSaveData()
   lastAnimateMinute = 0;
   isStrokingLeftSide = false;
   nextAlertTs = -1;
-  NVS.setInt(nvsKey_nextAlertTs, nextAlertTs);
+  NVS.setInt(nvsKey_nextAlertTs, nextAlertTs, false);
   nextAlertType = ScheduledAlertType::None;
-  NVS.setInt(nvsKey_nextAlertType, (int)nextAlertType);
+  NVS.setInt(nvsKey_nextAlertType, (int)nextAlertType, false);
+  activePlaymate = PlaymateSpecies::NoPlaymate;
+  NVS.setInt(nvsKey_activePlaymate, activePlaymate, false);
+  lastPlaymateJoinTs = -1;
+  NVS.setInt(nvsKey_lastPlaymateJoinTs, lastPlaymateJoinTs, false);
   emotionSelectIdx = 0;
   hasExecutedEnding = false;
   auto didSave = NVS.commit();
@@ -321,6 +335,11 @@ void Watchytchi::tickCreatureState()
     lastHungerCryMinute = -1;
   }
 
+  /*# Manage Playmate state! #*/
+  // Playmates leave after a bit
+  const int k_playmateStayDuration = 3 * 60 * 60;
+  if (hasActivePlaymate() && lastUpdateTsEpoch > lastPlaymateJoinTs + k_playmateStayDuration)
+    activePlaymate = PlaymateSpecies::NoPlaymate;
 
   /*# Atrophy happiness! #*/
   auto oldHappyPercent = getHappyPercent();
@@ -360,11 +379,18 @@ void Watchytchi::tickCreatureState()
       walkHappy.MoveTowards(0, happyDeltaAmt * 0.25f);
     if (gameState != GameState::StrokingMode)
       strokeHappy.MoveTowards(0, happyDeltaAmt * 0.25f);
+
+    // If I have a playmate, that makes me ambiently happy
+    if (hasActivePlaymate())
+      playmateHappy.AddTo(happyDeltaAmt);
+    else
+      playmateHappy.MoveTowards(0, happyDeltaAmt * 0.25f);
   }
 
   lastHappyDelta = getHappyPercent() - oldHappyPercent;
   DBGPrintF("Happy Contributions: food "); DBGPrint(foodHappy.value); DBGPrintF(", stroke "); DBGPrint(strokeHappy.value); 
-    DBGPrintF(", walk "); DBGPrint(walkHappy.value); DBGPrintF(", poopHappy "); DBGPrint(poopHappy.value); DBGPrintF(", sleep "); DBGPrint(sleepHappy.value); DBGPrintln();
+    DBGPrintF(", walk "); DBGPrint(walkHappy.value); DBGPrintF(", poopHappy "); DBGPrint(poopHappy.value); DBGPrintF(", sleep "); 
+    DBGPrint(sleepHappy.value); DBGPrintF(", playmate "); DBGPrint(playmateHappy.value); DBGPrintln();
   DBGPrintF("New happyPercent "); DBGPrint(getHappyPercent()); DBGPrintF(", from old happy percent "); DBGPrint(oldHappyPercent); DBGPrintln();
 
   /*# Atrophy poop: #*/
@@ -400,7 +426,8 @@ TimeOfDay Watchytchi::getTimeOfDay(const tmElements_t &tm)
 
 float Watchytchi::getHappyPercent()
 {
-  return constrain(foodHappy.value + strokeHappy.value + walkHappy.value + poopHappy.value + sleepHappy.value, 0, 1);
+  return constrain(foodHappy.value + strokeHappy.value + walkHappy.value 
+    + poopHappy.value + sleepHappy.value + playmateHappy.value, 0, 1);
 }
 
 HappyTier Watchytchi::getHappyTier()
@@ -425,10 +452,22 @@ bool Watchytchi::isElectricLit()
   return getTimeOfDay() == TimeOfDay::LateNight && !invertColors;
 }
 
+bool Watchytchi::hasActivePlaymate()
+{
+  return activePlaymate > PlaymateSpecies::NoPlaymate;
+}
+
+int Watchytchi::getPlaymateXOffset()
+{
+  if (hasActivePlaymate())
+    return -50;
+  return 0;
+}
+
 void Watchytchi::clearCreatureBackground()
 {
   auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
-  display.fillRect(100 - 36, 97, 156 - (100 - 36) + 8, 72, color_bg);
+  display.fillRect(getPlaymateXOffset() + 100 - 36, 97, 156 - (100 - 36) + 8, 72, color_bg);
 }
 
 void Watchytchi::clearScreen()
@@ -614,7 +653,9 @@ void Watchytchi::drawEatAnim(){
      for (int i = 0; i < numFrames; i++)
      {
        critter->DrawEatingPose(i, true);
-       display.drawBitmap(144 - 18, 126, foodType == BERRIES ? foodBerry_stages[i / 8] : foodCucumber_stages[i / 4], 36, 36, color_fg);
+       display.drawBitmap(144 - 18 + getPlaymateXOffset(), 126, foodType == BERRIES ? foodBerry_stages[i / 8] : foodCucumber_stages[i / 4], 36, 36, color_fg);
+       if (hasActivePlaymate())
+        drawPlaymate();
        display.display(true);
        clearCreatureBackground();
      }
@@ -625,6 +666,24 @@ void Watchytchi::drawEatAnim(){
        drawIdleCreature(false);
        display.display(true);
      }
+}
+
+void Watchytchi::drawPlaymate()
+{
+  if (!hasActivePlaymate())
+    return;
+
+  auto color_bg = invertColors ? GxEPD_BLACK : GxEPD_WHITE;
+  auto color_fg = invertColors ? GxEPD_WHITE : GxEPD_BLACK;
+
+  DBGPrintF("Active playmate is "); DBGPrint(activePlaymate); DBGPrintln();
+
+  // Draw the playmate!
+  // TODO: make data classes for playmate instead of hardcoding
+  if (activePlaymate == PlaymateSpecies::JuncoSnake)
+    display.drawBitmap(120, 97, img_Playmate_JuncoSnake_Idle1, 106, 72, color_fg);
+  else if (activePlaymate == PlaymateSpecies::SnappyLog)
+    display.drawBitmap(120, 97, img_Playmate_SnappyLog_Idle1, 106, 72, color_fg);
 }
 
 void Watchytchi::drawAgeFlower()
@@ -725,7 +784,10 @@ void Watchytchi::baseMenu_draw()
     drawIdleCreature(false);
   }
 
-  drawAgeFlower();
+  if (hasActivePlaymate())
+    drawPlaymate();
+  else
+    drawAgeFlower();
   drawPoop();    
 }
 
@@ -869,7 +931,10 @@ void Watchytchi::stroking_draw()
   if (strokeHappy.value < strokeHappy.max - 0.01f)
     display.drawBitmap(125, 115, isStrokingLeftSide ? img_Emote_Hearts1 : img_Emote_Hearts2, 28, 19, GxEPD_BLACK);
   
-  drawAgeFlower();
+  if (hasActivePlaymate())
+    drawPlaymate();
+  else
+    drawAgeFlower();
 }
 
 bool Watchytchi::stroking_handleButtonPress(uint64_t wakeupBit)
@@ -957,6 +1022,17 @@ void Watchytchi::sharedWalk_draw()
     if (newIncrementValue == k_walkHappyPayoutIncrements)
       happinessToAdd += walkHappy.max * 0.25f; // Extra payout at the end
     walkHappy.AddTo(happinessToAdd);
+
+    // Every time we add happiness, we have a chance to add a playmate
+    srand(lastUpdateTsEpoch);
+    auto shouldGetPlaymate = activePlaymate == PlaymateSpecies::NoPlaymate && rand() % 16 == 0;
+    // auto shouldGetPlaymate = true;
+    if (shouldGetPlaymate)
+    {
+      // Choose a random playmate from all the options
+      activePlaymate = (PlaymateSpecies)(rand() % (int)PlaymateSpecies::NUMPLAYMATES);
+      lastPlaymateJoinTs = lastUpdateTsEpoch;
+    }    
   }
 
   lastStepsDuringWalkCount = stepsDuringWalk;

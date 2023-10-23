@@ -34,6 +34,9 @@ class Watchytchi : public WatchyBase{
         HappyTier getHappyTier();
         HappyTier getHappyTier(float happyPercent);
         bool isElectricLit();
+        bool hasActivePlaymate();
+        int getPlaymateXOffset();
+
         /*## Game Logic (Schedulable Events) ##*/
         bool hasActiveAlert();
         void scheduleNextAlert();
@@ -49,6 +52,7 @@ class Watchytchi : public WatchyBase{
         void drawWeather();
         void drawIdleCreature(bool isAnimating);
         void drawEatAnim();
+        void drawPlaymate();
         void drawAgeFlower();
         void drawDebugClock();
         void drawPoop();

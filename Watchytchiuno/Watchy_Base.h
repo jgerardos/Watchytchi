@@ -13,6 +13,11 @@
 enum CreatureSpecies {Hog, Snake, Deer, COUNT};
 enum ScheduledAlertType {None, CloseUp, AskAboutDay};
 enum GameState {BaseMenu, Eating, AlertInteraction, StrokingMode, HowWasYourDay, Ending, SharedWalk, CNT};
+enum PlaymateSpecies {NoPlaymate = 0, JuncoSnake = 1, SnappyLog = 2, NUMPLAYMATES};
+/*
+enum PlaymateSpecies {None = -1, JuncoSnake, LogGator, BeerPenguin, GooseHydra, PetRock, KingSnake, EyeFrog, RockHider,
+    HaringHead, StaplerFish, EyePine, BootSnail}
+*/
 
 struct HappyContributor
 {
@@ -57,6 +62,8 @@ extern RTC_DATA_ATTR float poopHappy_rtc;
 const String nvsKey_poopHappy = "poopHappy";
 extern RTC_DATA_ATTR float sleepHappy_rtc;
 const String nvsKey_sleepHappy = "sleepHappy";
+extern RTC_DATA_ATTR float playmateHappy_rtc;
+const String nvsKey_playmateHappy = "playmateHappy";
 static float lastHappyDelta;
 
 extern RTC_DATA_ATTR bool hasPoop;
@@ -88,6 +95,12 @@ extern RTC_DATA_ATTR bool hasExecutedEnding;
 /*## State: Game State (Shared Walk) ##*/
 extern RTC_DATA_ATTR int bmaStepsAtWalkStart;
 extern RTC_DATA_ATTR int lastStepsDuringWalkCount;
+
+/*## State: Game State (Playmate) ##*/
+extern RTC_DATA_ATTR PlaymateSpecies activePlaymate;
+const String nvsKey_activePlaymate = "activePlaymate";
+extern RTC_DATA_ATTR int lastPlaymateJoinTs;
+const String nvsKey_lastPlaymateJoinTs = "lastPlaymateJoinTs";
 
 // Compile out macros to increase speed of serial printing
 #define DBGPrint(content) if (VERBOSE_LOGGING_ENABLED) {Serial.print(content);}
@@ -130,11 +143,13 @@ class WatchyBase : public Watchy {
         int nextProfileIdx;
         virtual void drawUIButton(int idx, bool quickCursorUpdate) {}
 
+        // TODO: move these to Watchytchi
         HappyContributor foodHappy = HappyContributor(0.25f,  -0.334f, 0.4f);
         HappyContributor strokeHappy = HappyContributor(0.f,  0.f, 0.334f);
         HappyContributor walkHappy = HappyContributor(0.f,  0.f, 0.334f);
         HappyContributor poopHappy = HappyContributor(0.f,  -0.334f, 0.2f);
         HappyContributor sleepHappy = HappyContributor(0.f,  -0.334f, 0.f);
+        HappyContributor playmateHappy = HappyContributor(0.f,  0.f, 0.2f);
     private:
         void _rtcConfig();
 };
