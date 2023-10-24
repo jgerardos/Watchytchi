@@ -342,8 +342,7 @@ void Watchytchi::tickCreatureState()
   if (FORCED_ACTIVE_PLAYMATE > (int)PlaymateSpecies::NoPlaymate)
   {
     activePlaymate = (PlaymateSpecies)FORCED_ACTIVE_PLAYMATE;
-    if (lastPlaymateJoinTs = -1 || lastUpdateTsEpoch > lastPlaymateJoinTs + k_playmateStayDuration)
-      lastPlaymateJoinTs = lastUpdateTsEpoch;
+    lastPlaymateJoinTs = lastUpdateTsEpoch;
   }
 
   // Playmates leave after a bit
@@ -479,7 +478,7 @@ void Watchytchi::clearCreatureBackground()
   display.fillRect(getPlaymateXOffset() + 100 - 36, 97, 156 - (100 - 36) + 8, 72, color_bg);
 
   if (hasActivePlaymate())
-    display.fillRect(120, 97, 106, 72, color_bg);
+    display.fillRect(120, 94, 106, 72, color_bg);
 }
 
 void Watchytchi::clearScreen()
@@ -695,12 +694,19 @@ void Watchytchi::drawPlaymate(int idleIdx)
   if (activePlaymate == PlaymateSpecies::JuncoSnake)
   {
     if (gameState == GameState::Eating)
-      display.drawBitmap(120, 97, idleIdx % 2 == 0 ? img_Playmate_JuncoSnake_Eating1 : img_Playmate_JuncoSnake_Eating2, 106, 72, color_fg);
+      display.drawBitmap(120, 94, idleIdx % 2 == 0 ? img_Playmate_JuncoSnake_Eating1 : img_Playmate_JuncoSnake_Eating2, 106, 72, color_fg);
     else
-      display.drawBitmap(120, 97, idleIdx % 2 == 0 ? img_Playmate_JuncoSnake_Idle1 : img_Playmate_JuncoSnake_Idle2, 106, 72, color_fg);
+      display.drawBitmap(120, 94, idleIdx % 2 == 0 ? img_Playmate_JuncoSnake_Idle1 : img_Playmate_JuncoSnake_Idle2, 106, 72, color_fg);
   }
   else if (activePlaymate == PlaymateSpecies::SnappyLog)
-    display.drawBitmap(120, 97, idleIdx % 2 == 0 ? img_Playmate_SnappyLog_Idle1 : img_Playmate_SnappyLog_Idle2, 106, 72, color_fg);
+    display.drawBitmap(120, 94, idleIdx % 2 == 0 ? img_Playmate_SnappyLog_Idle1 : img_Playmate_SnappyLog_Idle2, 106, 72, color_fg);
+  else if (activePlaymate == PlaymateSpecies::BugRat)
+  {
+    if (gameState == GameState::Eating)
+      display.drawBitmap(120, 94, idleIdx % 2 == 0 ? img_Playmate_BugRat_Eating1 : img_Playmate_BugRat_Eating2, 106, 72, color_fg);
+    else
+      display.drawBitmap(120, 94, idleIdx % 2 == 0 ? img_Playmate_BugRat_Idle1 : img_Playmate_BugRat_Idle2, 106, 72, color_fg);
+  }
 }
 
 void Watchytchi::drawAgeFlower()
@@ -1004,6 +1010,8 @@ void Watchytchi::sharedWalk_draw()
 
   // Draw the critter in the center!
   critter->DrawWalkingPose(idleAnimIdx, false);
+  if (hasActivePlaymate())
+    drawPlaymate(idleAnimIdx);
   idleAnimIdx = (idleAnimIdx + 1) % 2;
 
   // Draw a row of flowers representing the player's walking progress
