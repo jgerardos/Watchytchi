@@ -65,6 +65,11 @@ const String nvsKey_sleepHappy = "sleepHappy";
 extern RTC_DATA_ATTR float playmateHappy_rtc;
 const String nvsKey_playmateHappy = "playmateHappy";
 static float lastHappyDelta;
+extern RTC_DATA_ATTR int badEndSeconds;
+const String nvsKey_badEndSeconds = "badEndSecs";
+extern RTC_DATA_ATTR int badEndShieldSeconds;
+const String nvsKey_badEndShieldSeconds = "badEndShield";
+const float k_secondsThresholdForBadEnd = 24 * 60 * 60;
 
 extern RTC_DATA_ATTR bool hasPoop;
 const String nvsKey_hasPoop = "hasPoop";

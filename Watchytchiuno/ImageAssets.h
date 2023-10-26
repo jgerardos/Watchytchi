@@ -3,3 +3,4 @@
 #include "ImageAssets_Misc.h"
 #include "ImageAssets_DeerSlug.h"
 #include "ImageAssets_Playmates.h"
+#include "ImageAssets_Cinematics.h"

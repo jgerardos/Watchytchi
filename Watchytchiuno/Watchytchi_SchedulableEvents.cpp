@@ -2,6 +2,20 @@
 #include <stdlib.h>     //srand, rand
 #include "SpeciesCode.h"
 
+// Array of all bitmaps for convenience. (Total bytes used to store images in PROGMEM = 40192)
+const int img_angryLetterFrames_size = 8;
+const unsigned char* img_angryLetterFrames[8] = {
+	img_BadEnd_AngryLetter1,
+	img_BadEnd_AngryLetter2,
+	img_BadEnd_AngryLetter3,
+	img_BadEnd_AngryLetter4,
+	img_BadEnd_AngryLetter5,
+	img_BadEnd_AngryLetter6,
+	img_BadEnd_AngryLetter7,
+	img_BadEnd_AngryLetter8
+};
+
+
 bool Watchytchi::hasActiveAlert()
 {
   time_t currentEpochTime = makeTime(currentTime);
@@ -189,86 +203,163 @@ void Watchytchi::ending_draw()
 {
   if (!hasExecutedEnding)
   {
-    display.fillScreen(GxEPD_WHITE);
-    display.drawBitmap(0, 0, img_GoodEnd_DaisyHog_PackedBags, 200, 200, GxEPD_BLACK);
+    // Bad end: draw creature in running away pose
+    if (qualifiesForBadEnd())
+    {
+      invertColors = false;
+      clearScreen();
+      drawWeather();
+      drawAllUIButtons();
+      drawDebugClock();
+      critter->DrawRunningAwayIdle();
+      drawAgeFlower();
+    }
+    // Good end: creature hangs out with packed bags. This is all prerendered
+    else
+    {
+      display.fillScreen(GxEPD_WHITE);
+      display.drawBitmap(0, 0, img_GoodEnd_DaisyHog_PackedBags, 200, 200, GxEPD_BLACK);
+    }
   }
+  /*# Ending animation! #*/
   else
   {
-    /*# Ending animation! #*/
-
-    // Phase 0: Show the packed bags a little longer
-    vibrate(1, 30);
-    display.fillScreen(GxEPD_WHITE);
-    display.drawBitmap(0, 0, img_GoodEnd_DaisyHog_PackedBags, 200, 200, GxEPD_BLACK);
-    display.display(true);
-    delay(1000);
-
-    // Phase 1: Hike up a mountain!
-    vibrate(1, 50);
-    for (auto i = 0; i < 10; i++)
+    // Bad end: run away
+    if (qualifiesForBadEnd())
     {
-      display.fillScreen(GxEPD_WHITE);
-      display.drawBitmap(0, 0, i % 2 == 0 ? img_GoodEnd_DaisyHog_Hike1 : img_GoodEnd_DaisyHog_Hike2, 200, 200, GxEPD_BLACK);
-      display.display(true);
-    }
-    delay(2000);
+      vibrate(1, 30);
+      // Phase 0: walk offscreen
+      for (auto i = 0; i < 10; i++)
+      {
+        display.fillScreen(GxEPD_WHITE);
+        critter->DrawRunningAwayWalking(i, i * 18);
+        display.display(true);
+        delay(300);
+      }
+      delay(1500);
 
-    // Phase 2: Discover the wacky bonfire
-    vibrate(1, 50);
-    for (auto i = 0; i < 24; i++)
-    {
-      display.fillScreen(GxEPD_WHITE);
-      display.drawBitmap(0, 0, i % 2 == 0 ? img_GoodEnd_DaisyHog_IntroBonfire1 : img_GoodEnd_DaisyHog_IntroBonfire2, 200, 200, GxEPD_BLACK);
-      if (i < 3)
+      // Phase 1: Send an angry letter!
+      for (auto i = 0; i < img_angryLetterFrames_size; i++)
+      {
+        display.fillScreen(GxEPD_WHITE);
+        display.drawBitmap(0, 0, img_angryLetterFrames[i], 200, 200, GxEPD_BLACK);
+        display.display(true);
+        if (i == 2)
+          delay(1500);
+        else if (i == 3)
+          delay(1500);
+        else
+          delay(300);
+      }
+      delay(2000);
+
+      // Phase 2: fade out on the letter:
+      for (auto i = 0; i < 3; i++)
+      {
+        display.fillScreen(GxEPD_WHITE);
+        display.drawBitmap(0, 0, img_angryLetterFrames[img_angryLetterFrames_size - 1], 200, 200, GxEPD_BLACK);
+
+        if (i == 0)
+          display.drawBitmap(0, 0, img_GoodEnd_FadeOut1, 200, 200, GxEPD_BLACK);
+        if (i == 1)
+          display.drawBitmap(0, 0, img_GoodEnd_FadeOut2, 200, 200, GxEPD_BLACK);
+        if (i == 2)
+          display.drawBitmap(0, 0, img_GoodEnd_FadeOut3, 200, 200, GxEPD_BLACK);
+        display.display(true);
+        delay(1000);
+      }
+      for (auto i = 0; i < 3; i++)
+      {
         display.fillScreen(GxEPD_BLACK);
-      else if (i < 6)
-        display.drawBitmap(0, 0, img_GoodEnd_FadeOut3, 200, 200, GxEPD_BLACK);
-      else if (i < 9)
-        display.drawBitmap(0, 0, img_GoodEnd_FadeOut2, 200, 200, GxEPD_BLACK);
-      else if (i < 12)
-        display.drawBitmap(0, 0, img_GoodEnd_FadeOut1, 200, 200, GxEPD_BLACK);
-      display.display(true);
-    }
-    delay(2000);
+        display.display(true);
+        delay(666);
+      }
 
-    // Phase 3: Hug the caretaker goodbye :')
-    vibrate(1, 50);
-    display.fillScreen(GxEPD_WHITE);
-    display.drawBitmap(0, 0, img_GoodEnd_DaisyHog_HugIntro, 200, 200, GxEPD_BLACK);
-    display.display(true);
-    delay(2000);
-    for (auto i = 0; i < 10; i++)
-    {
+      // Phase 3: Ending title card
       display.fillScreen(GxEPD_WHITE);
-      display.drawBitmap(0, 0, i % 2 == 0 ? img_GoodEnd_DaisyHog_Hugging1 : img_GoodEnd_DaisyHog_Hugging2, 200, 200, GxEPD_BLACK);
+      display.drawBitmap(0, 0, img_BadEnd_TitleCard, 200, 200, GxEPD_BLACK);
       display.display(true);
-      vibrate(1, 10);
+      delay(5000);
     }
-    delay(2000);
+    // Good end: hike up to the mountains and live with nice little freaks
+    else
+    {
+      // Phase 0: Show the packed bags a little longer
+      vibrate(1, 30);
+      display.fillScreen(GxEPD_WHITE);
+      display.drawBitmap(0, 0, img_GoodEnd_DaisyHog_PackedBags, 200, 200, GxEPD_BLACK);
+      display.display(true);
+      delay(1000);
 
-    // Phase 4: Snuggling up with my new friends!
-    vibrate(1, 50);
-    for (auto i = 0; i < 24; i++)
-    {
+      // Phase 1: Hike up a mountain!
+      vibrate(1, 50);
+      for (auto i = 0; i < 10; i++)
+      {
+        display.fillScreen(GxEPD_WHITE);
+        display.drawBitmap(0, 0, i % 2 == 0 ? img_GoodEnd_DaisyHog_Hike1 : img_GoodEnd_DaisyHog_Hike2, 200, 200, GxEPD_BLACK);
+        display.display(true);
+      }
+      delay(2000);
+
+      // Phase 2: Discover the wacky bonfire
+      vibrate(1, 50);
+      for (auto i = 0; i < 24; i++)
+      {
+        display.fillScreen(GxEPD_WHITE);
+        display.drawBitmap(0, 0, i % 2 == 0 ? img_GoodEnd_DaisyHog_IntroBonfire1 : img_GoodEnd_DaisyHog_IntroBonfire2, 200, 200, GxEPD_BLACK);
+        if (i < 3)
+          display.fillScreen(GxEPD_BLACK);
+        else if (i < 6)
+          display.drawBitmap(0, 0, img_GoodEnd_FadeOut3, 200, 200, GxEPD_BLACK);
+        else if (i < 9)
+          display.drawBitmap(0, 0, img_GoodEnd_FadeOut2, 200, 200, GxEPD_BLACK);
+        else if (i < 12)
+          display.drawBitmap(0, 0, img_GoodEnd_FadeOut1, 200, 200, GxEPD_BLACK);
+        display.display(true);
+      }
+      delay(2000);
+
+      // Phase 3: Hug the caretaker goodbye :')
+      vibrate(1, 50);
       display.fillScreen(GxEPD_WHITE);
-      display.drawBitmap(0, 0, i % 2 == 0 ? img_GoodEnd_DaisyHog_OutroBonfire1 : img_GoodEnd_DaisyHog_OutroBonfire2, 200, 200, GxEPD_BLACK);
-      
-      if (i >= 21)
-        display.fillScreen(GxEPD_BLACK);
-      else if (i >= 18)
-        display.drawBitmap(0, 0, img_GoodEnd_FadeOut3, 200, 200, GxEPD_BLACK);
-      else if (i >= 15)
-        display.drawBitmap(0, 0, img_GoodEnd_FadeOut2, 200, 200, GxEPD_BLACK);
-      else if (i >= 12)
-        display.drawBitmap(0, 0, img_GoodEnd_FadeOut1, 200, 200, GxEPD_BLACK);
-      
+      display.drawBitmap(0, 0, img_GoodEnd_DaisyHog_HugIntro, 200, 200, GxEPD_BLACK);
       display.display(true);
+      delay(2000);
+      for (auto i = 0; i < 10; i++)
+      {
+        display.fillScreen(GxEPD_WHITE);
+        display.drawBitmap(0, 0, i % 2 == 0 ? img_GoodEnd_DaisyHog_Hugging1 : img_GoodEnd_DaisyHog_Hugging2, 200, 200, GxEPD_BLACK);
+        display.display(true);
+        vibrate(1, 10);
+      }
+      delay(2000);
+
+      // Phase 4: Snuggling up with my new friends!
+      vibrate(1, 50);
+      for (auto i = 0; i < 24; i++)
+      {
+        display.fillScreen(GxEPD_WHITE);
+        display.drawBitmap(0, 0, i % 2 == 0 ? img_GoodEnd_DaisyHog_OutroBonfire1 : img_GoodEnd_DaisyHog_OutroBonfire2, 200, 200, GxEPD_BLACK);
+        
+        if (i >= 21)
+          display.fillScreen(GxEPD_BLACK);
+        else if (i >= 18)
+          display.drawBitmap(0, 0, img_GoodEnd_FadeOut3, 200, 200, GxEPD_BLACK);
+        else if (i >= 15)
+          display.drawBitmap(0, 0, img_GoodEnd_FadeOut2, 200, 200, GxEPD_BLACK);
+        else if (i >= 12)
+          display.drawBitmap(0, 0, img_GoodEnd_FadeOut1, 200, 200, GxEPD_BLACK);
+        
+        display.display(true);
+      }
+      delay(2000);
+      display.fillScreen(GxEPD_WHITE);
+      display.drawBitmap(0, 0, img_GoodEnd_EndTitleCard, 200, 200, GxEPD_BLACK);
+      display.display(true);
+      delay(5000);
     }
-    delay(2000);
-    display.fillScreen(GxEPD_WHITE);
-    display.drawBitmap(0, 0, img_GoodEnd_EndTitleCard, 200, 200, GxEPD_BLACK);
-    display.display(true);
-    delay(5000);
+
+    // After the ending, reset!
     hasExecutedEnding = false;
     resetSaveData();
     tryLoadSaveData(true);

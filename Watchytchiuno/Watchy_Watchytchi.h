@@ -33,6 +33,7 @@ class Watchytchi : public WatchyBase{
         float getHappyPercent();
         HappyTier getHappyTier();
         HappyTier getHappyTier(float happyPercent);
+        bool qualifiesForBadEnd();
         bool isElectricLit();
         bool hasActivePlaymate();
         int getPlaymateXOffset();

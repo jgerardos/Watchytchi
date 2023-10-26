@@ -114,6 +114,8 @@ void Watchytchi::tryLoadSaveData(bool force)
   poopHappy_rtc = NVS.getFloat(nvsKey_poopHappy, poopHappy.defaultValue);
   sleepHappy_rtc = NVS.getFloat(nvsKey_sleepHappy, sleepHappy.defaultValue);
   playmateHappy_rtc = NVS.getFloat(nvsKey_playmateHappy, playmateHappy.defaultValue);
+  badEndSeconds = NVS.getInt(nvsKey_badEndSeconds, 0);
+  badEndShieldSeconds = NVS.getInt(nvsKey_badEndShieldSeconds, 0);
   hasPoop = 1 == NVS.getInt(nvsKey_hasPoop, 0);
   lastPoopHour = NVS.getInt(nvsKey_lastPoopHour, -1);
   nextAlertTs = NVS.getInt(nvsKey_nextAlertTs, -1);
@@ -167,12 +169,14 @@ void Watchytchi::tryWriteSaveData(bool force)
   NVS.setInt(nvsKey_species, (int)species, false);
   NVS.setInt(nvsKey_numSecondsAlive, numSecondsAlive, false);
   NVS.setFloat(nvsKey_hunger, hunger, false);
-  NVS.setFloat(nvsKey_foodHappy, foodHappy.value);
-  NVS.setFloat(nvsKey_strokeHappy, strokeHappy.value);
-  NVS.setFloat(nvsKey_walkHappy, walkHappy.value);
-  NVS.setFloat(nvsKey_poopHappy, poopHappy.value);
-  NVS.setFloat(nvsKey_sleepHappy, sleepHappy.value);
-  NVS.setFloat(nvsKey_playmateHappy, playmateHappy.value);
+  NVS.setFloat(nvsKey_foodHappy, foodHappy.value, false);
+  NVS.setFloat(nvsKey_strokeHappy, strokeHappy.value, false);
+  NVS.setFloat(nvsKey_walkHappy, walkHappy.value, false);
+  NVS.setFloat(nvsKey_poopHappy, poopHappy.value, false);
+  NVS.setFloat(nvsKey_sleepHappy, sleepHappy.value, false);
+  NVS.setFloat(nvsKey_playmateHappy, playmateHappy.value, false);
+  NVS.setInt(nvsKey_badEndSeconds, badEndSeconds, false);
+  NVS.setInt(nvsKey_badEndShieldSeconds, badEndShieldSeconds, false);
   NVS.setInt(nvsKey_hasPoop, hasPoop ? 1 : 0, false);
   NVS.setInt(nvsKey_lastPoopHour, lastPoopHour, false);
   NVS.setInt(nvsKey_nextAlertTs, nextAlertTs, false);
@@ -223,6 +227,10 @@ void Watchytchi::resetSaveData()
   NVS.setFloat(nvsKey_sleepHappy, sleepHappy.defaultValue, false);
   playmateHappy_rtc = playmateHappy.defaultValue;
   NVS.setFloat(nvsKey_playmateHappy, playmateHappy.defaultValue, false);
+  badEndSeconds = 0;
+  NVS.setInt(nvsKey_badEndSeconds, badEndSeconds, false);
+  badEndShieldSeconds = 0;
+  NVS.setInt(nvsKey_badEndShieldSeconds, badEndShieldSeconds, false);
   hasPoop = false;
   NVS.setInt(nvsKey_hasPoop, 0, false);
   lastPoopHour = -1;
@@ -299,9 +307,33 @@ void Watchytchi::tickCreatureState()
   }
 
   // Handle the ending!
-  auto maximumAge = 7 * 24 * 60 * 60;
-  if (gameState != GameState::Ending && numSecondsAlive >= maximumAge)
-    gameState = GameState::Ending;
+  if (gameState != GameState::Ending)
+  {
+    // Force ending?
+    if (FORCED_ENDING == 0 || FORCED_ENDING == 1)
+    {
+      gameState = GameState::Ending;
+      // Force bad ending?
+      if (FORCED_ENDING == 1)
+        badEndSeconds = k_secondsThresholdForBadEnd * 2;
+      // Endings are only defined for adults, so forcibly grow up if I'm not an adult
+      if (species == CreatureSpecies::Deer)
+      {
+        srand(currentEpochTime);
+        species = rand() % 2 == 0 ? CreatureSpecies::Hog : CreatureSpecies::Snake;
+        loadFromRTC();
+      }
+      
+      return;
+    }
+
+    // Good end: reach a certain age without getting the bad end
+    auto maximumAge = 7 * 24 * 60 * 60;
+    if (numSecondsAlive >= maximumAge)
+      gameState = GameState::Ending;
+    else if (qualifiesForBadEnd())
+      gameState = GameState::Ending;
+  }
   if (gameState == GameState::Ending)
     return;
 
@@ -399,7 +431,22 @@ void Watchytchi::tickCreatureState()
   DBGPrintF("Happy Contributions: food "); DBGPrint(foodHappy.value); DBGPrintF(", stroke "); DBGPrint(strokeHappy.value); 
     DBGPrintF(", walk "); DBGPrint(walkHappy.value); DBGPrintF(", poopHappy "); DBGPrint(poopHappy.value); DBGPrintF(", sleep "); 
     DBGPrint(sleepHappy.value); DBGPrintF(", playmate "); DBGPrint(playmateHappy.value); DBGPrintln();
-  DBGPrintF("New happyPercent "); DBGPrint(getHappyPercent()); DBGPrintF(", from old happy percent "); DBGPrint(oldHappyPercent); DBGPrintln();
+  DBGPrintF("New happyPercent "); DBGPrint(getHappyPercent()); DBGPrintF(", from old happy percent "); DBGPrint(oldHappyPercent); 
+  DBGPrintF(", lastHappyDelta is "); DBGPrint(lastHappyDelta); DBGPrintln();
+
+  /*# Tick running away #*/
+  auto isContemplatingRunAway = getHappyPercent() <= 0.f && lastHappyDelta < 0; // TODO: get lastHappyDelta working
+
+  // Offer a buffer "shield" that ticks up first before you get permanent run away points
+  const int k_shieldSecondsSize = 30 * 60;
+  badEndShieldSeconds = constrain(badEndShieldSeconds + timeDelta * (isContemplatingRunAway ? 1.f : -1.f), 0.f, k_shieldSecondsSize);
+  // Once the shield is used up, accumulate permanent bad points
+  if (isContemplatingRunAway && badEndShieldSeconds >= k_shieldSecondsSize)
+    badEndSeconds += timeDelta;
+  // The bad end meter can go down just a tad if you're happy and hovering at the edge
+  if (getHappyPercent() >= 0.9f && badEndSeconds > k_secondsThresholdForBadEnd - 4 * 60 * 60)
+    badEndSeconds -= timeDelta;
+  DBGPrintF("Bad end seconds: "); DBGPrint(badEndSeconds); DBGPrintF(", shield seconds is "); DBGPrint(badEndShieldSeconds); DBGPrintln();
 
   /*# Atrophy poop: #*/
   if (!hasPoop && getTimeOfDay() != TimeOfDay::LateNight && (lastPoopHour == -1 || currentTime.Hour >= lastPoopHour + 4 || currentTime.Hour < lastPoopHour) 
@@ -453,6 +500,11 @@ HappyTier Watchytchi::getHappyTier(float hPercent)
     return HappyTier::Neutral;
   
   return HappyTier::Sad;
+}
+
+bool Watchytchi::qualifiesForBadEnd()
+{
+  return badEndSeconds >= k_secondsThresholdForBadEnd;
 }
 
 bool Watchytchi::isElectricLit()
